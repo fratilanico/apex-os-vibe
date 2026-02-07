@@ -2,19 +2,15 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { 
   Cpu, 
-  Users, 
   Rocket, 
-  Shield, 
-  Brain, 
   Zap,
   ChevronRight,
   Lock,
   Unlock,
   Star,
-  Target,
   Layers,
-  Sparkles,
-  Award
+  Award,
+  Target
 } from 'lucide-react';
 import { modules as restoredModules } from '../../data/curriculumData';
 
@@ -37,7 +33,8 @@ const ICON_MAP: Record<string, any> = {
   Terminal: Cpu,
   GitBranch: Rocket,
   Layers,
-  Award
+  Award,
+  Target
 };
 
 const displayModules: DisplayModule[] = restoredModules.map((m, idx) => ({
@@ -52,6 +49,11 @@ const displayModules: DisplayModule[] = restoredModules.map((m, idx) => ({
   xpRequired: idx * 500,
   phase: idx < 2 ? 'foundation' : idx < 4 ? 'learner' : 'builder'
 }));
+
+const displayModulesCount = displayModules.length;
+const completedCount = displayModules.filter(m => m.status === 'completed').length;
+const availableCount = displayModules.filter(m => m.status === 'available').length;
+const lockedCount = displayModules.filter(m => m.status === 'locked').length;
 
 const phaseConfig = {
   foundation: {
@@ -367,7 +369,7 @@ export function CurriculumGrid() {
           </div>
           
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            6 Modules to{' '}
+            {displayModulesCount} Modules to{' '}
             <span className="bg-gradient-to-r from-cyan-400 via-violet-400 to-amber-400 bg-clip-text text-transparent">
               Sovereign Mastery
             </span>
@@ -377,6 +379,58 @@ export function CurriculumGrid() {
             Progress through the core curriculum designed for rapid transformation. 
             Each module unlocks new specialized capabilities in your agentic workflow.
           </p>
+        </motion.div>
+
+        {/* Progress Overview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-12 p-6 rounded-2xl bg-zinc-900/40 border border-zinc-800/50 backdrop-blur-sm"
+        >
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/30 flex items-center justify-center">
+                <Target className="w-8 h-8 text-cyan-400" />
+              </div>
+              <div>
+                <div className="text-sm text-zinc-500 mb-1">Current Progress</div>
+                <div className="text-2xl font-bold text-white">Level 2 <span className="text-zinc-500">/ {displayModulesCount}</span></div>
+              </div>
+            </div>
+            
+            <div className="flex-1 max-w-md w-full">
+              <div className="flex justify-between text-xs font-mono text-zinc-500 mb-2">
+                <span>Total XP</span>
+                <span>250 / {displayModulesCount * 500}</span>
+              </div>
+              <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: '5%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="h-full bg-gradient-to-r from-cyan-500 via-violet-500 to-amber-500 rounded-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6 text-center">
+              <div>
+                <div className="text-2xl font-bold text-emerald-400">{completedCount}</div>
+                <div className="text-[10px] font-mono text-zinc-500 uppercase">Completed</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-cyan-400">{availableCount}</div>
+                <div className="text-[10px] font-mono text-zinc-500 uppercase">Available</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-zinc-600">{lockedCount}</div>
+                <div className="text-[10px] font-mono text-zinc-500 uppercase">Locked</div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* Module grid */}

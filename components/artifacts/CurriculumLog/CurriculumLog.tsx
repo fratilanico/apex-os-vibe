@@ -138,12 +138,12 @@ export const CurriculumLog = React.memo<CurriculumLogProps>(function CurriculumL
   // Transform module titles with founder-focused copy
   const transformModuleTitle = (title: string, number: string): string => {
     const transformations: Record<string, string> = {
-      'The Shift': 'Phase 00: The Mindset Transfer',
-      'The Environment': 'Phase 01: Breaking Ground',
-      'Specifying': 'Phase 02: Configuration Mastery',
-      'Orchestration': 'Phase 03: Agent Swarms',
-      'Synthesis': 'Phase 04: Automating Operations',
-      'Practicum': 'Launch Day: Shipping Your MVP',
+      'The Shift': 'MOD 00: The Shift',
+      'The Environment': 'MOD 01: The Environment',
+      'Specifying vs Chatting': 'MOD 02: Specifying vs Chatting',
+      'Agent Orchestration': 'MOD 03: Agent Swarms',
+      'The Synthesis': 'MOD 04: The Synthesis',
+      'Solo Practicum': 'MOD 05: Solo Practicum',
     };
     return transformations[title] || `Phase ${number}: ${title}`;
   };
@@ -160,9 +160,9 @@ export const CurriculumLog = React.memo<CurriculumLogProps>(function CurriculumL
     // Small delay to let the DOM settle after auth terminal closes
     const bootDelay = setTimeout(() => {
       const bootSequence = [
-        { text: '> VIBE_CURRICULUM_BROWSER v3.0.0', type: 'system', delay: 300 },
+        { text: '> APEX_OS_CURRICULUM_BROWSER v4.0.0', type: 'system', delay: 300 },
         { text: '> LOADING MODULE_INDEX...', type: 'system', delay: 200 },
-        { text: '> INITIALIZING NLP_ENGINE...', type: 'system', delay: 200 },
+        { text: '> SYNCHRONIZING WITH APEX INTEL...', type: 'system', delay: 200 },
         { text: '> READY.', type: 'success', delay: 400 },
         { text: '', type: 'output', delay: 200 },
         { text: '> ls', type: 'input', delay: 600 },
@@ -303,7 +303,7 @@ export const CurriculumLog = React.memo<CurriculumLogProps>(function CurriculumL
       case 'clear':
         clearTerminal();
         await processSequence([
-          { text: '> VIBE_CURRICULUM_BROWSER v2.1.0', type: 'system', delay: 100 },
+          { text: '> APEX_OS_CURRICULUM_BROWSER v4.0.0', type: 'system', delay: 100 },
         ] as any);
         setViewMode('list');
         break;

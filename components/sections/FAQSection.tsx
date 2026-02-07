@@ -12,7 +12,7 @@ interface FAQItem {
 const faqItems: FAQItem[] = [
   {
     question: "What exactly will I build in this program?",
-    answer: "You'll build a complete AI-powered business system: automated content pipelines, agent orchestration infrastructure, deployment workflows, and revenue-generating products. By Module 12, you'll have a deployed system running 24/7—not just tutorials, real assets that work while you sleep.",
+    answer: "You'll build a complete AI-powered business system: automated content pipelines, agent orchestration infrastructure, deployment workflows, and revenue-generating products. By Module 05, you'll have a deployed system running 24/7—not just tutorials, real assets that work while you sleep.",
     icon: Zap,
     concern: "Worried it's just theory?"
   },
@@ -36,7 +36,7 @@ const faqItems: FAQItem[] = [
   },
   {
     question: "What tools will I master and how?",
-    answer: "The 12-tool stack: Cursor, Claude Code, APEX Intel, OpenAI Codex, Antigravity, CodeMachine, NotebookLM, APEX Stitch, GPT-5.2, OpenCode, Imagen 3, and Veo 3.1. Plus infrastructure: Vercel, Supabase, Polar.sh, and APEX automation. You don't just watch—you build with each tool in real projects.",
+    answer: "The APEX tool stack: Cursor, Claude Code, APEX Intel, OpenAI Codex, Antigravity, CodeMachine, NotebookLM, APEX Stitch, GPT-5.2, OpenCode, Imagen 3, and Veo 3.1. Plus infrastructure: Vercel, Supabase, Polar.sh, and APEX automation. You don't just watch—you build with each tool in real projects.",
     icon: Zap,
     concern: "Tool overload anxiety?"
   },
@@ -59,7 +59,7 @@ const faqItems: FAQItem[] = [
     concern: "Risk concerns?"
   },
   {
-    question: "What happens after the 12 modules—how do I reach accelerator?",
+    question: "What happens after the 6 modules—how do I reach accelerator?",
     answer: "You graduate with a deployed system, a portfolio of AI-powered assets, and access to the alumni network. Many graduates become contributors, mentors, or launch their own products using our infrastructure. The accelerator track opens for projects showing traction. This is just the beginning of your journey.",
     icon: ArrowRight,
     concern: "What comes next?"

@@ -6,10 +6,10 @@ import {
 import { SpectacularTerminal } from './SpectacularTerminal';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { TerminalBranding } from './TerminalBranding';
+import { modules as restoredModules } from '../data/curriculumData';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WAITLIST V2 - MULTI-PANEL FOUNDER INTERFACE
-// Real-time UI Morphing | Personal vs Business | Geek Mode Integrated
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const QuantWidget: React.FC<{ label: string, value: string, icon: any, color: string }> = ({ label, value, icon: Icon, color }) => (
@@ -39,20 +39,30 @@ const ModuleAccessPanel = () => {
       </div>
       
       <div className="space-y-4">
-        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-          <p className="text-[10px] font-bold text-emerald-400 uppercase mb-1">Module 00: Foundation</p>
-          <p className="text-[9px] text-white/60">ACCESS GRANTED: Protocol Onboarding</p>
-        </div>
-        
-        <div className={`p-3 rounded-lg transition-all duration-500 ${isUnlocked ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-white/5 border-white/5 opacity-40'}`}>
-          <p className={`text-[10px] font-bold uppercase mb-1 ${isUnlocked ? 'text-cyan-400' : 'text-white/40'}`}>Module 01: Build</p>
-          <p className="text-[9px] text-white/60">{isUnlocked ? 'ACCESS GRANTED: Agent Orchestration' : 'LOCKED: Awaiting Neural Sync'}</p>
-        </div>
-
-        <div className="p-3 rounded-lg bg-white/5 border border-white/5 opacity-20">
-          <p className="text-[10px] font-bold text-white/40 uppercase mb-1">Module 02: Scale</p>
-          <p className="text-[9px] text-white/60">LOCKED: High-Value Target</p>
-        </div>
+        {restoredModules.slice(0, 3).map((module, idx) => {
+          const isModuleUnlocked = idx === 0 || (idx === 1 && isUnlocked);
+          const isModuleFuture = idx === 2;
+          
+          return (
+            <div 
+              key={module.id}
+              className={`p-3 rounded-lg transition-all duration-500 ${
+                isModuleUnlocked 
+                  ? 'bg-emerald-500/10 border border-emerald-500/20' 
+                  : isModuleFuture
+                    ? 'bg-white/5 border border-white/5 opacity-20'
+                    : 'bg-white/5 border border-white/5 opacity-40'
+              }`}
+            >
+              <p className={`text-[10px] font-bold uppercase mb-1 ${isModuleUnlocked ? 'text-emerald-400' : 'text-white/40'}`}>
+                MOD {module.number}: {module.title}
+              </p>
+              <p className="text-[9px] text-white/60">
+                {isModuleUnlocked ? `ACCESS GRANTED: ${module.subtitle}` : 'LOCKED: Awaiting Neural Sync'}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -107,7 +107,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('', 'system');
       addTerminalLine('You\'re in the system now, Player One. Standard protocols are offline.', 'jarvis');
       addTerminalLine('I\'m all yours. What are we building today?', 'jarvis');
-      addTerminalLine('Tip: Ask about Module 00 or 01. Or find the secret.', 'system');
+      addTerminalLine('Tip: Ask about Module 00: The Shift or Module 01: The Environment.', 'system');
       unlock();
       setStep('unlocked');
     } catch (e) {
