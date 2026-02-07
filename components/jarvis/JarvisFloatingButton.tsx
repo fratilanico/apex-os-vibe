@@ -63,7 +63,7 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
       {!isOpen && (
         <div
           ref={pulseRef}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 opacity-30 pointer-events-none z-40"
+          className="fixed bottom-6 left-6 w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 opacity-30 pointer-events-none z-40"
         />
       )}
 
@@ -74,7 +74,7 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          fixed bottom-6 right-6 z-50
+          fixed bottom-6 left-6 z-50
           w-14 h-14 rounded-full
           bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600
           shadow-2xl shadow-violet-500/40
@@ -156,10 +156,10 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
       <AnimatePresence>
         {isHovered && !isOpen && (
           <motion.div
-            initial={{ opacity: 0, x: 10 }}
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 10 }}
-            className="fixed bottom-8 right-24 z-50 px-4 py-2 bg-slate-800/90 backdrop-blur-xl rounded-xl border border-white/10 text-sm text-white font-medium shadow-xl"
+            exit={{ opacity: 0, x: -10 }}
+            className="fixed bottom-8 left-24 z-50 px-4 py-2 bg-slate-800/90 backdrop-blur-xl rounded-xl border border-white/10 text-sm text-white font-medium shadow-xl"
           >
             Ask JARVIS
             <span className="block text-xs text-white/50 mt-1">Voice-enabled AI Assistant</span>

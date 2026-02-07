@@ -2,24 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {  
   Zap, Users, Globe, ArrowRight, Trophy, Share2, 
-  Activity, Clock, Target, Rocket, Brain, Code, Sparkles
+  Activity, Clock, Target, Brain, Code, Sparkles
 } from 'lucide-react';
 import { TerminalBranding, TerminalBrandingMobile } from '../components/TerminalBranding';
 import { SocialHub } from '../components/SocialHub';
-import { TerminalHero, CommandRecord } from '../components/TerminalHero';
+import { TerminalHero } from '../components/TerminalHero';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // APEX OS WAITLIST - SPECTACULAR EDITION
-// Module 00 Terminal Experience + Old vs New + AI-Scored Form
+// Module 00 Terminal Experience + Old vs New
 // ═══════════════════════════════════════════════════════════════════════════════
-
-// Supabase and webhook callers moved to server-side
 
 // Countdown target (webinar) ~18 days by default
 const TARGET_DAYS = 18;
 const targetDate = new Date(Date.now() + TARGET_DAYS * 24 * 60 * 60 * 1000);
-
-// Terminal typing animation component
 
 // Old vs New Comparison Component
 const OldVsNewComparison = () => {
@@ -27,7 +23,7 @@ const OldVsNewComparison = () => {
 
   const newFeatures = [
     { icon: Brain, title: '17-Agent AI Swarm', desc: 'Autonomous agents handle architecture, code, design, and deployment' },
-    { icon: Rocket, title: '30-Day Sprint', desc: 'Ship production-ready products in 30 days, not 6-12 months' },
+    { icon: RocketIcon, title: '30-Day Sprint', desc: 'Ship production-ready products in 30 days, not 6-12 months' },
     { icon: Target, title: 'GTM on Day 1', desc: 'Go-to-market strategy integrated from the start' },
     { icon: Code, title: 'Keep Your Equity', desc: 'No VC dilution. You own 100% of what you build' },
   ];
@@ -137,39 +133,11 @@ const OldVsNewComparison = () => {
 
 // Main Waitlist Page Component
 export default function WaitlistPage() {
-  // Form State
-  const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [aiScore, setAiScore] = useState<number | null>(null);
-  const [rank, setRank] = useState<number | null>(null);
-  const [referralCode, setReferralCode] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState('');
-  const [commandRecords, setCommandRecords] = useState<CommandRecord[]>([]);
-
-  // Stats
-  const [count, setCount] = useState(2847);
-  const [spotsLeft, setSpotsLeft] = useState(153);
+  const [aiResult, setAiResult] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(() => targetDate.getTime() - Date.now());
-
-  // Form Data
-  const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', linkedin: '',
-    company: '', role: '', industry: '', companySize: '',
-    experience: '', teamSize: '', revenueRange: '', fundingStatus: '',
-    whyJoin: '', biggestChallenge: '', currentTools: '', timeline: '', referralSource: '',
-    goal: '', notes: '', consent: false,
-  });
-
-  // Live counter simulation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount(c => c + Math.floor(Math.random() * 3));
-      setSpotsLeft(s => Math.max(0, s - Math.floor(Math.random() * 2)));
-    }, 8000);
-    return () => clearInterval(interval);
-  }, []);
+  const [count] = useState(2847);
+  const [spotsLeft] = useState(153);
 
   // Webinar countdown
   useEffect(() => {
@@ -190,80 +158,6 @@ export default function WaitlistPage() {
   };
 
   const countdown = formatCountdown(timeLeft);
-
-  const formSectionRef = useRef<HTMLDivElement>(null);
-
-  const handleTerminalContact = () => {
-    setStep(1);
-    setTimeout(() => {
-      formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
-  };
-
-  const handleCommandRecord = (record: CommandRecord) => {
-    setCommandRecords((prev) => [...prev, record].slice(-20));
-    void fetch('/api/analytics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'event',
-        userId: 'module00_terminal',
-        eventType: `terminal:${record.intent}`,
-        payload: record,
-      }),
-    }).catch((err) => console.warn('Terminal analytics log failed', err));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    if (!formData.name || !formData.email || !formData.phone || !formData.goal || !formData.consent) {
-      setError('Please complete all required fields (Name, Email, Phone, Goal, Consent).');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/waitlist/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, commands: commandRecords }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || 'Submission failed');
-      }
-
-      setAiScore(result.ai_score);
-      setReferralCode(result.referral_code);
-      setRank(result.rank ?? count + 1);
-      setSubmitted(true);
-      setCommandRecords([]);
-      setCount((c) => c + 1);
-      setSpotsLeft((s) => Math.max(0, s - 1));
-    } catch (error: any) {
-      console.error('Submission error', error);
-      setError(error.message || 'Could not submit right now. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateForm = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const nextStep = () => setStep(s => Math.min(s + 1, 3));
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
-
-  const copyReferral = () => {
-    navigator.clipboard.writeText(`https://apex-os.io/waitlist?ref=${referralCode}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
@@ -329,7 +223,7 @@ export default function WaitlistPage() {
               ))}
             </motion.div>
 
-            {/* Social Hub - Discord + Telegram + Waitlist */}
+            {/* Social Hub */}
             <SocialHub />
 
             {/* Webinar Countdown */}
@@ -362,12 +256,58 @@ export default function WaitlistPage() {
           </div>
         </section>
 
-        {/* Old vs New + Terminal Section */}
-        {/* Terminal Hero - Full Screen Centerpiece */}
-        <TerminalHero
-          onContactRequest={handleTerminalContact}
-          onCommandRecord={handleCommandRecord}
-        />
+        {/* Terminal Hero Section - CENTERPIECE */}
+        <section className="py-12 px-6">
+          <div className="max-w-6xl mx-auto">
+            {!submitted ? (
+              <TerminalHero onSuccess={(data) => {
+                setAiResult(data);
+                setSubmitted(true);
+              }} />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white/5 backdrop-blur-2xl border border-emerald-500/30 rounded-3xl p-12 text-center max-w-2xl mx-auto"
+              >
+                <Trophy className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
+                <h2 className="text-3xl font-black mb-2 uppercase">You're In!</h2>
+                <p className="text-white/60 mb-8">Identity verified. Welcome to the swarm.</p>
+
+                {aiResult && (
+                  <div className="mb-8 p-8 bg-black/40 rounded-2xl border border-emerald-500/20">
+                    <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-2">AI Readiness Score</div>
+                    <div className="text-6xl font-black text-emerald-400 mb-4">{aiResult.ai_score}</div>
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mb-4">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${aiResult.ai_score}%` }}
+                        className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-left bg-black/20 p-4 rounded-xl">
+                        <p className="text-xs text-white/40 uppercase">Position</p>
+                        <p className="text-xl font-bold text-cyan-400">#{aiResult.rank}</p>
+                      </div>
+                      <div className="text-left bg-black/20 p-4 rounded-xl">
+                        <p className="text-xs text-white/40 uppercase">Referral ID</p>
+                        <p className="text-xl font-bold text-emerald-400 font-mono">{aiResult.referral_code}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <button 
+                  onClick={() => setSubmitted(false)}
+                  className="text-cyan-400 font-mono text-sm uppercase hover:underline"
+                >
+                  Return to Terminal
+                </button>
+              </motion.div>
+            )}
+          </div>
+        </section>
 
         {/* Old vs New Comparison */}
         <section className="py-12 px-6">
@@ -376,446 +316,26 @@ export default function WaitlistPage() {
           </div>
         </section>
 
-        {/* Waitlist Form Section */}
-        <section ref={formSectionRef} className="py-16 px-6">
-          <div className="max-w-2xl mx-auto">
-            <AnimatePresence mode="wait">
-              {!submitted ? (
-                <motion.div
-                  key="form"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/5 backdrop-blur-2xl border border-cyan-500/30 rounded-3xl p-8 md:p-10"
-                >
-                  {error && (
-                    <div className="mb-6 text-sm text-amber-200 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
-                      {error}
-                    </div>
-                  )}
-                  {/* Progress */}
-                  <div className="flex justify-center gap-2 mb-8">
-                    {[1, 2, 3].map((s) => (
-                      <div
-                        key={s}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                          s === step ? 'w-12 bg-cyan-400' : s < step ? 'w-12 bg-emerald-400' : 'w-12 bg-white/20'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <form onSubmit={handleSubmit}>
-                    {/* Step 1: Identity */}
-                    {step === 1 && (
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                        <div className="text-center mb-6">
-                          <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-2">Step 01</div>
-                          <h2 className="text-2xl font-bold">Who are you?</h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-cyan-400 uppercase mb-2">Full Name</label>
-                            <input
-                              type="text"
-                              value={formData.name}
-                              onChange={(e) => updateForm('name', e.target.value)}
-                              placeholder="Tony Stark"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-cyan-400 focus:outline-none transition-all"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-cyan-400 uppercase mb-2">Email</label>
-                            <input
-                              type="email"
-                              value={formData.email}
-                              onChange={(e) => updateForm('email', e.target.value)}
-                              placeholder="founder@company.com"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-cyan-400 focus:outline-none transition-all"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-cyan-400 uppercase mb-2">Phone</label>
-                            <input
-                              type="tel"
-                              value={formData.phone}
-                              onChange={(e) => updateForm('phone', e.target.value)}
-                              placeholder="+1 (555) 000-0000"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-cyan-400 focus:outline-none transition-all"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-cyan-400 uppercase mb-2">LinkedIn</label>
-                            <input
-                              type="url"
-                              value={formData.linkedin}
-                              onChange={(e) => updateForm('linkedin', e.target.value)}
-                              placeholder="linkedin.com/in/username"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-cyan-400 focus:outline-none transition-all"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-mono text-cyan-400 uppercase mb-2">Mission Goal</label>
-                          <select
-                            value={formData.goal}
-                            onChange={(e) => updateForm('goal', e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none appearance-none cursor-pointer"
-                            required
-                          >
-                            <option value="">Select your goal...</option>
-                            <option value="ship">Ship an AI product</option>
-                            <option value="accelerator">Join the Accelerator</option>
-                            <option value="b2b">Partner for B2B</option>
-                            <option value="hire">Hire APEX to build</option>
-                            <option value="other">Other / Tell us more</option>
-                          </select>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={nextStep}
-                          disabled={!formData.name || !formData.email || !formData.phone || !formData.goal}
-                          className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-black py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Continue <ArrowRight className="w-5 h-5" />
-                        </button>
-                      </motion.div>
-                    )}
-
-                    {/* Step 2: Business */}
-                    {step === 2 && (
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                        <div className="text-center mb-6">
-                          <div className="text-xs font-mono text-violet-400 uppercase tracking-widest mb-2">Step 02</div>
-                          <h2 className="text-2xl font-bold">Your Business</h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Company</label>
-                            <input
-                              type="text"
-                              value={formData.company}
-                              onChange={(e) => updateForm('company', e.target.value)}
-                              placeholder="Stark Industries"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-violet-400 focus:outline-none transition-all"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Role</label>
-                            <input
-                              type="text"
-                              value={formData.role}
-                              onChange={(e) => updateForm('role', e.target.value)}
-                              placeholder="CEO / Founder"
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-violet-400 focus:outline-none transition-all"
-                              required
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Industry</label>
-                            <select
-                              value={formData.industry}
-                              onChange={(e) => updateForm('industry', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="saas">SaaS / Software</option>
-                              <option value="ai-ml">AI / Machine Learning</option>
-                              <option value="fintech">Fintech</option>
-                              <option value="ecommerce">E-commerce</option>
-                              <option value="healthcare">Healthcare</option>
-                              <option value="other">Other</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Company Size</label>
-                            <select
-                              value={formData.companySize}
-                              onChange={(e) => updateForm('companySize', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="solo">Solo Founder</option>
-                              <option value="2-5">2-5 people</option>
-                              <option value="10-50">10-50 people</option>
-                              <option value="50-200">50-200 people</option>
-                              <option value="200+">200+ people</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Experience</label>
-                            <select
-                              value={formData.experience}
-                              onChange={(e) => updateForm('experience', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="0-1">0-1 years</option>
-                              <option value="1-3">1-3 years</option>
-                              <option value="3-5">3-5 years</option>
-                              <option value="5+">5+ years</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Funding Status</label>
-                            <select
-                              value={formData.fundingStatus}
-                              onChange={(e) => updateForm('fundingStatus', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="bootstrapped">Bootstrapped</option>
-                              <option value="pre-seed">Pre-seed</option>
-                              <option value="seed">Seed</option>
-                              <option value="series-a">Series A</option>
-                              <option value="profitable">Profitable</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Team Size</label>
-                            <select
-                              value={formData.teamSize}
-                              onChange={(e) => updateForm('teamSize', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="solo">Solo</option>
-                              <option value="2-5">2-5</option>
-                              <option value="5-10">5-10</option>
-                              <option value="10+">10+</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-violet-400 uppercase mb-2">Revenue Range</label>
-                            <select
-                              value={formData.revenueRange}
-                              onChange={(e) => updateForm('revenueRange', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-violet-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="pre-revenue">Pre-revenue</option>
-                              <option value="10k-50k">$10k-$50k</option>
-                              <option value="50k-100k">$50k-$100k</option>
-                              <option value="100k+">$100k+</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                          <button
-                            type="button"
-                            onClick={prevStep}
-                            className="flex-1 py-4 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition-all"
-                          >
-                            Back
-                          </button>
-                          <button
-                            type="button"
-                            onClick={nextStep}
-                          disabled={!formData.company || !formData.role || !formData.industry || !formData.companySize || !formData.experience || !formData.fundingStatus || !formData.teamSize || !formData.revenueRange}
-                            className="flex-1 bg-gradient-to-r from-violet-500 to-cyan-500 text-white font-black py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Continue <ArrowRight className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* Step 3: Mission */}
-                    {step === 3 && (
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                        <div className="text-center mb-6">
-                          <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-2">Step 03</div>
-                          <h2 className="text-2xl font-bold">Your Mission</h2>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-mono text-emerald-400 uppercase mb-2">Why do you want to join?</label>
-                          <textarea
-                            value={formData.whyJoin}
-                            onChange={(e) => updateForm('whyJoin', e.target.value)}
-                            placeholder="Tell us about your goals and what you want to build..."
-                            rows={4}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-emerald-400 focus:outline-none resize-none transition-all"
-                            required
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-emerald-400 uppercase mb-2">Biggest Challenge</label>
-                            <select
-                              value={formData.biggestChallenge}
-                              onChange={(e) => updateForm('biggestChallenge', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="speed">Execution Speed</option>
-                              <option value="technical">Technical Architecture</option>
-                              <option value="ai">AI Integration</option>
-                              <option value="gtm">Go-to-Market</option>
-                              <option value="team">Team Building</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-mono text-emerald-400 uppercase mb-2">Timeline</label>
-                            <select
-                              value={formData.timeline}
-                              onChange={(e) => updateForm('timeline', e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-400 focus:outline-none appearance-none cursor-pointer"
-                              required
-                            >
-                              <option value="">Select...</option>
-                              <option value="immediately">Immediately</option>
-                              <option value="1-month">Within 1 month</option>
-                              <option value="3-months">Within 3 months</option>
-                              <option value="6-months">Within 6 months</option>
-                            </select>
-                          </div>
-                        </div>
-
-                    <div>
-                      <label className="block text-xs font-mono text-emerald-400 uppercase mb-2">Notes / Context (optional)</label>
-                      <textarea
-                        value={formData.notes}
-                        onChange={(e) => updateForm('notes', e.target.value)}
-                        placeholder="Anything else we should know (stack, market, timeline, blockers)..."
-                        rows={3}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:border-emerald-400 focus:outline-none transition-all"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-3 bg-black/40 border border-white/10 rounded-xl px-4 py-3">
-                      <input
-                        id="consent"
-                        type="checkbox"
-                        checked={formData.consent}
-                        onChange={(e) => updateForm('consent', e.target.checked)}
-                        className="w-4 h-4 accent-emerald-400"
-                        required
-                      />
-                      <label htmlFor="consent" className="text-xs text-white/70">I agree to be contacted about APEX OS (email/phone) and receive the webinar details.</label>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <button
-                        type="button"
-                        onClick={prevStep}
-                        className="flex-1 py-4 rounded-xl border border-white/20 text-white font-bold hover:bg-white/5 transition-all"
-                      >
-                        Back
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={loading || !formData.whyJoin || !formData.biggestChallenge || !formData.timeline || !formData.consent}
-                        className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-black py-4 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {loading ? 'Processing...' : 'Join Waitlist'} <ArrowRight className="w-5 h-5" />
-                      </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </form>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white/5 backdrop-blur-2xl border border-emerald-500/30 rounded-3xl p-8 md:p-10 text-center"
-                >
-                  <Trophy className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-                  <h2 className="text-3xl font-black mb-2">You're In!</h2>
-                  <div className="text-white/60 mb-8">Welcome to the APEX OS ecosystem.</div>
-
-                  {aiScore && (
-                    <div className="mb-8 p-6 bg-black/40 rounded-2xl border border-emerald-500/20">
-                      <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-2">AI Readiness Score</div>
-                      <div className="text-6xl font-black text-emerald-400 mb-4">{aiScore}</div>
-                      <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${aiScore}%` }}
-                          transition={{ duration: 1.5, ease: "easeOut" }}
-                          className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full"
-                        />
-                      </div>
-                      <div className="mt-2 text-sm text-white/60">
-                        {aiScore >= 80 ? '🔥 Hot Lead - Priority Access' : aiScore >= 60 ? '⚡ Warm Lead - Standard Queue' : '📋 Cold Lead - Review Required'}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-black/40 border border-white/10 rounded-xl p-4">
-                      <div className="text-xs text-white/40 uppercase mb-1">Queue Position</div>
-                      <div className="text-2xl font-black text-cyan-400">#{rank?.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-black/40 border border-white/10 rounded-xl p-4">
-                      <div className="text-xs text-white/40 uppercase mb-1">Launch Window</div>
-                      <div className="text-2xl font-black text-emerald-400">T-14 Days</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 rounded-xl p-5 border border-cyan-500/30 mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Share2 className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">Boost Your Position</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={`https://apex-os.io/waitlist?ref=${referralCode}`}
-                        readOnly
-                        className="flex-1 bg-black/60 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white/50"
-                      />
-                      <button
-                        onClick={copyReferral}
-                        className="px-4 py-2 bg-cyan-500 text-black font-bold rounded-lg text-xs uppercase hover:bg-cyan-400 transition-all"
-                      >
-                        {copied ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-white/40">Webinar invite coming soon. Check your email.</div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
-
         {/* Footer */}
-        <footer className="py-8 px-6 text-center">
-          <div className="text-white/30 text-sm">© 2026 APEX OS • Built with AI • Owned by Builders</div>
+        <footer className="py-12 px-6 text-center">
+          <div className="text-white/30 text-sm font-mono uppercase tracking-widest">
+            © 2026 APEX OS • Built with AI • Owned by Builders
+          </div>
         </footer>
       </div>
     </div>
   );
 }
+
+// Icon fallbacks
+const RocketIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3"/><path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5"/>
+  </svg>
+);
+
+const Trophy = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+  </svg>
+);

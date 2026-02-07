@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { 
   Crown, 
@@ -9,32 +9,24 @@ import {
   Database, 
   Cloud, 
   Terminal,
-  Users,
   Activity,
-  Lock,
   Server,
-  Cpu,
   Network,
   Layers,
-  GitBranch,
-  Settings,
   MessageSquare,
   Eye,
   FileCode,
-  TestTube,
   Rocket,
   Monitor,
-  AlertTriangle,
-  CheckCircle,
   Clock,
   ArrowRight,
   Workflow,
   Target
 } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
+import { useAgentStore } from '../../../stores/useAgentStore';
 
 // Agent Node Types
-interface AgentNode {
+export interface AgentNode {
   id: string;
   name: string;
   role: string;
@@ -51,8 +43,8 @@ interface AgentNode {
   };
 }
 
-// Agent Hierarchy Data
-const agentHierarchy: AgentNode = {
+// Initial Agent Hierarchy Structure
+const initialHierarchy: AgentNode = {
   id: 'founder',
   name: 'APEX OS MONSTER',
   role: 'Founder & Chief Orchestrator',
@@ -363,7 +355,6 @@ const AgentCard: React.FC<{
   onClick: () => void;
   depth: number;
 }> = ({ agent, isSelected, onClick, depth }) => {
-  const { isDark } = useTheme();
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -421,54 +412,29 @@ const AgentCard: React.FC<{
           {agent.icon}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-white truncate">{agent.name}</h3>
-          <p className="text-xs text-white/60 truncate">{agent.role}</p>
+          <h3 className="font-bold text-white truncate text-sm">{agent.name}</h3>
+          <p className="text-[10px] text-white/60 truncate">{agent.role}</p>
         </div>
         <StatusBadge status={agent.status} />
       </div>
 
       {/* Metrics */}
       {agent.metrics && (
-        <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
-          <div className="text-center p-1.5 rounded bg-black/20">
+        <div className="grid grid-cols-3 gap-1 mb-2 text-[10px]">
+          <div className="text-center p-1 rounded bg-black/20">
             <div className="text-white/40">Tasks</div>
-            <div className="font-mono text-white">{agent.metrics.tasksCompleted.toLocaleString()}</div>
+            <div className="font-mono text-white">{agent.metrics.tasksCompleted}</div>
           </div>
-          <div className="text-center p-1.5 rounded bg-black/20">
+          <div className="text-center p-1 rounded bg-black/20">
             <div className="text-white/40">Success</div>
             <div className="font-mono text-emerald-400">{agent.metrics.successRate}%</div>
           </div>
-          <div className="text-center p-1.5 rounded bg-black/20">
-            <div className="text-white/40">Latency</div>
+          <div className="text-center p-1 rounded bg-black/20">
+            <div className="text-white/40">Lat</div>
             <div className="font-mono text-blue-400">{agent.metrics.responseTime}</div>
           </div>
         </div>
       )}
-
-      {/* Last Action */}
-      {agent.lastAction && (
-        <div className="flex items-center gap-2 text-xs text-white/50">
-          <Clock className="w-3 h-3" />
-          <span className="truncate">{agent.lastAction}</span>
-        </div>
-      )}
-
-      {/* Capabilities */}
-      <div className="mt-3 flex flex-wrap gap-1">
-        {agent.capabilities.slice(0, 3).map((cap, i) => (
-          <span 
-            key={i}
-            className="px-1.5 py-0.5 text-[10px] rounded bg-white/5 text-white/60 border border-white/10"
-          >
-            {cap}
-          </span>
-        ))}
-        {agent.capabilities.length > 3 && (
-          <span className="px-1.5 py-0.5 text-[10px] rounded bg-white/5 text-white/40">
-            +{agent.capabilities.length - 3}
-          </span>
-        )}
-      </div>
     </div>
   );
 };
@@ -494,13 +460,13 @@ const AgentDetailPanel: React.FC<{ agent: AgentNode | null; onClose: () => void 
   return (
     <div 
       ref={panelRef}
-      className="fixed right-0 top-0 h-full w-96 bg-slate-900/95 backdrop-blur-xl border-l border-white/10 p-6 overflow-y-auto z-50"
+      className="fixed right-0 top-0 h-full w-full bg-slate-900/95 backdrop-blur-xl border-l border-white/10 p-6 overflow-y-auto z-50"
     >
       <button 
         onClick={onClose}
         className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-colors"
       >
-        <ArrowRight className="w-5 h-5" />
+        <ArrowRight className="w-5 h-5 text-white" />
       </button>
 
       <div className="mb-6">
@@ -509,27 +475,27 @@ const AgentDetailPanel: React.FC<{ agent: AgentNode | null; onClose: () => void 
             {agent.icon}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">{agent.name}</h2>
-            <p className="text-white/60">{agent.role}</p>
+            <h2 className="text-xl font-bold text-white">{agent.name}</h2>
+            <p className="text-sm text-white/60">{agent.role}</p>
           </div>
         </div>
         <StatusBadge status={agent.status} />
       </div>
 
       {agent.metrics && (
-        <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
-          <h3 className="text-sm font-semibold text-white/80 mb-3">Performance Metrics</h3>
-          <div className="space-y-3">
+        <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10 text-sm">
+          <h3 className="text-xs font-semibold text-white/80 mb-3 uppercase tracking-wider">Metrics</h3>
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-white/60">Tasks Completed</span>
-              <span className="font-mono text-white">{agent.metrics.tasksCompleted.toLocaleString()}</span>
+              <span className="text-white/60">Completed</span>
+              <span className="font-mono text-white">{agent.metrics.tasksCompleted}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-white/60">Success Rate</span>
               <span className="font-mono text-emerald-400">{agent.metrics.successRate}%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-white/60">Avg Response Time</span>
+              <span className="text-white/60">Latency</span>
               <span className="font-mono text-blue-400">{agent.metrics.responseTime}</span>
             </div>
           </div>
@@ -537,12 +503,12 @@ const AgentDetailPanel: React.FC<{ agent: AgentNode | null; onClose: () => void 
       )}
 
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-white/80 mb-3">Capabilities</h3>
+        <h3 className="text-xs font-semibold text-white/80 mb-3 uppercase tracking-wider">Capabilities</h3>
         <div className="flex flex-wrap gap-2">
           {agent.capabilities.map((cap, i) => (
             <span 
               key={i}
-              className="px-3 py-1.5 text-sm rounded-full bg-white/5 text-white/80 border border-white/10"
+              className="px-2 py-1 text-xs rounded-lg bg-white/5 text-white/80 border border-white/10"
             >
               {cap}
             </span>
@@ -551,34 +517,11 @@ const AgentDetailPanel: React.FC<{ agent: AgentNode | null; onClose: () => void 
       </div>
 
       {agent.lastAction && (
-        <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
-          <h3 className="text-sm font-semibold text-white/80 mb-2">Current Activity</h3>
-          <div className="flex items-center gap-2 text-white/60">
+        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+          <h3 className="text-xs font-semibold text-white/80 mb-2 uppercase tracking-wider">Current Activity</h3>
+          <div className="flex items-center gap-2 text-white/60 text-sm">
             <Activity className="w-4 h-4" />
             <span>{agent.lastAction}</span>
-          </div>
-        </div>
-      )}
-
-      {agent.children && (
-        <div>
-          <h3 className="text-sm font-semibold text-white/80 mb-3">
-            Subordinate Agents ({agent.children.length})
-          </h3>
-          <div className="space-y-2">
-            {agent.children.map((child) => (
-              <div 
-                key={child.id}
-                className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/10"
-              >
-                <div className="text-white/60">{child.icon}</div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-white">{child.name}</div>
-                  <div className="text-xs text-white/50">{child.role}</div>
-                </div>
-                <StatusBadge status={child.status} />
-              </div>
-            ))}
           </div>
         </div>
       )}
@@ -620,7 +563,7 @@ const OrchestrationFlow: React.FC = () => {
         vx: (Math.random() - 0.5) * 2,
         vy: -Math.random() * 3 - 1,
         life: 1,
-        color: colors[Math.floor(Math.random() * colors.length)]
+        color: colors[Math.floor(Math.random() * colors.length)] as string
       };
     };
 
@@ -628,12 +571,10 @@ const OrchestrationFlow: React.FC = () => {
       ctx.fillStyle = 'rgba(15, 23, 42, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Add new particles
-      if (particles.length < 50) {
+      if (particles.length < 30) {
         particles.push(createParticle());
       }
 
-      // Update and draw particles
       particles = particles.filter(p => {
         p.x += p.vx;
         p.y += p.vy;
@@ -642,32 +583,13 @@ const OrchestrationFlow: React.FC = () => {
         if (p.life <= 0) return false;
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 1, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.life;
         ctx.fill();
         ctx.globalAlpha = 1;
 
         return true;
-      });
-
-      // Draw connection lines
-      ctx.strokeStyle = 'rgba(139, 92, 246, 0.2)';
-      ctx.lineWidth = 1;
-      particles.forEach((p1, i) => {
-        particles.slice(i + 1).forEach(p2 => {
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.globalAlpha = (1 - dist / 100) * 0.3;
-            ctx.stroke();
-            ctx.globalAlpha = 1;
-          }
-        });
       });
 
       animationId = requestAnimationFrame(animate);
@@ -694,8 +616,30 @@ const OrchestrationFlow: React.FC = () => {
 // Main Component
 export const AgentHierarchyVisualization: React.FC = () => {
   const [selectedAgent, setSelectedAgent] = useState<AgentNode | null>(null);
-  const [activeView, setActiveView] = useState<'hierarchy' | 'flow' | 'metrics'>('hierarchy');
   const containerRef = useRef<HTMLDivElement>(null);
+  const { agents, activeAgentsCount } = useAgentStore();
+
+  // Merge real-time agent data into the hierarchy
+  const agentHierarchy = useMemo(() => {
+    const mergeData = (node: AgentNode): AgentNode => {
+      const liveData = agents[node.id];
+      const updatedNode = { ...node };
+      
+      if (liveData) {
+        updatedNode.status = liveData.status;
+        updatedNode.lastAction = liveData.lastAction;
+        updatedNode.metrics = { ...node.metrics, ...liveData.metrics } as any;
+      }
+      
+      if (node.children) {
+        updatedNode.children = node.children.map(mergeData);
+      }
+      
+      return updatedNode;
+    };
+    
+    return mergeData(initialHierarchy);
+  }, [agents]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -708,7 +652,7 @@ export const AgentHierarchyVisualization: React.FC = () => {
 
   const renderHierarchy = (agent: AgentNode, depth: number = 0): React.ReactNode => {
     return (
-      <div key={agent.id} className={depth > 0 ? 'mt-4' : ''}>
+      <div key={agent.id} className={depth > 0 ? 'mt-2' : ''}>
         <AgentCard
           agent={agent}
           isSelected={selectedAgent?.id === agent.id}
@@ -716,12 +660,7 @@ export const AgentHierarchyVisualization: React.FC = () => {
           depth={depth}
         />
         {agent.children && (
-          <div className={`
-            grid gap-4 mt-4
-            ${depth === 0 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : ''}
-            ${depth === 1 ? 'grid-cols-1 md:grid-cols-3' : ''}
-            ${depth >= 2 ? 'grid-cols-1 md:grid-cols-2' : ''}
-          `}>
+          <div className="grid grid-cols-2 gap-2 mt-2">
             {agent.children.map(child => renderHierarchy(child, depth + 1))}
           </div>
         )}
@@ -730,163 +669,25 @@ export const AgentHierarchyVisualization: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} className="relative min-h-screen bg-slate-950 text-white p-6 overflow-hidden">
-      {/* Background Effects */}
+    <div ref={containerRef} className="relative h-full bg-slate-950 text-white p-4 overflow-y-auto">
       <OrchestrationFlow />
       
-      {/* Grid Pattern */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }}
-      />
-
-      {/* Header */}
-      <div className="relative z-10 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              Multi-Agent Orchestration
-            </h1>
-            <p className="text-white/60 mt-2 text-lg">
-              Hierarchical AI Agent Swarm with Real-Time Coordination
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-sm text-emerald-400">12 Agents Active</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <Workflow className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-blue-400">Fork 4</span>
-            </div>
-          </div>
+      <div className="relative z-10 mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-xs font-mono text-cyan-400 uppercase tracking-widest">Neural Network</h2>
+          <p className="text-[10px] text-white/40">{activeAgentsCount} Agents Syncing</p>
         </div>
-
-        {/* View Toggle */}
-        <div className="flex gap-2 mt-6">
-          {(['hierarchy', 'flow', 'metrics'] as const).map((view) => (
-            <button
-              key={view}
-              onClick={() => setActiveView(view)}
-              className={`
-                px-4 py-2 rounded-lg text-sm font-medium transition-all
-                ${activeView === view 
-                  ? 'bg-white/10 text-white border border-white/20' 
-                  : 'text-white/50 hover:text-white hover:bg-white/5'
-                }
-              `}
-            >
-              {view.charAt(0).toUpperCase() + view.slice(1)} View
-            </button>
-          ))}
-        </div>
+        <Workflow className="w-4 h-4 text-cyan-500/50" />
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10">
-        {activeView === 'hierarchy' && renderHierarchy(agentHierarchy)}
-        
-        {activeView === 'flow' && (
-          <div className="h-96 flex items-center justify-center">
-            <div className="text-center">
-              <Workflow className="w-16 h-16 text-violet-400 mx-auto mb-4" />
-              <p className="text-white/60">Orchestration Flow Visualization</p>
-              <p className="text-sm text-white/40 mt-2">Real-time data flow between agents</p>
-            </div>
-          </div>
-        )}
-
-        {activeView === 'metrics' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-lg font-semibold mb-4">System Health</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Uptime</span>
-                  <span className="font-mono text-emerald-400">99.97%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Active Agents</span>
-                  <span className="font-mono text-white">12/12</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Avg Latency</span>
-                  <span className="font-mono text-blue-400">124ms</span>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-lg font-semibold mb-4">Task Distribution</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Completed Today</span>
-                  <span className="font-mono text-emerald-400">1,247</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">In Progress</span>
-                  <span className="font-mono text-amber-400">23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Queue Depth</span>
-                  <span className="font-mono text-white">5</span>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-lg font-semibold mb-4">Coordination</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">MCP Handshakes</span>
-                  <span className="font-mono text-violet-400">3 Active</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Sync State</span>
-                  <span className="font-mono text-emerald-400">Healthy</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-white/60">Last Update</span>
-                  <span className="font-mono text-white/60">2s ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {renderHierarchy(agentHierarchy)}
       </div>
 
-      {/* Detail Panel */}
       <AgentDetailPanel 
         agent={selectedAgent} 
         onClose={() => setSelectedAgent(null)} 
       />
-
-      {/* Footer Stats */}
-      <div className="relative z-10 mt-12 pt-6 border-t border-white/10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-violet-400">4</div>
-            <div className="text-sm text-white/60">Executive Agents</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-blue-400">5</div>
-            <div className="text-sm text-white/60">Operational Agents</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-orange-400">4</div>
-            <div className="text-sm text-white/60">DevOps Agents</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-emerald-400">4</div>
-            <div className="text-sm text-white/60">Specialist Models</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
