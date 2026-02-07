@@ -100,7 +100,7 @@ export const SpectacularTerminal: React.FC = () => {
     if (step === 'boot' || step === 'idle') {
       // Render APEX logo immediately on first tick
       if (bootLine === 0) {
-        addAsciiArt(apexLogo, `text-cyan-400 whitespace-pre ${isMobile ? 'text-[8px]' : 'text-xs'}`);
+        addAsciiArt(apexLogo, `text-cyan-400 whitespace-pre ${isMobile ? 'text-[10px]' : 'text-sm'}`);
       }
       if (bootLine < BOOT_SEQUENCE.length) {
         const line = BOOT_SEQUENCE[bootLine]!;
@@ -177,7 +177,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('[████████████████████] 100%', 'success');
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
       
-      addAsciiArt(playerOneLogo, `text-emerald-400 whitespace-pre ${isMobile ? 'text-[8px]' : 'text-xs'}`);
+      addAsciiArt(playerOneLogo, `text-emerald-400 whitespace-pre ${isMobile ? 'text-[10px]' : 'text-sm'}`);
       addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
       
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');

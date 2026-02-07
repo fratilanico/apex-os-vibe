@@ -114,17 +114,17 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
         }}
       >
         {/* Cyan layer (offset left) */}
-        <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[8px] sm:text-xs">
+        <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[10px] sm:text-sm">
           {apexLogo}
         </pre>
         
         {/* Pink/Magenta layer (offset right) */}
-        <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[8px] sm:text-xs">
+        <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[10px] sm:text-sm">
           {apexLogo}
         </pre>
         
         {/* White layer (main) */}
-        <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[8px] sm:text-xs">
+        <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[10px] sm:text-sm">
           {apexLogo}
         </pre>
       </div>
@@ -167,7 +167,7 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
       >
         <div className="backdrop-blur-md bg-black/20 border border-zinc-700/50 rounded-lg px-6 py-4 shadow-xl">
           <pre
-            className="text-[8px] sm:text-xs leading-tight transition-colors duration-600 whitespace-pre"
+            className="text-[10px] sm:text-sm leading-tight transition-colors duration-600 whitespace-pre"
             style={{
               color: isAuthorized ? 'rgba(52, 211, 153, 0.9)' : 'rgba(34, 211, 238, 0.9)',
               textShadow: isAuthorized 
