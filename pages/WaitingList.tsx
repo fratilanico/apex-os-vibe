@@ -82,8 +82,6 @@ export default function WaitingListPage() {
 
         </div>
       </div>
-      
-      <JarvisIntegration />
     </div>
   );
 }

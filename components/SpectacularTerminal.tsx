@@ -223,6 +223,20 @@ export const SpectacularTerminal: React.FC = () => {
     setIsProcessing(true);
 
     try {
+      // Simulate real-time agent synchronization
+      const syncAgents = [
+        '👑 Infrastructure-Architect SYNCING...',
+        '🔒 Security-Monitor VALIDATING...',
+        '📋 Compliance-Guardian AUDITING...',
+        '💰 Cost-Optimizer PROJECTING...',
+        '🧠 Intel-Architect SYNTHESIZING...'
+      ];
+      
+      for (const agent of syncAgents) {
+        await new Promise(r => setTimeout(r, 400));
+        addLine(agent, 'matrix');
+      }
+
       const response = await fetch('/api/waitlist/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -230,11 +244,13 @@ export const SpectacularTerminal: React.FC = () => {
       });
       const res = await response.json();
       setResult(res);
-      addLine(`✓ AI Readiness Score: ${res.ai_score}/100`, 'success');
-      addLine(`✓ Queue Position: #${res.rank}`, 'success');
+      
       addLine('', 'system');
-      addLine(`Congratulations ${data.name || 'Founder'}. You are now synchronized.`, 'jarvis');
-      addLine('Type "intel" or "help" to explore the stack.', 'jarvis');
+      addLine(`✓ AI READINESS SCORE: ${res.ai_score}/100`, 'success');
+      addLine(`✓ QUEUE POSITION: #${res.rank}`, 'success');
+      addLine('', 'system');
+      addLine(`Congratulations ${data.name || 'Founder'}. Welcome to the APEX OS swarm.`, 'jarvis');
+      addLine('Type "financials" to see the projections for your new ecosystem.', 'jarvis');
       setStep('chat');
     } catch (e: any) {
       addLine(`✗ ERROR: ${e.message}`, 'error');

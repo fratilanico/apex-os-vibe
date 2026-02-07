@@ -77,7 +77,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const recognitionRef = useRef<any>(null);
-  const { sendCommand } = useAgentSync();
+  // const { sendCommand } = useAgentSync(); // Reserved for future command-driven agent control
 
   // Initialize Speech Recognition
   useEffect(() => {
