@@ -28,6 +28,7 @@ const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
 
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
 const WaitlistPage = lazy(() => import('./pages/Waitlist'));
+const WaitingListPage = lazy(() => import('./pages/WaitingList'));
 const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
 
 const PageLoader = () => (
@@ -174,6 +175,11 @@ const App = (): React.ReactElement => {
           {/* Public routes - no password protection */}
           <Route path="/waitlist/*" element={<PublicRoutes />} />
           <Route path="/whitelist/*" element={<PublicRoutes />} />
+          <Route path="/waitinglist/*" element={
+            <ErrorBoundary fallback={<RouteErrorFallback error={new Error('WaitingList page error')} />}>
+              <WaitingListPage />
+            </ErrorBoundary>
+          } />
           
           {/* Protected routes - require password */}
           <Route path="/*" element={<ProtectedRoutes />} />
@@ -191,9 +197,9 @@ const App = (): React.ReactElement => {
 
 export default App;
 
-// Hide HUD/CTA on waitlist routes to keep the page clean
+// Hide HUD/CTA on waitlist/waitinglist routes to keep the page clean
 const HideOnWaitlist: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  if (location.pathname.startsWith('/waitlist')) return null;
+  if (location.pathname.startsWith('/waitlist') || location.pathname.startsWith('/waitinglist')) return null;
   return <>{children}</>;
 };
