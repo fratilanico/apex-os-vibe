@@ -41,7 +41,7 @@ export const TerminalOutput = forwardRef<HTMLDivElement, TerminalOutputProps>(
         ref={ref}
         className={`flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent ${className}`}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           {lines.map((line, index) => {
             if (line.type === 'branding') {
               if (brandingRendered) return null;
