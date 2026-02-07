@@ -1,5 +1,11 @@
 export default {
-  content: ['./index.html', './*.tsx', './components/**/*.{ts,tsx}', './pages/**/*.{ts,tsx}'],
+  content: ['./index.html', './*.tsx', './components/**/*.{ts,tsx}', './pages/**/*.{ts,tsx}', './hooks/**/*.{ts,tsx}'],
+  safelist: [
+    { pattern: /text-(cyan|emerald|violet|amber|pink)-(400|500)/ },
+    { pattern: /bg-(cyan|emerald|violet|amber|pink)-(500)/ },
+    { pattern: /border-(cyan|emerald|violet|amber|pink)-(500)/ },
+    { pattern: /shadow-(cyan|emerald|violet|amber|pink)-(500)/ },
+  ],
   theme: {
     extend: {
       colors: {

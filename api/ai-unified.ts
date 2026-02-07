@@ -1,12 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
+import path from 'path';
 import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
 import { createClient } from '@supabase/supabase-js';
 import { modules as curriculumModules } from '../data/curriculumData.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED AI API - TIERED KNOWLEDGE & TONY STARK MODE
+// UNIFIED AI API - TIERED KNOWLEDGE & TONY STARK MODE (STARK-V3)
 // PRINCIPAL AGENT: VERTEX (GEMINI) WITH FALLBACKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -74,19 +75,24 @@ function getTierContext(tier: number): string {
   context += "MOD 00 Summary: AI orchestration for founders. 30-day GTM sprint.\n";
   
   if (tier >= 1) {
-    // Tier 1: Full M00 + Full M01 + AGENTS.md Intro
+    // Tier 1: Full M00 + Sneak Peek M01 + AGENTS.md Sections 1 & 2
     const m00 = curriculumModules.find(m => m.id === 'module-00');
     const m01 = curriculumModules.find(m => m.id === 'module-01');
     if (m00) context += `\nMODULE 00 FULL:\n${JSON.stringify(m00)}\n`;
-    if (m01) context += `\nMODULE 01 FULL:\n${JSON.stringify(m01)}\n`;
-    context += "\nAGENTS.md (Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\n";
+    if (m01) {
+      // Sneak peek: Summary + Topics but maybe not the full body
+      const { sections, ...rest } = m01;
+      context += `\nMODULE 01 SNEAK PEEK:\n${JSON.stringify(rest)}\n`;
+    }
+    context += "\nAGENTS.md (Golden Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\n";
   }
   
   if (tier >= 2) {
     // Tier 2: Everything
     context += `\nFULL CURRICULUM:\n${JSON.stringify(curriculumModules)}\n`;
     try {
-      const agentsMd = fs.readFileSync('./AGENTS.md', 'utf-8');
+      const agentsPath = path.join(process.cwd(), 'AGENTS.md');
+      const agentsMd = fs.readFileSync(agentsPath, 'utf-8');
       context += `\nAGENTS.md BIBLE:\n${agentsMd}\n`;
     } catch (e) {}
   }
@@ -102,8 +108,6 @@ function buildSystemPrompt(
 ): string {
   return [basePrompt, `CURRENT_USER_SYNC_LEVEL: ${tierContext}`, systemPrompt, context].filter(Boolean).join('\n\n');
 }
-
-// ... (existing normalize functions and COMPLEXITY_HINTS)
 
 function normalizePreferredProvider(value?: string): string {
   if (!value) return 'auto';
@@ -152,7 +156,6 @@ const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): 
   }
 };
 
-// Providers (Perplexity, Vertex, etc. - implementation same as before)
 const callPerplexity = async (message: string, history: any[], systemPrompt: string) => {
   const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
