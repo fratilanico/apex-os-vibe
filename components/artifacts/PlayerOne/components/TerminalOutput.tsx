@@ -1,8 +1,7 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { InlineRenderer } from '@/components/ui/Terminal/InlineRenderer';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import type { ApexTerminalLine } from '@/lib/terminal/types';
 import { NeuralPixelBranding } from './NeuralPixelBranding';
@@ -32,52 +31,45 @@ const getLineStyles = (type: ApexTerminalLine['type']): string => {
   }
 };
 
-
 export const TerminalOutput = forwardRef<HTMLDivElement, TerminalOutputProps>(
   ({ lines, isProcessing, className = '' }, ref) => {
-    let brandingRendered = false;
+    // Filter lines to only show one branding element (the first one)
+    const filteredLines = useMemo(() => {
+      let brandingFound = false;
+      return lines.filter((line) => {
+        if (line.type === 'branding') {
+          if (brandingFound) return false;
+          brandingFound = true;
+        }
+        return true;
+      });
+    }, [lines]);
+
     return (
       <div
         ref={ref}
         className={`flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent ${className}`}
       >
-        <AnimatePresence>
-          {lines.map((line, index) => {
-            if (line.type === 'branding') {
-              if (brandingRendered) return null;
-              brandingRendered = true;
-            }
-            return (
-            <motion.div
-              key={line.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              transition={{ duration: 0.2, delay: index * 0.02 }}
-              className={getLineStyles(line.type)}
-            >
-              {line.type === 'branding' ? (
-                <NeuralPixelBranding isAuthorized={true} />
-              ) : (
-                <span className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
-                  {typeof line.content === 'string' ? <InlineRenderer text={line.content} /> : line.content}
-                </span>
-              )}
-            </motion.div>
-          );
-          })}
-        </AnimatePresence>
+        {filteredLines.map((line) => (
+          <div
+            key={line.id}
+            className={getLineStyles(line.type)}
+          >
+            {line.type === 'branding' ? (
+              <NeuralPixelBranding isAuthorized={true} />
+            ) : (
+              <span className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
+                {typeof line.content === 'string' ? <InlineRenderer text={line.content} /> : line.content}
+              </span>
+            )}
+          </div>
+        ))}
 
         {isProcessing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center gap-2 text-cyan-400/60"
-          >
+          <div className="flex items-center gap-2 text-cyan-400/60">
             <Loader2 className="w-4 h-4 animate-spin" />
             <span className="text-sm font-mono animate-pulse">Processing...</span>
-          </motion.div>
+          </div>
         )}
 
         <div className="h-4" />
