@@ -7,7 +7,6 @@ export interface AIRequest {
   systemPrompt?: string;
   preferredProvider?: 'auto' | 'vertex' | 'vertex-ai' | 'gemini' | 'perplexity' | 'groq' | 'cohere';
   preferredModel?: 'auto' | 'fast' | 'pro';
-  userEmail?: string;
   /** Optional base URL override for server-side calls */
   baseUrl?: string;
 }
