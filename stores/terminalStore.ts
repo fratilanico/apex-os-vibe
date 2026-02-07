@@ -16,8 +16,8 @@ import { ClawBotClient } from '../lib/clawbot-client';
 import { getOrCreateUserId } from '../lib/userIdentity';
 
 const SESSION_SAVE_DEBOUNCE_MS = 600;
-const sessionSaveTimers: Partial<Record<AIMode, number>> = {};
-const sessionLoaded: Partial<Record<AIMode, boolean>> = {};
+const sessionSaveTimers: Partial<Record<string, number>> = {};
+const sessionLoaded: Partial<Record<string, boolean>> = {};
 
 interface TerminalSessionMessage {
   role: string;
@@ -50,15 +50,15 @@ interface TerminalStore {
   sendToClawBot: (message: string) => void;
   clearClawBotHistory: () => void;
   
-  // Gemini state (keeping existing)
-  gemini: {
+  // Apex Intel state (keeping existing)
+  apex: {
     messages: Array<{ role: 'user' | 'assistant'; content: string }>;
     isProcessing: boolean;
   };
   
-  // Gemini actions
-  sendToGemini: (message: string) => Promise<void>;
-  clearGeminiHistory: () => void;
+  // Apex Intel actions
+  sendToApex: (message: string) => Promise<void>;
+  clearApexHistory: () => void;
 
   // Session sync
   loadSession: (mode: AIMode, force?: boolean) => Promise<void>;
@@ -72,8 +72,8 @@ export const useTerminalStore = create<TerminalStore>()(
         const userId = getOrCreateUserId();
         const state = get();
 
-        const messages: TerminalSessionMessage[] = mode === 'gemini'
-          ? state.gemini.messages.map((msg) => ({ role: msg.role, content: msg.content }))
+        const messages: TerminalSessionMessage[] = mode === 'apex'
+          ? state.apex.messages.map((msg) => ({ role: msg.role, content: msg.content }))
           : (state.clawbot.session?.messages ?? []).map((msg) => ({ role: msg.role, content: msg.content }));
 
         await fetch('/api/sessions/terminal', {
@@ -121,14 +121,14 @@ export const useTerminalStore = create<TerminalStore>()(
           return;
         }
 
-        if (mode === 'gemini') {
+        if (mode === 'apex') {
           const messages = session.messages
             .filter((msg) => msg && (msg.role === 'user' || msg.role === 'assistant'))
             .map((msg) => ({ role: msg.role as 'user' | 'assistant', content: msg.content ?? '' }));
 
           set((state) => ({
-            gemini: {
-              ...state.gemini,
+            apex: {
+              ...state.apex,
               messages,
               isProcessing: false,
             },
@@ -161,7 +161,7 @@ export const useTerminalStore = create<TerminalStore>()(
 
       return {
   // Initial mode
-  mode: 'gemini',
+  mode: 'apex',
   
   // ClawBot initial state
   clawbot: {
@@ -174,8 +174,8 @@ export const useTerminalStore = create<TerminalStore>()(
     }
   },
   
-  // Gemini initial state
-  gemini: {
+  // Apex Intel initial state
+  apex: {
     messages: [],
     isProcessing: false
   },
@@ -388,55 +388,55 @@ export const useTerminalStore = create<TerminalStore>()(
         },
   
   /**
-   * Send message to Gemini
+   * Send message to Apex Intel
    */
-        sendToGemini: async (message: string) => {
+        sendToApex: async (message: string) => {
           // Add user message
           set((state) => ({
-            gemini: {
-              ...state.gemini,
+            apex: {
+              ...state.apex,
               messages: [
-                ...state.gemini.messages,
+                ...state.apex.messages,
                 { role: 'user', content: message }
               ],
               isProcessing: true
             }
           }));
-          queueSaveSession('gemini');
+          queueSaveSession('apex');
 
           try {
-            // Call your existing Gemini API endpoint
+            // Call your existing APEX API endpoint
             const response = await fetch('/api/terminal', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 message,
-                history: get().gemini.messages
+                history: get().apex.messages
               })
             });
 
             if (!response.ok) {
-              throw new Error(`Gemini API error: ${response.status}`);
+              throw new Error(`Apex API error: ${response.status}`);
             }
 
             const data = await response.json();
 
             // Add assistant response
             set((state) => ({
-              gemini: {
+              apex: {
                 messages: [
-                  ...state.gemini.messages,
+                  ...state.apex.messages,
                   { role: 'assistant', content: data.response }
                 ],
                 isProcessing: false
               }
             }));
-            queueSaveSession('gemini');
+            queueSaveSession('apex');
           } catch (error) {
-            console.error('[Terminal] Gemini error:', error);
+            console.error('[Terminal] Apex Intel error:', error);
             set((state) => ({
-              gemini: {
-                ...state.gemini,
+              apex: {
+                ...state.apex,
                 isProcessing: false
               }
             }));
@@ -445,23 +445,23 @@ export const useTerminalStore = create<TerminalStore>()(
         },
   
   /**
-   * Clear Gemini chat history
+   * Clear Apex Intel chat history
    */
-        clearGeminiHistory: () => {
+        clearApexHistory: () => {
           set({
-            gemini: {
+            apex: {
               messages: [],
               isProcessing: false
             }
           });
-          saveSessionNow('gemini').catch((error) => {
+          saveSessionNow('apex').catch((error) => {
             console.error('[Terminal] Failed to save session:', error);
           });
         },
 
         loadSession,
         hydrateSessions: async () => {
-          await Promise.all([loadSession('gemini'), loadSession('clawbot')]);
+          await Promise.all([loadSession('apex'), loadSession('clawbot')]);
         },
       };
     },
@@ -470,7 +470,7 @@ export const useTerminalStore = create<TerminalStore>()(
       version: 1,
       partialize: (state) => ({
         mode: state.mode,
-        gemini: { messages: state.gemini.messages, isProcessing: false },
+        apex: { messages: state.apex.messages, isProcessing: false },
         clawbot: {
           session: state.clawbot.session ? {
             ...state.clawbot.session,
@@ -490,9 +490,9 @@ export const useTerminalStore = create<TerminalStore>()(
             status: currentState.clawbot.status,
             client: currentState.clawbot.client,
           },
-          gemini: {
-            ...currentState.gemini,
-            ...persisted.gemini,
+          apex: {
+            ...currentState.apex,
+            ...persisted.apex,
           },
         };
       },

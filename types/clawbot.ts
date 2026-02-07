@@ -3,7 +3,7 @@
  * Types for integrating Clawdbot into Vibe Coder Terminal
  */
 
-export type AIMode = 'gemini' | 'clawbot';
+export type AIMode = 'apex' | 'clawbot';
 
 export interface ClawBotConfig {
   wsUrl: string;

@@ -233,7 +233,7 @@ export default function WaitlistPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-[#06b6d4] animate-pulse" />
-                      Vertex AI Scoring
+                      APEX OS Cloud Scoring
                     </div>
                   </div>
                 </div>

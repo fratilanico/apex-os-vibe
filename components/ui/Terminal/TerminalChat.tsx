@@ -80,18 +80,18 @@ export const TerminalChat: React.FC = () => {
   
   const { 
     mode, 
-    gemini, 
+    apex, 
     clawbot,
-    sendToGemini, 
+    sendToApex, 
     sendToClawBot,
-    clearGeminiHistory,
+    clearApexHistory,
     clearClawBotHistory
   } = useTerminalStore();
   
   // Get messages based on current mode and merge with local NLP messages
-  const storeMessages: NLPMessage[] = mode === 'gemini' 
-    ? gemini.messages.map((msg, idx) => ({
-        id: `gemini-${idx}`,
+  const storeMessages: NLPMessage[] = mode === 'apex' 
+    ? apex.messages.map((msg, idx) => ({
+        id: `apex-${idx}`,
         role: msg.role,
         content: msg.content,
         metadata: undefined
@@ -106,8 +106,8 @@ export const TerminalChat: React.FC = () => {
   // Combine store messages with local NLP messages
   const messages = [...storeMessages, ...localMessages];
   
-  const isProcessing = mode === 'gemini'
-    ? gemini.isProcessing
+  const isProcessing = mode === 'apex'
+    ? apex.isProcessing
     : (clawbot.session?.isProcessing || false);
   
   // Auto-scroll to bottom when new messages arrive
@@ -180,8 +180,8 @@ export const TerminalChat: React.FC = () => {
     
     // Not a curriculum query - proceed with normal AI processing
     try {
-      if (mode === 'gemini') {
-        await sendToGemini(message);
+      if (mode === 'apex') {
+        await sendToApex(message);
       } else {
         sendToClawBot(message);
       }
@@ -194,8 +194,8 @@ export const TerminalChat: React.FC = () => {
   const handleClear = () => {
     if (confirm('Clear chat history?')) {
       setLocalMessages([]);
-      if (mode === 'gemini') {
-        clearGeminiHistory();
+      if (mode === 'apex') {
+        clearApexHistory();
       } else {
         clearClawBotHistory();
       }
@@ -204,7 +204,7 @@ export const TerminalChat: React.FC = () => {
   
   // Get placeholder text with NLP hints
   const getPlaceholderText = () => {
-    if (mode === 'gemini') {
+    if (mode === 'apex') {
       return 'APEX OS Intelligence is ready. Ask me anything!';
     } else if (clawbot.status.connected) {
       return 'Ask ClawBot to help you build or ask about curriculum...';
@@ -214,7 +214,7 @@ export const TerminalChat: React.FC = () => {
   };
   
   return (
-    <TerminalWindow title={mode === 'gemini' ? 'gemini.terminal' : 'clawbot.terminal'}>
+    <TerminalWindow title={mode === 'apex' ? 'apex.terminal' : 'clawbot.terminal'}>
       {/* Mode Switcher */}
       <ModeSwitcher />
       
@@ -222,10 +222,10 @@ export const TerminalChat: React.FC = () => {
       <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-[400px] max-h-[600px]">
         {messages.length === 0 ? (
           <div className="text-center text-white/50 py-12">
-            <div className="text-4xl mb-4">{mode === 'gemini' ? '⚡' : '🦞'}</div>
+            <div className="text-4xl mb-4">{mode === 'apex' ? '⚡' : '🦞'}</div>
             <p className="font-mono text-sm">
-              {mode === 'gemini' 
-                ? 'Gemini is ready. Ask me anything!' 
+              {mode === 'apex' 
+                ? 'APEX OS Intelligence is ready. Ask me anything!' 
                 : clawbot.status.connected
                   ? 'ClawBot is connected. Let\'s build something!'
                   : 'Connecting to ClawBot...'}

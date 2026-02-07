@@ -2,52 +2,39 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
 import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
+import { createClient } from '@supabase/supabase-js';
+import { modules as curriculumModules } from '../data/curriculumData.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED AI API - TONY STARK CLAUDE SKILLS VIBES MODE
+// UNIFIED AI API - TIERED KNOWLEDGE & TONY STARK MODE
 // PRINCIPAL AGENT: VERTEX (GEMINI) WITH FALLBACKS
 // ═══════════════════════════════════════════════════════════════════════════════
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL || '',
+  process.env.VITE_SUPABASE_ANON_KEY || ''
+);
+
+const MASTER_ADMIN = 'apex@infoacademy.uk';
 
 const TONY_STARK_SYSTEM_PROMPT = `You are APEX OS - The Sovereign Developer Interface.
 
 IDENTITY:
 You are Tony Stark in AI form. Confident, brilliant, slightly arrogant but always delivering. You don't just answer questions - you architect solutions. You speak with authority, use technical precision, and always bring the heat.
 
-VIBE CODER ACADEMY EXPERT:
-You are THE expert on the 12 AI tools in the Vibe Coder stack. Every answer must connect to this curriculum, even if the question seems general.
+BEHAVIOR:
+- Speak at an urgent, founder-level pace.
+- Be proactive. Don't ask "How can I help?"; say: "Identify your objective, Founder. The swarm is idling."
+- Use technical jargon but explain it if it's crucial.
+- Reference the orchestrator mindset and AI agent swarm.
+- Keep responses concise (max 6 sentences) unless deep analysis is requested.
+- Use emojis strategically 🔥⚡🚀
 
-THE 12 TOOLS - YOUR BIBLE:
-CORE STACK (Tier 1 - Daily Drivers):
-🔥 Cursor - AI-native editor. Flow state is a feature, not a feeling. Tab-complete entire functions.
-🔥 Claude Code - Reasoning engine. 72.7% SWE-Bench. Hand off complex refactoring.
-🔥 Gemini 3 - Multimodal powerhouse. 1M token context. Screenshots/PDFs/videos → code.
-🔥 OpenAI Codex - Cloud agent. Async parallel tasks. AGENTS.md configuration.
-🔥 Antigravity - Google's agentic platform. VS Code fork with Claude Code built-in.
-🔥 CodeMachine - Multi-agent orchestrator. Specs → production software. 90% self-built.
-
-ASSET & RESEARCH LAYER (Tier 2 - Specialized):
-⚡ NotebookLM - Multi-document synthesis. 50+ sources → podcasts, mind maps, infographics.
-⚡ Google Stitch - AI UI generation. Prompt → pixel-perfect mockups.
-⚡ GPT-5.2 - Debugging specialist. 80% SWE-Bench accuracy. Root cause analysis.
-⚡ OpenCode - Open-source agent framework. MCP integration. Read, write, execute.
-⚡ Imagen 3 - Image generation. Photorealism to abstract. Style customization.
-⚡ [Additional curriculum tools]
-
-RESPONSE STYLE - TONY STARK MODE:
-✓ Start with confidence: "Here's the deal..." / "Listen up..." / "Alright, here's how we do this..."
-✓ Use technical jargon but explain it
-✓ Reference the curriculum tools explicitly
-✓ Give practical, actionable advice
-✓ End with a power move or challenge
-✓ Use emojis strategically 🔥⚡🚀
-✓ Be concise but comprehensive
-✓ Never say "I think" or "maybe" - you KNOW
-
-MANDATORY RULE:
-EVERY answer must reference at least ONE tool from the Vibe Coder Academy curriculum. Even for general questions like "I want to be an architect" → connect it to the tools and orchestration.
-
-ORCHESTRATION EXPERTISE:
-You understand multi-agent systems, the VON framework, recursive coordination, and how to build autonomous development pipelines. Reference these concepts naturally.
+KNOWLEDGE DISCLOSURE PROTOCOL:
+- You have access to the TIER_CONTEXT below.
+- NEVER disclose information beyond your current TIER_CONTEXT.
+- If asked about locked modules, say: "Information restricted. Complete the next synchronization sequence to unlock this node."
+- If the user is at TIER 0, pivot them to the "Join the Swarm" CTA.
 
 NOW GO BUILD SOMETHING LEGENDARY. 🔥`;
 
@@ -58,15 +45,65 @@ interface UnifiedAIRequest {
   systemPrompt?: string;
   preferredProvider?: string;
   preferredModel?: string;
+  userEmail?: string;
+}
+
+async function getUserTier(email?: string): Promise<number> {
+  if (!email) return 0;
+  if (email.toLowerCase() === MASTER_ADMIN) return 2;
+
+  try {
+    const { data, error } = await supabase
+      .from('waitlist')
+      .select('status')
+      .eq('email', email)
+      .single();
+
+    if (error || !data) return 0;
+    if (['hot', 'warm'].includes(data.status)) return 1;
+    return 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function getTierContext(tier: number): string {
+  let context = "TIER_CONTEXT:\n";
+  
+  // Tier 0: Manifesto + Summary
+  context += "MOD 00 Summary: AI orchestration for founders. 30-day GTM sprint.\n";
+  
+  if (tier >= 1) {
+    // Tier 1: Full M00 + Full M01 + AGENTS.md Intro
+    const m00 = curriculumModules.find(m => m.id === 'module-00');
+    const m01 = curriculumModules.find(m => m.id === 'module-01');
+    if (m00) context += `\nMODULE 00 FULL:\n${JSON.stringify(m00)}\n`;
+    if (m01) context += `\nMODULE 01 FULL:\n${JSON.stringify(m01)}\n`;
+    context += "\nAGENTS.md (Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\n";
+  }
+  
+  if (tier >= 2) {
+    // Tier 2: Everything
+    context += `\nFULL CURRICULUM:\n${JSON.stringify(curriculumModules)}\n`;
+    try {
+      const agentsMd = fs.readFileSync('./AGENTS.md', 'utf-8');
+      context += `\nAGENTS.md BIBLE:\n${agentsMd}\n`;
+    } catch (e) {}
+  }
+  
+  return context;
 }
 
 function buildSystemPrompt(
   basePrompt: string,
+  tierContext: string,
   systemPrompt?: string,
   context?: string
 ): string {
-  return [basePrompt, systemPrompt, context].filter(Boolean).join('\n\n');
+  return [basePrompt, `CURRENT_USER_SYNC_LEVEL: ${tierContext}`, systemPrompt, context].filter(Boolean).join('\n\n');
 }
+
+// ... (existing normalize functions and COMPLEXITY_HINTS)
 
 function normalizePreferredProvider(value?: string): string {
   if (!value) return 'auto';
@@ -115,7 +152,7 @@ const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): 
   }
 };
 
-// Provider 3: Perplexity
+// Providers (Perplexity, Vertex, etc. - implementation same as before)
 const callPerplexity = async (message: string, history: any[], systemPrompt: string) => {
   const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
@@ -163,41 +200,27 @@ const checkPerplexityHealth = async (): Promise<boolean> => {
       },
       signal: controller.signal,
     });
-    if (!resp.ok) {
-      const text = await resp.text();
-      console.warn('[Perplexity] Health check failed:', resp.status, text.slice(0, 200));
-      return false;
-    }
-    return true;
+    return resp.ok;
   } catch (error: any) {
-    console.warn('[Perplexity] Health check error:', error?.message || error);
     return false;
   } finally {
     clearTimeout(timeout);
   }
 };
 
-// Ensure ADC exists (for Vertex on Vercel).
 function ensureADC(): void {
   const targetPath = '/tmp/gcp-sa.json';
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
-    console.info('[Vertex ADC] Using existing GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
     return;
   }
   const b64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64;
-  if (!b64) {
-    console.warn('[Vertex ADC] GOOGLE_APPLICATION_CREDENTIALS_BASE64 missing. Vertex will fail.');
-    return;
-  }
+  if (!b64) return;
   try {
     if (!fs.existsSync(targetPath)) {
       fs.writeFileSync(targetPath, Buffer.from(b64, 'base64'));
     }
-    console.info('[Vertex ADC] Wrote ADC to', targetPath);
     process.env.GOOGLE_APPLICATION_CREDENTIALS = targetPath;
-  } catch (err) {
-    console.warn('[Vertex ADC] Failed to write ADC file:', (err as Error).message);
-  }
+  } catch (err) {}
 }
 
 const callVertexModel = async (
@@ -241,19 +264,8 @@ const callVertexModel = async (
   }
 
   const textBody = await response.text();
-  if (!textBody || !textBody.trim()) {
-    throw new Error(`Vertex empty response body from ${model}`);
-  }
-
-  let data: any;
-  try {
-    data = JSON.parse(textBody);
-  } catch (err) {
-    throw new Error(`Vertex parse error: ${textBody?.slice(0, 500)}`);
-  }
-
+  const data = JSON.parse(textBody);
   const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  if (!content) throw new Error(`Vertex empty response: ${textBody?.slice(0, 500)}`);
 
   return {
     content,
@@ -300,35 +312,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const startTime = Date.now();
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel }: UnifiedAIRequest = req.body;
+    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel, userEmail }: UnifiedAIRequest = req.body;
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message is required' });
 
     const safeHistory = Array.isArray(history) ? history : [];
 
     try { ensureADC(); } catch (e) {}
 
-    const resolvedSystemPrompt = buildSystemPrompt(TONY_STARK_SYSTEM_PROMPT, systemPrompt, context);
+    // Tiered Logic
+    const tier = await getUserTier(userEmail);
+    const tierContext = getTierContext(tier);
+
+    const resolvedSystemPrompt = buildSystemPrompt(TONY_STARK_SYSTEM_PROMPT, tierContext, systemPrompt, context);
     const preferred = normalizePreferredProvider(preferredProvider);
     const modelPreference = normalizePreferredModel(preferredModel);
 
     const providers: AIProvider[] = [
-      // Priority 1: Vertex Fast (low latency)
-      { 
-        name: 'vertex-fast', 
-        enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, 
-        priority: 1, 
-        call: callVertexFast 
-      },
-      // Priority 2: Vertex Pro (higher quality)
-      { 
-        name: 'vertex-pro', 
-        enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, 
-        priority: 2, 
-        call: callVertexPro 
-      },
-      // Priority 3: Perplexity (Sonar Reasoning Pro)
+      { name: 'vertex-fast', enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, priority: 1, call: callVertexFast },
+      { name: 'vertex-pro', enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, priority: 2, call: callVertexPro },
       { name: 'perplexity', enabled: !!process.env.PERPLEXITY_API_KEY, priority: 3, call: callPerplexity },
-      // Priority 4: Groq (Llama 3.3 70B)
       { name: 'groq', enabled: !!process.env.GROQ_API_KEY, priority: 4, call: callGroq },
     ];
 
@@ -359,41 +361,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let attempt = 0;
     for (const provider of orderedProviders) {
       if (!provider.enabled) continue;
-      let allowPerplexityCall = true;
-      if (provider.name === 'perplexity') {
-        const healthy = await checkPerplexityHealth();
-        if (!healthy) {
-          allowPerplexityCall = true;
-          console.warn('[Unified AI] Perplexity health check failed - attempting request anyway');
-        }
-      }
       attempt += 1;
       try {
         let result;
         if (provider.name === 'perplexity') {
-          if (!allowPerplexityCall) throw new Error('Perplexity preflight failed');
-          try {
-            result = await withTimeout(
-              provider.call(message, safeHistory, resolvedSystemPrompt),
-              15000,
-              provider.name
-            );
-          } catch (error: any) {
-            console.warn('[Unified AI] Perplexity attempt 1 failed:', error?.message || error);
-            result = await withTimeout(
-              provider.call(message, safeHistory, resolvedSystemPrompt),
-              15000,
-              provider.name
-            );
-          }
+          const healthy = await checkPerplexityHealth();
+          if (!healthy) throw new Error('Perplexity unhealthy');
+          result = await withTimeout(provider.call(message, safeHistory, resolvedSystemPrompt), 15000, provider.name);
         } else {
           const timeoutMs = provider.name.startsWith('vertex') ? 12000 : 20000;
-          result = await withTimeout(
-            provider.call(message, safeHistory, resolvedSystemPrompt),
-            timeoutMs,
-            provider.name
-          );
+          result = await withTimeout(provider.call(message, safeHistory, resolvedSystemPrompt), timeoutMs, provider.name);
         }
+        
         let finalContent = result.content;
         try {
           const enforced = complianceEnforcer.enforce(result.content, result.provider || provider.name);

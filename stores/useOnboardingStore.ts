@@ -23,6 +23,7 @@ interface OnboardingState {
   isTerminalOnly: boolean;
   isUnlocked: boolean;
   secretTreatFound: boolean;
+  isVaultOpen: boolean;
   
   // Actions
   setMode: (mode: 'STANDARD' | 'GEEK') => void;
@@ -34,6 +35,7 @@ interface OnboardingState {
   toggleTerminalOnly: () => void;
   unlock: () => void;
   setSecretTreatFound: (found: boolean) => void;
+  setVaultOpen: (open: boolean) => void;
   reset: () => void;
 }
 
@@ -47,6 +49,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   isTerminalOnly: false,
   isUnlocked: false,
   secretTreatFound: false,
+  isVaultOpen: false,
 
   setMode: (mode) => set({ mode }),
   setStep: (step) => set({ step }),
@@ -57,6 +60,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   toggleTerminalOnly: () => set((state) => ({ isTerminalOnly: !state.isTerminalOnly })),
   unlock: () => set({ isUnlocked: true }),
   setSecretTreatFound: (found) => set({ secretTreatFound: found }),
+  setVaultOpen: (open) => set({ isVaultOpen: open }),
   reset: () => set({
     mode: 'STANDARD',
     step: 'boot',
@@ -67,5 +71,6 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     isTerminalOnly: false,
     isUnlocked: false,
     secretTreatFound: false,
+    isVaultOpen: false,
   }),
 }));

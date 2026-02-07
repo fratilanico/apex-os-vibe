@@ -9,7 +9,14 @@
  * - Box drawing characters for tables/borders
  * - ANSI-style color classes (applied via CSS)
  * - Exit codes for command results
+ * - Strict 42-character constant for HUD alignment (Golden Standard)
  */
+
+/**
+ * The Golden Standard Width for HUD components
+ */
+export const HUD_WIDTH = 42;
+export const MOBILE_HUD_WIDTH = 32;
 
 /**
  * Color codes for terminal output (applied via CSS classes)
@@ -50,17 +57,69 @@ const BOX = {
 } as const;
 
 /**
+ * Smartly wrap text to fit within a specific width
+ */
+export function smartWrap(text: string, width: number = HUD_WIDTH): string[] {
+  if (!text) return [];
+  const lines: string[] = [];
+  const paragraphs = text.split('\n');
+
+  paragraphs.forEach(p => {
+    if (p.trim() === '') {
+      lines.push('');
+      return;
+    }
+    const words = p.split(' ');
+    let currentLine = '';
+
+    words.forEach(word => {
+      if ((currentLine + (currentLine ? ' ' : '') + word).length <= width) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+        // Handle words longer than width
+        while (currentLine.length > width) {
+          lines.push(currentLine.substring(0, width));
+          currentLine = currentLine.substring(width);
+        }
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+  });
+
+  return lines;
+}
+
+/**
+ * Get current target width based on environment
+ */
+function getTargetWidth(): number {
+  if (typeof window !== 'undefined') {
+    return window.innerWidth < 768 ? MOBILE_HUD_WIDTH : HUD_WIDTH;
+  }
+  return HUD_WIDTH;
+}
+
+/**
  * Box text with heavy borders (Golden Standard)
  */
 export function boxText(title: string, content: string | string[]): string {
-  const lines = Array.isArray(content) ? content : content.split('\n');
-  const width = Math.max(title.length, ...lines.map(l => l.length), 40);
+  const targetWidth = getTargetWidth();
+  const innerWidth = targetWidth - 4;
   
-  const top = BOX.HEAVY_TOP_LEFT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_TOP_RIGHT;
-  const header = `${BOX.HEAVY_VERTICAL} ${title.padEnd(width)} ${BOX.HEAVY_VERTICAL}`;
-  const sep = BOX.HEAVY_T_RIGHT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_T_LEFT;
-  const body = lines.map(line => `${BOX.HEAVY_VERTICAL} ${line.padEnd(width)} ${BOX.HEAVY_VERTICAL}`).join('\n');
-  const bottom = BOX.HEAVY_BOTTOM_LEFT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_BOTTOM_RIGHT;
+  const contentLines = Array.isArray(content) ? content : content.split('\n');
+  const wrappedLines: string[] = [];
+  
+  contentLines.forEach(line => {
+    wrappedLines.push(...smartWrap(line, innerWidth));
+  });
+
+  const top = BOX.HEAVY_TOP_LEFT + BOX.HEAVY_HORIZONTAL.repeat(targetWidth - 2) + BOX.HEAVY_TOP_RIGHT;
+  const header = `${BOX.HEAVY_VERTICAL} ${title.substring(0, innerWidth).padEnd(innerWidth)} ${BOX.HEAVY_VERTICAL}`;
+  const sep = BOX.HEAVY_T_RIGHT + BOX.HEAVY_HORIZONTAL.repeat(targetWidth - 2) + BOX.HEAVY_T_LEFT;
+  const body = wrappedLines.map(line => `${BOX.HEAVY_VERTICAL} ${line.padEnd(innerWidth)} ${BOX.HEAVY_VERTICAL}`).join('\n');
+  const bottom = BOX.HEAVY_BOTTOM_LEFT + BOX.HEAVY_HORIZONTAL.repeat(targetWidth - 2) + BOX.HEAVY_BOTTOM_RIGHT;
   
   return `${top}\n${header}\n${sep}\n${body}\n${bottom}`;
 }
@@ -81,38 +140,32 @@ export function formatError(message: string, exitCode: number = 1): string {
 
 /**
  * Format a table from data
- * 
- * @example
- * formatTable(['Name', 'XP', 'Status'], [
- *   ['Quest 1', '100', 'Complete'],
- *   ['Quest 2', '250', 'Active']
- * ])
  */
 export function formatTable(headers: string[], rows: string[][]): string {
   if (rows.length === 0) return 'No data';
+  const targetWidth = getTargetWidth();
 
-  // Calculate column widths
-  const colWidths = headers.map((header, i) => {
-    const maxDataWidth = Math.max(...rows.map(row => (row[i] || '').length));
-    return Math.max(header.length, maxDataWidth);
-  });
+  // Calculate column widths proportional to targetWidth
+  const totalPadding = (headers.length * 3) + 1;
+  const availableWidth = targetWidth - totalPadding;
+  const colWidths = headers.map(() => Math.floor(availableWidth / headers.length));
 
   // Build top border
-  const topBorder = BOX.TOP_LEFT + colWidths.map(w => BOX.HORIZONTAL.repeat(w + 2)).join(BOX.T_DOWN) + BOX.TOP_RIGHT;
+  const topBorder = BOX.TOP_LEFT + colWidths.map(w => BOX.HORIZONTAL.repeat((w || 0) + 2)).join(BOX.T_DOWN) + BOX.TOP_RIGHT;
 
   // Build header row
-  const headerRow = BOX.VERTICAL + headers.map((h, i) => ` ${h.padEnd(colWidths[i] || 0)} `).join(BOX.VERTICAL) + BOX.VERTICAL;
+  const headerRow = BOX.VERTICAL + headers.map((h, i) => ` ${h.substring(0, colWidths[i] || 0).padEnd(colWidths[i] || 0)} `).join(BOX.VERTICAL) + BOX.VERTICAL;
 
   // Build separator
-  const separator = BOX.T_RIGHT + colWidths.map(w => BOX.HORIZONTAL.repeat(w + 2)).join(BOX.CROSS) + BOX.T_LEFT;
+  const separator = BOX.T_RIGHT + colWidths.map(w => BOX.HORIZONTAL.repeat((w || 0) + 2)).join(BOX.CROSS) + BOX.T_LEFT;
 
   // Build data rows
   const dataRows = rows.map(row => 
-    BOX.VERTICAL + row.map((cell, i) => ` ${(cell || '').padEnd(colWidths[i] || 0)} `).join(BOX.VERTICAL) + BOX.VERTICAL
+    BOX.VERTICAL + colWidths.map((w, i) => ` ${(row[i] || '').substring(0, w || 0).padEnd(w || 0)} `).join(BOX.VERTICAL) + BOX.VERTICAL
   ).join('\n');
 
   // Build bottom border
-  const bottomBorder = BOX.BOTTOM_LEFT + colWidths.map(w => BOX.HORIZONTAL.repeat(w + 2)).join(BOX.T_UP) + BOX.BOTTOM_RIGHT;
+  const bottomBorder = BOX.BOTTOM_LEFT + colWidths.map(w => BOX.HORIZONTAL.repeat((w || 0) + 2)).join(BOX.T_UP) + BOX.BOTTOM_RIGHT;
 
   return `${topBorder}\n${headerRow}\n${separator}\n${dataRows}\n${bottomBorder}`;
 }
@@ -121,215 +174,30 @@ export function formatTable(headers: string[], rows: string[][]): string {
  * Format a code block with simple borders
  */
 export function formatCodeBlock(code: string, language?: string): string {
+  const targetWidth = getTargetWidth();
+  const innerWidth = targetWidth - 4;
+  
   const lines = code.split('\n');
-  const languageLength = language?.length || 0;
-  const maxLineLength = Math.max(...lines.map(l => l.length), languageLength + 2);
+  const wrappedLines: string[] = [];
+  lines.forEach(line => wrappedLines.push(...smartWrap(line, innerWidth)));
   
-  const topBorder = BOX.TOP_LEFT + BOX.HORIZONTAL.repeat(maxLineLength + 2) + BOX.TOP_RIGHT;
-  const bottomBorder = BOX.BOTTOM_LEFT + BOX.HORIZONTAL.repeat(maxLineLength + 2) + BOX.BOTTOM_RIGHT;
+  const topBorder = BOX.TOP_LEFT + BOX.HORIZONTAL.repeat(targetWidth - 2) + BOX.TOP_RIGHT;
+  const bottomBorder = BOX.BOTTOM_LEFT + BOX.HORIZONTAL.repeat(targetWidth - 2) + BOX.BOTTOM_RIGHT;
   
-  const languageLabel = language ? `${BOX.VERTICAL} [${language}]${' '.repeat(maxLineLength - languageLength - 2)}${BOX.VERTICAL}\n` : '';
-  const separator = language ? `${BOX.T_RIGHT}${BOX.HORIZONTAL.repeat(maxLineLength + 2)}${BOX.T_LEFT}\n` : '';
+  const languageLabel = language ? `${BOX.VERTICAL} [${language}]${' '.repeat(Math.max(0, targetWidth - (language?.length || 0) - 6))}${BOX.VERTICAL}\n` : '';
+  const separator = language ? `${BOX.T_RIGHT}${BOX.HORIZONTAL.repeat(targetWidth - 2)}${BOX.T_LEFT}\n` : '';
   
-  const codeLines = lines.map(line => `${BOX.VERTICAL} ${line.padEnd(maxLineLength)} ${BOX.VERTICAL}`).join('\n');
+  const codeLines = wrappedLines.map(line => `${BOX.VERTICAL} ${line.padEnd(innerWidth)} ${BOX.VERTICAL}`).join('\n');
   
   return `${topBorder}\n${languageLabel}${separator}${codeLines}\n${bottomBorder}`;
 }
 
 /**
- * Format a list with bullet points
- */
-export function formatList(items: string[], ordered: boolean = false): string {
-  return items.map((item, i) => {
-    const bullet = ordered ? `${i + 1}.` : '•';
-    return `  ${bullet} ${item}`;
-  }).join('\n');
-}
-
-/**
- * Format a progress bar
- */
-export function formatProgressBar(current: number, max: number, width: number = 20): string {
-  const percentage = Math.min(100, Math.max(0, (current / max) * 100));
-  const filled = Math.floor((percentage / 100) * width);
-  const empty = width - filled;
-  
-  const bar = '█'.repeat(filled) + '░'.repeat(empty);
-  const percentText = `${Math.floor(percentage)}%`;
-  
-  return `[${bar}] ${percentText}`;
-}
-
-/**
- * Format player stats display
- */
-export function formatPlayerStats(stats: {
-  xp: number;
-  gold: number;
-  level: number;
-  completedQuests: number;
-  unlockedSkills: number;
-  nodesCompleted: number;
-}): string {
-  const xpForNextLevel = Math.pow(stats.level, 2) * 100;
-  const xpProgress = stats.xp - Math.pow(stats.level - 1, 2) * 100;
-  const xpNeeded = xpForNextLevel - Math.pow(stats.level - 1, 2) * 100;
-  
-  return `
-╔════════════════════════════════════════════╗
-║           PLAYER ONE STATUS                ║
-╠════════════════════════════════════════════╣
-║  Level:           ${String(stats.level).padEnd(24)} ║
-║  XP:              ${String(stats.xp).padEnd(24)} ║
-║  Gold:            ${String(stats.gold).padEnd(24)} ║
-╠════════════════════════════════════════════╣
-║  Next Level:      ${formatProgressBar(xpProgress, xpNeeded, 16).padEnd(24)} ║
-╠════════════════════════════════════════════╣
-║  Quests:          ${String(stats.completedQuests).padEnd(24)} ║
-║  Skills:          ${String(stats.unlockedSkills).padEnd(24)} ║
-║  Nodes:           ${String(stats.nodesCompleted).padEnd(24)} ║
-╚════════════════════════════════════════════╝
-`.trim();
-}
-
-/**
- * Format quest list
- */
-export function formatQuestList(quests: Array<{
-  id: string;
-  title: string;
-  difficulty: string;
-  status: 'available' | 'active' | 'completed';
-  xpReward: number;
-}>): string {
-  if (quests.length === 0) {
-    return 'No quests available.\n[exit 0]';
-  }
-
-  const rows = quests.map(q => [
-    q.status === 'active' ? '▶' : q.status === 'completed' ? '✓' : ' ',
-    q.title,
-    q.difficulty,
-    `${q.xpReward} XP`,
-  ]);
-
-  return formatTable(['', 'QUEST', 'DIFFICULTY', 'REWARD'], rows);
-}
-
-/**
- * Format inventory/skills list
- */
-export function formatSkillsList(skills: Array<{
-  id: string;
-  name: string;
-  progress: number;
-}>): string {
-  if (skills.length === 0) {
-    return 'No skills unlocked yet.\n[exit 0]';
-  }
-
-  const rows = skills.map(s => [
-    s.name,
-    formatProgressBar(s.progress, 100, 12),
-  ]);
-
-  return formatTable(['SKILL', 'PROGRESS'], rows);
-}
-
-/**
- * Format node list (for ls command)
- */
-export function formatNodeList(nodes: Array<{
-  id: string;
-  label: string;
-  type: string;
-  status: string;
-  distance?: number;
-}>): string {
-  if (nodes.length === 0) {
-    return 'No adjacent nodes.\n[exit 0]';
-  }
-
-  const rows = nodes.map(n => [
-    n.id,
-    n.label,
-    n.type,
-    n.status.toUpperCase(),
-    n.distance !== undefined ? `${n.distance} hops` : '-',
-  ]);
-
-  return formatTable(['ID', 'NAME', 'TYPE', 'STATUS', 'DISTANCE'], rows);
-}
-
-/**
- * Format ASCII map (simplified node graph view)
- */
-export function formatAsciiMap(currentNodeId: string, adjacentNodes: Array<{ id: string; label: string }>): string {
-  const maxLabelLength = Math.max(...adjacentNodes.map(n => n.label.length), 10);
-  
-  const lines: string[] = [];
-  
-  // Current node (center)
-  lines.push('');
-  lines.push(`     ╔${'═'.repeat(maxLabelLength + 2)}╗`);
-  lines.push(`     ║ ${currentNodeId.padEnd(maxLabelLength)} ║ ◄── YOU ARE HERE`);
-  lines.push(`     ╚${'═'.repeat(maxLabelLength + 2)}╝`);
-  lines.push('         │');
-  
-  // Adjacent nodes
-  if (adjacentNodes.length > 0) {
-    adjacentNodes.forEach((node, i) => {
-      const isLast = i === adjacentNodes.length - 1;
-      const connector = isLast ? '└──' : '├──';
-      lines.push(`         ${connector} [${node.id}] ${node.label}`);
-    });
-  } else {
-    lines.push('         (no connections)');
-  }
-  
-  lines.push('');
-  
-  return lines.join('\n');
-}
-
-/**
- * Format fork choices
- */
-export function formatForkChoices(choices: Array<{
-  label: string;
-  description: string;
-  consequence?: string;
-}>): string {
-  const lines: string[] = [];
-  
-  lines.push('');
-  lines.push('═══════════════════════════════════════════════════════');
-  lines.push('              DECISION POINT DETECTED');
-  lines.push('═══════════════════════════════════════════════════════');
-  lines.push('');
-  
-  choices.forEach((choice, i) => {
-    lines.push(`  [${i + 1}] ${choice.label}`);
-    lines.push(`      ${choice.description}`);
-    if (choice.consequence) {
-      lines.push(`      ⚠ ${choice.consequence}`);
-    }
-    lines.push('');
-  });
-  
-  lines.push('───────────────────────────────────────────────────────');
-  lines.push('Use: fork choose <label>');
-  lines.push('');
-  
-  return lines.join('\n');
-}
-
-/**
  * Convert AI markdown-like response to plain CLI text
- * Basic parsing: strips markdown, preserves code blocks and lists
  */
 export function convertMarkdownToCLI(markdown: string): string {
   let output = markdown;
+  const targetWidth = getTargetWidth();
   
   // Convert headers to styled tags
   output = output.replace(/^###\s+(.+)$/gm, '[h3]$1[/h3]\n');
@@ -353,15 +221,16 @@ export function convertMarkdownToCLI(markdown: string): string {
   // Convert unordered lists
   output = output.replace(/^[-*]\s+(.+)$/gm, '  • $1');
   
-  // Convert ordered lists
-  output = output.replace(/^\d+\.\s+(.+)$/gm, (_match, text, offset, str) => {
-    const linesBefore = str.substring(0, offset).split('\n');
-    const currentListLength = linesBefore.reverse().findIndex((line: string) => !/^\d+\./.test(line));
-    const num = currentListLength === -1 ? linesBefore.length : linesBefore.length - currentListLength;
-    return `  ${num}. ${text}`;
+  // Smart wrap long paragraphs that aren't headers or code blocks
+  const lines = output.split('\n');
+  const wrappedLines = lines.map(line => {
+    if (line.startsWith('[h') || line.startsWith('╔') || line.startsWith('╚') || line.startsWith('╠') || line.startsWith('║') || line.startsWith('┌') || line.startsWith('└') || line.trim() === '') {
+      return line;
+    }
+    return smartWrap(line, targetWidth).join('\n');
   });
-
-  return output;
+  
+  return wrappedLines.join('\n');
 }
 
 const ICON_MAP: Record<string, string> = {

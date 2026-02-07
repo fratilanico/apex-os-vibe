@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Rocket, TrendingUp, Users, Target, DollarSign, Globe, Award, Briefcase,
-  AlertTriangle, Lightbulb, Zap, Shield, CheckCircle2,
+  Rocket, TrendingUp, Users, Target, DollarSign, Globe, Award,
+  Zap, Shield, CheckCircle2,
   BarChart3, Calculator,
   Landmark, Play, ArrowRight
 } from 'lucide-react';

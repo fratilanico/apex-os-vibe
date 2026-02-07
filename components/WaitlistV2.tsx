@@ -7,10 +7,13 @@ import { SpectacularTerminal } from './SpectacularTerminal';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { TerminalBranding } from './TerminalBranding';
 import { modules as restoredModules } from '../data/curriculumData';
+import { NotionVaultOverlay } from './NotionVaultOverlay';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WAITLIST V2 - MULTI-PANEL FOUNDER INTERFACE
 // ═══════════════════════════════════════════════════════════════════════════════
+
+const VAULT_URL = "https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder";
 
 const QuantWidget: React.FC<{ label: string, value: string, icon: any, color: string }> = ({ label, value, icon: Icon, color }) => (
   <motion.div 
@@ -69,12 +72,19 @@ const ModuleAccessPanel = () => {
 };
 
 export const WaitlistV2: React.FC = () => {
-  const { mode, persona, isTerminalOnly } = useOnboardingStore();
+  const { mode, persona, isUnlocked, isTerminalOnly, isVaultOpen, setVaultOpen } = useOnboardingStore();
   const auraColor = persona === 'BUSINESS' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(6, 182, 212, 0.2)';
 
   return (
     <div className="h-screen w-screen bg-black text-white font-mono overflow-hidden relative selection:bg-cyan-500/30">
       <TerminalBranding />
+      
+      {/* Notion Vault Overlay */}
+      <NotionVaultOverlay 
+        isOpen={isVaultOpen} 
+        onClose={() => setVaultOpen(false)} 
+        vaultUrl={VAULT_URL} 
+      />
       
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -100,7 +110,19 @@ export const WaitlistV2: React.FC = () => {
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tighter uppercase">APEX_OS <span className="text-cyan-400 font-bold">HUD</span></h1>
-              <p className="text-[10px] text-cyan-400/60 uppercase tracking-[0.3em]">Neural Interface v2.1 // Mode: {mode}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[10px] text-cyan-400/60 uppercase tracking-[0.3em]">Mode: {mode}</p>
+                {isUnlocked && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[8px] text-emerald-400 font-bold tracking-tighter">PLAYER 1 // SYNCED</span>
+                  </motion.div>
+                )}
+              </div>
             </div>
           </div>
           

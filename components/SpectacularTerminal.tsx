@@ -8,8 +8,8 @@ import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SPECTACULAR TERMINAL WAITLIST - GEEK MODE EVOLVED (STARK-V2)
-// Onboarding Journey | Tony Stark Persona | Real-time UI Morphing
+// SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
+// Direct Neural Link | Intent Parsing | Dynamic Branching
 // ═══════════════════════════════════════════════════════════════════════════════
 
 interface TerminalLine {
@@ -29,6 +29,15 @@ const BOOT_SEQUENCE = [
   { text: '', delay: 1400, type: 'system' as const },
 ];
 
+const JOKES: Record<string, string> = {
+  sudo: "Nice try. You are already root here. This is YOUR terminal. You have full control.",
+  'rm -rf': "You cannot delete the future. Module 00 is immutable. Nice try though.",
+  matrix: "Wake up, Neo... The Matrix has you... Follow the white rabbit.",
+  coffee: "☕ COFFEE.exe loaded successfully. Caffeine levels: OPTIMAL.",
+  beer: "🍺 Pouring beer... Relaxation mode activated. Ship tomorrow.",
+  '42': "The Answer to the Ultimate Question of Life, the Universe, and Everything is 42.",
+};
+
 export const SpectacularTerminal: React.FC = () => {
   const { 
     step, setStep, 
@@ -36,6 +45,7 @@ export const SpectacularTerminal: React.FC = () => {
     email, setEmail,
     setGoal,
     isUnlocked, unlock,
+    setVaultOpen,
     addHistory
   } = useOnboardingStore();
 
@@ -45,6 +55,7 @@ export const SpectacularTerminal: React.FC = () => {
   const [colorIndex, setColorIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState<any>({});
+  const [glitchActive, setGlitchActive] = useState(false);
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,25 +100,53 @@ export const SpectacularTerminal: React.FC = () => {
 
   const validateEmail = (e: string) => /\S+@\S+\.\S+/.test(e);
 
-  const finalizeWaitlist = useCallback(async (data: any) => {
+  const performHandshake = useCallback(async (data: any) => {
     setStep('processing');
     setIsProcessing(true);
     addTerminalLine('TRANSMITTING TO APEX SWARM...', 'matrix');
+    addTerminalLine('ORCHESTRATING AI READINESS SCORE...', 'matrix');
     
     try {
+      const syncAgents = [
+        '👑 Infrastructure-Architect SYNCING...',
+        '🔒 Security-Monitor VALIDATING...',
+        '📋 Compliance-Guardian AUDITING...',
+        '💰 Cost-Optimizer PROJECTING...',
+        '🧠 Intel-Architect SYNTHESIZING...'
+      ];
+      
+      for (const agent of syncAgents) {
+        await new Promise(r => setTimeout(r, 400));
+        addTerminalLine(agent, 'matrix');
+      }
+
       const res = await fetch('/api/waitlist/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, mode: 'GEEK_V2', version: '21eb428_EVOLVED' }),
+        body: JSON.stringify({ ...data, mode: 'GEEK_V3', version: '3.0_STARK' }),
       });
       const result = await res.json();
-      addTerminalLine(`✓ [PROTOCOL: ENCRYPTION_KEYS_SWAPPED]`, 'success');
+      
+      setGlitchActive(true);
+      setTimeout(() => setGlitchActive(false), 1500);
+
+      addTerminalLine('SYNCING NEURAL LINK...', 'matrix');
+      addTerminalLine('[████████████████████] 100%', 'success');
+      addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
+      
+      const handshakeMsg = `
+╔══════════════════════════════════════════╗
+║ . . . PLAYER 1 - CONNECTED               ║
+╚══════════════════════════════════════════╝`;
+      
+      addTerminalLine(handshakeMsg, 'success');
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
       addTerminalLine(`✓ QUEUE RANK: #${result.rank}`, 'success');
       addTerminalLine('', 'system');
-      addTerminalLine('You\'re in the system now, Player One. Standard protocols are offline.', 'jarvis');
+      addTerminalLine('You\'re in the swarm now, Player One. Standard protocols are offline.', 'jarvis');
       addTerminalLine('I\'m all yours. What are we building today?', 'jarvis');
-      addTerminalLine('Tip: Ask about Module 00: The Shift or Module 01: The Environment.', 'system');
+      addTerminalLine('Tip: Ask about Module 00: The Shift or type "help" for intel.', 'system');
+      
       unlock();
       setStep('unlocked');
     } catch (e) {
@@ -126,7 +165,8 @@ export const SpectacularTerminal: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message: msg,
-          context: `User persona: ${persona}. Access granted to Module 00/01. System: Stark-V2.` 
+          userEmail: email,
+          context: `User persona: ${persona}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist.` 
         }),
       });
       const data = await res.json();
@@ -143,6 +183,23 @@ export const SpectacularTerminal: React.FC = () => {
   const handleCommand = async (val: string) => {
     const trimmed = val.trim();
     if (!trimmed) return;
+    const lower = trimmed.toLowerCase();
+
+    // Global Easter Eggs
+    if (JOKES[lower]) {
+      addTerminalLine(`> ${trimmed}`, 'input');
+      setInputValue('');
+      addTerminalLine(JOKES[lower]!, 'matrix');
+      return;
+    }
+
+    if (lower === 'clear') {
+      addTerminalLine(`> ${trimmed}`, 'input');
+      setInputValue('');
+      setLines([]);
+      return;
+    }
+
     addTerminalLine(`> ${trimmed}`, 'input');
     setInputValue('');
 
@@ -162,27 +219,45 @@ export const SpectacularTerminal: React.FC = () => {
     }
 
     if (step === 'handshake') {
-      if (trimmed === '1' || trimmed.toLowerCase().includes('personal')) {
+      const isPersonal = lower === '1' || 
+                        lower.includes('personal') || 
+                        lower.includes('myself') || 
+                        lower.includes('me') || 
+                        lower.includes('just me') ||
+                        lower.includes('individual') ||
+                        lower.includes('master the stack');
+      
+      const isBusiness = lower === '2' || 
+                         lower.includes('business') || 
+                         lower.includes('company') || 
+                         lower.includes('team') || 
+                         lower.includes('fleet') || 
+                         lower.includes('organization') ||
+                         lower.includes('architecting');
+
+      if (isPersonal) {
         setPersona('PERSONAL');
         addTerminalLine('✓ Profile: PERSONAL_BUILDER. Initializing individual arbitrage metrics.', 'success');
-        addTerminalLine('Right. Let\'s turn you into a one-man production powerhouse.', 'jarvis');
-        addTerminalLine('# 03 What is your Dream Stack? (e.g., Next.js, Python, Rust):', 'system');
+        addTerminalLine('Right. Let\'s turn you into a one-man production powerhouse. The goal is technical sovereignty—zero dependencies, infinite velocity.', 'jarvis');
+        addTerminalLine('', 'system');
+        addTerminalLine('# 03 Mission Parameter: What is your weapon of choice? Which stack will you use to dominate your niche? (e.g., Next.js, Rust, Python):', 'system');
         setStep('dynamic_discovery');
-      } else if (trimmed === '2' || trimmed.toLowerCase().includes('business')) {
+      } else if (isBusiness) {
         setPersona('BUSINESS');
         addTerminalLine('✓ Profile: BUSINESS_ARCHITECT. Allocating market sovereignty resources.', 'success');
-        addTerminalLine('Director. Let\'s talk about orchestrating outcomes and dominating the market.', 'jarvis');
-        addTerminalLine('# 03 Current Tech Debt or Bottleneck? (e.g., slow dev cycles, high burn):', 'system');
+        addTerminalLine('Director. Let\'s architect an outcome that eliminates burn and CTO-dependency. We\'re building a fleet, not a department.', 'jarvis');
+        addTerminalLine('', 'system');
+        addTerminalLine('# 03 Strategic Audit: What is the primary friction point in your current operations? (High burn, slow velocity, or talent gaps?):', 'system');
         setStep('dynamic_discovery');
       } else {
-        addTerminalLine('Invalid input. Select [1] PERSONAL or [2] BUSINESS.', 'error');
+        addTerminalLine('I need to categorize your intent, Sir. Are we building for [1] YOU or [2] THE COMPANY?', 'jarvis');
       }
       return;
     }
 
     if (step === 'dynamic_discovery') {
       setFormData((p: any) => ({ ...p, discovery: trimmed }));
-      addTerminalLine('✓ Intel captured.', 'success');
+      addTerminalLine('✓ Intel captured. Analyzing friction points...', 'success');
       addTerminalLine('', 'system');
       addTerminalLine('Now, the most important part. What is your primary 10-day build goal?', 'jarvis');
       addTerminalLine('Note: Be specific. Ambition requires depth (Min 50 characters).', 'system');
@@ -192,23 +267,43 @@ export const SpectacularTerminal: React.FC = () => {
 
     if (step === 'validation') {
       if (trimmed.length < 50) {
-        addTerminalLine(`[!] Input length: ${trimmed.length}/50. This is a blueprint for a legacy hobby, not a 10-day sprint. Give me depth or give me the exit.`, 'error');
+        addTerminalLine(`I can't architect a solution based on a single word, Sir. Give me some depth so I can allocate the right agents. (${trimmed.length}/50 chars).`, 'jarvis');
         return;
       }
       setGoal(trimmed);
-      addTerminalLine('✓ Visionary intent recognized. Processing mission profile...', 'success');
-      void finalizeWaitlist({ ...formData, email, goal: trimmed, persona });
+      addTerminalLine('✓ Mission profile recognized. Initiating swarm synchronization...', 'success');
+      void performHandshake({ ...formData, email, goal: trimmed, persona });
       return;
     }
 
     if (step === 'unlocked') {
-      if (trimmed.toLowerCase() === 'greuceanu') {
+      if (lower === 'greuceanu') {
         addTerminalLine('SECRET PROTOCOL: GREUCEANU ACTIVATED', 'matrix');
         addTerminalLine('Accessing Private Resource Vault...', 'jarvis');
         addTerminalLine('UNLOCKED: Direct Signal Channel & Founder Bible.', 'success');
-        addTerminalLine('LINK: https://notion.so/apex-os-private-vault (PLACEHOLDER)', 'choice');
+        setVaultOpen(true);
         return;
       }
+
+      if (lower === 'help') {
+        addTerminalLine('[SYSTEM] Available Commands:', 'system');
+        addTerminalLine('  clear  - Clear screen', 'system');
+        addTerminalLine('  status - Check sync status', 'system');
+        addTerminalLine('  jarvis - Direct AI link', 'system');
+        addTerminalLine('  about  - APEX OS mission', 'system');
+        return;
+      }
+
+      if (lower === 'status') {
+        addTerminalLine('[SYSTEM] 17 Agents Synchronized. All systems nominal.', 'success');
+        return;
+      }
+
+      if (lower === 'about') {
+        addTerminalLine('APEX OS is the sovereign orchestrator for founders. We build at AI speed, using agent swarms instead of dev teams.', 'success');
+        return;
+      }
+
       void handleChat(trimmed);
       return;
     }
@@ -217,10 +312,14 @@ export const SpectacularTerminal: React.FC = () => {
   const currentColor = persona === 'BUSINESS' ? '#8b5cf6' : COLOR_CYCLE[colorIndex]!;
 
   return (
-    <div className="flex-1 bg-black/90 backdrop-blur-2xl border-2 rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[500px]"
-         style={{ borderColor: `${currentColor}40`, boxShadow: `0 0 100px ${currentColor}10` }}>
+    <motion.div 
+      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[500px] ${glitchActive ? 'animate-glitch' : ''}`}
+      style={{ borderColor: `${currentColor}40`, boxShadow: `0 0 100px ${currentColor}10` }}
+    >
+      {glitchActive && (
+        <div className="absolute inset-0 bg-cyan-500/10 mix-blend-overlay z-50 pointer-events-none animate-pulse" />
+      )}
       
-      {/* Terminal Header */}
       <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/5">
         <div className="flex items-center gap-3">
           <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: currentColor }} />
@@ -236,7 +335,6 @@ export const SpectacularTerminal: React.FC = () => {
         </div>
       </div>
 
-      {/* Output */}
       <div ref={terminalRef} className="flex-1 overflow-y-auto p-8 font-mono space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         <AnimatePresence>
           {lines.map((line) => (
@@ -267,7 +365,6 @@ export const SpectacularTerminal: React.FC = () => {
         )}
       </div>
 
-      {/* Input */}
       <form onSubmit={(e) => { e.preventDefault(); handleCommand(inputValue); }}
             className="p-6 border-t border-white/10 bg-white/5 flex items-center gap-4">
         <span className="text-xl font-bold font-mono" style={{ color: currentColor }}>λ</span>
@@ -290,6 +387,6 @@ export const SpectacularTerminal: React.FC = () => {
           <ArrowRight className="w-6 h-6 text-white/20" />
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 };
