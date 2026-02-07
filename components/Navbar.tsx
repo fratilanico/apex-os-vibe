@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+
+// Premium navbar inspired by OpenAI/Apple/Claude
+// Clean, minimal, professional
 
 interface NavbarProps {
   onOpenCurriculum?: () => void;
@@ -10,6 +13,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   
   const navItems = [
     { name: 'Vibe', path: '/vibe' },
@@ -20,69 +24,72 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Track scroll for backdrop effect
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
       <motion.nav
-        aria-label="Primary"
-        initial={{ y: -100, x: '-50%' }}
-        animate={{ y: 0, x: '-50%' }}
-        className="fixed top-8 left-1/2 z-40 px-3 sm:px-6 py-3 rounded-full bg-black/40 border border-white/10 backdrop-blur-2xl flex items-center gap-4 sm:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
+        }`}
       >
-        <Link to="/" className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-white/10 group">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-          <span className="mono text-[10px] font-black tracking-[0.3em] text-white uppercase">Vibe</span>
-        </Link>
-        
-        {/* Desktop navigation */}
-        <div className="hidden sm:flex items-center gap-8">
-          {navItems.map((item) => (
-            <Link 
-              key={item.name} 
-              to={item.path}
-              className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:tracking-[0.3em] ${
-                isActive(item.path) ? 'text-white' : 'text-white/40 hover:text-white'
-              }`}
-            >
-              {item.name}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
+                <span className="text-white text-xs font-black">A</span>
+              </div>
+              <span className="text-sm font-semibold text-white tracking-tight">APEX OS</span>
             </Link>
-          ))}
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(item.path)
+                      ? 'text-white bg-white/10'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop CTA */}
+            <div className="hidden md:flex items-center gap-3">
+              <Link
+                to="/pricing"
+                className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+              >
+                Get Started
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-
-        {/* Mobile hamburger button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="sm:hidden p-2 text-white/60 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-
-        {/* Desktop Enroll button */}
-        <Link to="/pricing" className="relative group hidden sm:block">
-          <motion.div
-            className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 opacity-75 blur-md group-hover:opacity-100 transition-opacity"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.5, 0.8, 0.5],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.button 
-            whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(6, 182, 212, 0.6), 0 0 80px rgba(139, 92, 246, 0.4)' }}
-            whileTap={{ scale: 0.95 }}
-            className="relative px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
-          >
-            Enroll Now
-          </motion.button>
-        </Link>
       </motion.nav>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -90,25 +97,24 @@ export const Navbar: React.FC<NavbarProps> = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 sm:hidden"
               onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             />
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed top-24 left-4 right-4 z-40 sm:hidden bg-black/95 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-2xl"
+              className="fixed top-16 left-0 right-0 z-50 md:hidden bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl"
             >
-              <div className="flex flex-col gap-2">
+              <div className="max-w-7xl mx-auto px-4 py-6 space-y-1">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`text-base font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all min-h-[48px] flex items-center ${
-                      isActive(item.path) 
-                        ? 'text-cyan-400 bg-cyan-500/10' 
+                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(item.path)
+                        ? 'text-white bg-white/10'
                         : 'text-white/60 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -118,9 +124,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   to="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="mt-4 px-6 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold uppercase tracking-wider text-center min-h-[48px] flex items-center justify-center shadow-lg shadow-cyan-500/30"
+                  className="block mt-4 px-4 py-3 rounded-lg bg-white text-black text-sm font-semibold text-center"
                 >
-                  Enroll Now
+                  Get Started
                 </Link>
               </div>
             </motion.div>
