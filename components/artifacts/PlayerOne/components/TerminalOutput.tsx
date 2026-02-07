@@ -4,7 +4,6 @@ import { forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import type { ApexTerminalLine } from '@/lib/terminal/types';
-import { NeuralPixelBranding } from './NeuralPixelBranding';
 
 interface TerminalOutputProps {
   lines: ApexTerminalLine[];
@@ -49,7 +48,9 @@ export const TerminalOutput = forwardRef<HTMLDivElement, TerminalOutputProps>(
               className={getLineStyles(line.type)}
             >
               {line.type === 'branding' ? (
-                <NeuralPixelBranding isAuthorized={true} />
+                <pre className="text-xs leading-tight">
+                  {typeof line.content === 'string' ? line.content : ''}
+                </pre>
               ) : (
                 <span className="text-sm leading-relaxed">
                   {typeof line.content === 'string' ? line.content : line.content}

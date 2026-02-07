@@ -83,8 +83,8 @@ export const TerminalInput = forwardRef<HTMLInputElement, TerminalInputProps>(
 
     return (
       <div className={`relative ${className}`}>
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
-        <div className="relative flex items-center gap-3 bg-zinc-900/80 border border-white/10 rounded-xl px-4 py-2 focus-within:border-cyan-500/50 shadow-2xl transition-all h-10">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 rounded-lg blur opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+        <div className="relative flex items-center gap-2 bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-1.5 focus-within:border-cyan-500/50 shadow-2xl transition-all h-9">
           <span className="text-cyan-400 font-mono text-xs font-black animate-pulse shrink-0">λ</span>
           <input
             ref={ref}
@@ -93,24 +93,18 @@ export const TerminalInput = forwardRef<HTMLInputElement, TerminalInputProps>(
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isProcessing || !isAuthorized}
-            placeholder={isAuthorized ? 'Neural Link Active...' : 'Initializing...'}
-            className="flex-1 bg-transparent text-white font-mono text-sm placeholder:text-zinc-700 focus:outline-none disabled:opacity-50 min-w-0"
+            placeholder={isAuthorized ? 'Type command...' : 'Initializing...'}
+            className="flex-1 bg-transparent text-white font-mono text-sm placeholder:text-zinc-600 focus:outline-none disabled:opacity-50 min-w-0"
             spellCheck={false}
             autoComplete="off"
             autoCapitalize="off"
             autoFocus
           />
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {isProcessing ? (
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
-                <span className="text-[8px] font-mono text-amber-500/60 uppercase tracking-widest hidden sm:block font-black">Processing</span>
-              </div>
+              <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full" />
-                <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest hidden sm:block font-black">Sovereign</span>
-              </div>
+              <div className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full" />
             )}
           </div>
         </div>

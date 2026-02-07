@@ -1,29 +1,30 @@
-'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import * as CLIFormatter from '@/lib/cliFormatter';
+import { InlineRenderer } from '@/components/ui/Terminal/InlineRenderer';
 
-// Basic type for a terminal line
 interface TerminalLine {
   text: string;
-  type?: 'input' | 'output' | 'error' | 'system' | 'success';
+  type?: 'input' | 'output' | 'error' | 'system' | 'glitch' | 'matrix' | 'success';
 }
+
+const COLOR_CYCLE = ['#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
 
 const BOOT_SEQUENCE = [
   { text: '> initializing APEX_OS kernel...', delay: 100, type: 'system' as const },
   { text: '> loading Module 00 curriculum...', delay: 300, type: 'system' as const },
-  { text: '> connecting to Vertex AI...', delay: 500, type: 'system' as const },
+  { text: '> connecting to APEX OS...', delay: 500, type: 'system' as const },
   { text: '[OK] system ready', delay: 900, type: 'success' as const },
 ];
 
 export const WaitlistV2: React.FC = () => {
-  const [lines, setLines] = useState<TerminalLine[]>([]);
-  const [input, setInput] = useState('');
-  const [email, setEmail] = useState('');
-  const [isEmailSubmitted, setIsEmailSubmitted] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  // Removed: const [showIgnition, setShowIgnition] = useState(true);
   const [booted, setBooted] = useState(false);
   const [bootLine, setBootLine] = useState(0);
-
+  const [colorIndex, setColorIndex] = useState(0);
+  const [lines, setLines] = useState<TerminalLine[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,125 +32,115 @@ export const WaitlistV2: React.FC = () => {
     setLines(prev => [...prev, { text, type }].slice(-100));
   }, []);
 
-  // Boot sequence effect
   useEffect(() => {
-    if (booted) return;
-    const line = BOOT_SEQUENCE[bootLine];
-    if (!line) {
-      setBooted(true);
-      return;
-    }
-    const timer = setTimeout(() => {
-      addLine(line.text, line.type);
-      setBootLine(p => p + 1);
-      if (bootLine === BOOT_SEQUENCE.length - 1) {
-        setBooted(true);
-        addLine('Please enter your email to join the waitlist:', 'system');
-      }
-    }, line.delay);
-    return () => clearTimeout(timer);
-  }, [bootLine, booted, addLine]);
+    // Removed: if (showIgnition) return;
 
-  // Auto-scroll to bottom
+    let timer: NodeJS.Timeout | undefined;
+    if (bootLine < BOOT_SEQUENCE.length) {
+      const line = BOOT_SEQUENCE[bootLine];
+      timer = setTimeout(() => {
+        setBootLine(prev => prev + 1);
+        if (line && line.text) addLine(line.text, line.type);
+        if (bootLine === BOOT_SEQUENCE.length - 1) setBooted(true);
+      }, line?.delay || 100);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [bootLine, addLine]); // Removed showIgnition from dependencies
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (booted) {
+      interval = setInterval(() => {
+        setColorIndex(p => (p + 1) % COLOR_CYCLE.length);
+      }, 5000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [booted]);
+
   useEffect(() => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [lines]);
 
-  const handleCommand = async (command: string) => {
-    if (!isEmailSubmitted) {
-        // Simple email validation
-        if (!/\S+@\S+\.\S+/.test(command)) {
-            addLine('Invalid email format. Please try again.', 'error');
-            return;
-        }
-        setEmail(command);
-        setIsEmailSubmitted(true);
-        setInput('');
-        addLine(`> Email registered: ${command}`, 'success');
-        addLine('You can now use the terminal. Type `help` for commands.', 'system');
-        return;
+  const handleCommand = async (raw: string) => {
+    const cmd = raw.trim();
+    if (!cmd) return;
+    addLine(`> ${cmd}`, 'input');
+    setInput('');
+
+    if (cmd.toLowerCase() === 'help') {
+      addLine('[h1]AVAILABLE COMMANDS[/h1]', 'system');
+      addLine('  [b]info[/b]     - Product details', 'system');
+      addLine('  [b]clear[/b]    - Clear screen', 'system');
+      return;
     }
 
-    const trimmed = command.trim();
-    if (!trimmed) return;
+    if (cmd.toLowerCase() === 'clear') {
+      setLines([]);
+      return;
+    }
 
-    addLine(`> ${trimmed}`, 'input');
-    setInput('');
-    setIsProcessing(true);
-
+    setLoading(true);
     try {
-      // API call will be added here later
-      const response = await fetch('/api/waitlist-notify', {
+      const response = await fetch('/api/ai-unified', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, name: 'Waitlist User', command: trimmed }),
+        body: JSON.stringify({ message: cmd, history: [] }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'API request failed');
-      }
-
-      // For now, just echo
-      await new Promise(res => setTimeout(res, 1000));
-      addLine(`Echo: ${trimmed}`);
-    } catch (error) {
-      addLine(`Error: ${(error as Error).message}`, 'error');
+      const data = await response.json();
+      const content = data?.content || '';
+      const formatted = CLIFormatter.convertMarkdownToCLI(content);
+      formatted.split('\n').forEach((line) => addLine(line, 'output'));
+    } catch (error: any) {
+      addLine(`AI Error: ${error.message}`, 'error');
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="flex h-screen w-screen bg-black text-white font-mono">
-      {/* Left Panel (25%) */}
-      <div className="w-1/4 h-full p-4 flex flex-col space-y-4 border-r border-gray-700">
-        <div className="flex-1 border border-dashed border-gray-600 p-2">Left Top (Typewriter, CTA)</div>
-        <div className="flex-1 border border-dashed border-gray-600 p-2">Left Bottom (Cool Widget)</div>
-      </div>
+  const currentColor = COLOR_CYCLE[colorIndex] || COLOR_CYCLE[0];
 
-      {/* Right Panels (75%) */}
-      <div className="w-3/4 h-full flex flex-col">
-        <div className="flex-1 p-4 overflow-y-auto" ref={terminalRef}>
-            {/* APEX OS ASCII LOGO */}
-            <pre className="text-cyan-400 text-center text-sm">
-                {
-`
-    /\\\\\\\\\\\\\\\_ /\\\\\\\\\\\\\\\\\\_        /\\\\\\\\\\\\\\\_        /\\\\\\\\\_        
-     /\\\//////////__//\\\///////////__       /\\\///////////__      /\\\///////\\\_       
-      /\\\      /\\\/      /\\\      /\\\      /\\\      /\\\_     /\\\______/\\\_      
-       /\\\\\\\\\\\/ /\\\      /\\\      /\\\      /\\\      /\\\\\\\\\\\/ /\\\      
-        /\\\/////////  /\\\      /\\\      /\\\      /\\\      /\\\///////////  /\\\      
-         /\\\    /\\\/ /\\\      /\\\      /\\\      /\\\      /\\\      /\\\      
-          /\\\    /\\\/ /\\\\\\\\\\\\\\\/       /\\\\\\\\\\\\\\\/ /\\\      /\\\      
-           \///     \///  \/////////////         \/////////////  \///       \///      
-`                
-                }
-            </pre>
+  return (
+    <div className="relative min-h-screen bg-black overflow-hidden flex flex-col p-4">
+      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
+        <div 
+          className="flex-1 bg-black/90 border-2 rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+          style={{ borderColor: `${currentColor}30` }}
+        >
+          <div className="px-6 py-6 border-b border-white/10 bg-white/5 flex items-center justify-center">
+            <h1 className="text-cyan-400 font-bold text-xl font-mono">APEX OS</h1>
+          </div>
+          
+          <div ref={terminalRef} className="flex-1 overflow-y-auto p-6 font-mono space-y-2">
             {lines.map((line, i) => (
-                <div key={i} className={`whitespace-pre-wrap ${line.type === 'error' ? 'text-red-500' : line.type === 'success' ? 'text-green-500' : 'text-cyan-400'}`}>
-                    {line.text}
-                </div>
+              <div key={i} className="whitespace-pre-wrap text-white/80">
+                <InlineRenderer text={line.text} />
+              </div>
             ))}
-        </div>
-        <div className="h-1/3 p-4 flex space-x-4 border-t border-gray-700">
-            <div className="flex-1 border border-dashed border-gray-600 p-2">Bottom Right (Modules)</div>
-            <div className="w-1/3 border border-dashed border-gray-600 p-2">
-                 <form onSubmit={(e) => { e.preventDefault(); handleCommand(input); }} className="h-full">
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        className="w-full h-full bg-transparent focus:outline-none"
-                        placeholder={!booted ? 'Initializing...' : isEmailSubmitted ? 'Type command...' : 'Enter your email...'}
-                        disabled={isProcessing || !booted}
-                        autoFocus
-                    />
-                </form>
-            </div>
+            {loading && <div className="text-cyan-400 animate-pulse uppercase text-xs tracking-widest font-black">Orchestrating...</div>}
+          </div>
+
+          <form 
+            onSubmit={(e) => { e.preventDefault(); if (input.trim() && !loading) handleCommand(input); }}
+            className="px-6 py-4 border-t border-white/10 flex items-center gap-3 bg-white/5"
+          >
+            <span style={{ color: currentColor }} className="font-mono font-bold text-lg leading-none">λ</span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="flex-1 bg-transparent outline-none text-white font-mono text-sm sm:text-base"
+              placeholder={booted ? "Type command..." : "Initializing..."}
+              disabled={loading || !booted}
+              autoFocus
+            />
+          </form>
         </div>
       </div>
     </div>

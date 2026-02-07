@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { FinancialTrajectoryChart } from '../charts/FinancialTrajectoryChart';
 import { UnitEconomicsChart } from '../charts/UnitEconomicsChart';
+import { FinancialBrain } from '../FinancialBrain';
 import { monthlyProjections, keyMilestones } from '../../../data/financialModel';
 
 // Format helpers
@@ -66,13 +67,13 @@ const PremiumMetricCard: React.FC<PremiumMetricCardProps> = ({
     >
       {/* Glow effect on hover */}
       <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 
-                      bg-gradient-to-br from-${color}-500/5 to-transparent`} />
+                      bg-gradient-to-br from-${String(color)}-500/5 to-transparent`} />
 
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className={`w-10 h-10 rounded-xl ${colorClasses[color]} 
                           flex items-center justify-center border`}>
-            <Icon className="w-5 h-5" />
+            {React.createElement(Icon as any, { className: "w-5 h-5" })}
           </div>
           
           {trend && (
@@ -200,8 +201,18 @@ const MilestoneTimeline: React.FC = () => {
 export const DashboardTab: React.FC = () => {
   // Get latest data
   const latestData = monthlyProjections[monthlyProjections.length - 1];
-  const month12Data = monthlyProjections.find(m => m.month === 12);
-  const month6Data = monthlyProjections.find(m => m.month === 6);
+  
+  if (!latestData) {
+    return (
+      <div className="flex items-center justify-center h-64 text-white/40 font-mono">
+        [ERROR: NO_PROJECTION_DATA_FOUND]
+      </div>
+    );
+  }
+
+  // month12Data and month6Data are used for historical comparison in larger views
+  // const month12Data = monthlyProjections.find(m => m.month === 12);
+  // const month6Data = monthlyProjections.find(m => m.month === 6);
 
   // Calculate runway
   const runwayMonths = Math.floor(latestData.cumulativeCash / Math.abs(latestData.netCashFlow));
@@ -282,6 +293,15 @@ export const DashboardTab: React.FC = () => {
           <MilestoneTimeline />
         </div>
       </div>
+
+      {/* Financial Brain - Interactive Sliders */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <FinancialBrain />
+      </motion.div>
 
       {/* Unit Economics */}
       <motion.div

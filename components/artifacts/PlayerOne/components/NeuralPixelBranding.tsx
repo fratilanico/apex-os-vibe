@@ -38,14 +38,14 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
           className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none"
           style={{ willChange: 'transform, opacity' }}
           animate={{
-            x: [-3, 3, -2, 2, -3, 1, -1, 0, -3],
-            y: [-1, 1, 0, -1, 1, 0, -1, 0, -1],
-            opacity: [0.7, 0.9, 0.5, 0.8, 0.6, 0.9, 0.5, 0.7, 0.7],
+            x: [-1, 1, -1, 1, 0],
+            y: [0, 1, 0, -1, 0],
+            opacity: [0.6, 0.8, 0.6, 0.8, 0.6],
           }}
           transition={{
-            duration: 0.08,
+            duration: 0.8,
             repeat: Infinity,
-            ease: "linear",
+            ease: 'easeInOut',
           }}
         >
           {APEX_LOGO_ASCII}
@@ -56,14 +56,14 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
           className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none"
           style={{ willChange: 'transform, opacity' }}
           animate={{
-            x: [3, -3, 2, -2, 3, -1, 1, 0, 3],
-            y: [1, -1, 0, 1, -1, 0, 1, 0, 1],
-            opacity: [0.7, 0.5, 0.9, 0.6, 0.8, 0.5, 0.9, 0.7, 0.7],
+            x: [1, -1, 1, -1, 0],
+            y: [0, -1, 0, 1, 0],
+            opacity: [0.6, 0.7, 0.6, 0.7, 0.6],
           }}
           transition={{
-            duration: 0.06,
+            duration: 0.9,
             repeat: Infinity,
-            ease: "linear",
+            ease: 'easeInOut',
           }}
         >
           {APEX_LOGO_ASCII}
@@ -74,14 +74,14 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
           className="text-white/95 relative z-10"
           style={{ willChange: 'transform, opacity' }}
           animate={{
-            x: [0, 1, -1, 0, 0, 1, 0, -1, 0],
-            y: [0, -1, 1, 0, 0, -1, 0, 1, 0],
-            opacity: [1, 0.95, 1, 0.9, 1, 0.95, 1, 0.9, 1],
+            x: [0, 0.5, -0.5, 0],
+            y: [0, -0.5, 0.5, 0],
+            opacity: [1, 0.97, 1, 0.97],
           }}
           transition={{
-            duration: 0.05,
+            duration: 1.6,
             repeat: Infinity,
-            ease: "linear",
+            ease: 'easeInOut',
           }}
         >
           {APEX_LOGO_ASCII}

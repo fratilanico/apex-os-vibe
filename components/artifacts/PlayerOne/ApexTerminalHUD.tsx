@@ -21,8 +21,6 @@ import type { ApexTerminalLine } from '@/lib/terminal/types';
 import { TerminalHeader } from './components/TerminalHeader';
 import { TerminalOutput } from './components/TerminalOutput';
 import { TerminalInput } from './components/TerminalInput';
-import { NeuralBoard } from './components/NeuralBoard';
-import { NeuralPixelBranding } from './components/NeuralPixelBranding';
 import { ProviderBadge } from '@/components/ai/ProviderBadge';
 import { queryAI, type AIResponse } from '@/lib/ai/globalAIService';
 import { TERMINAL_SYSTEM_PROMPT } from '@/lib/ai/prompts/terminal';
@@ -322,7 +320,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
     const boot = async () => {
       setIsBooting(true);
       await new Promise(resolve => setTimeout(resolve, 300));
-      addLine('branding', <NeuralPixelBranding isAuthorized={isAuthorized} />);
+      addLine('branding', `${APEX_LOGO_ASCII}\n${PLAYER_ONE_ASCII}`);
       setIsBooting(false);
     };
     boot();
@@ -347,7 +345,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   return (
     <div
       ref={terminalRef}
-      className={`flex-1 flex flex-col bg-zinc-950 rounded-2xl border border-cyan-500/10 overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
+      className={`flex-1 flex flex-col bg-zinc-950 rounded-none sm:rounded-2xl border-0 sm:border sm:border-cyan-500/10 overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
       onClick={() => inputRef.current?.focus()}
       style={{ touchAction: 'manipulation' }}
     >
@@ -368,28 +366,20 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         isProcessing={isProcessing}
       />
 
-      <div className="p-4 flex flex-col md:flex-row items-center gap-4 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 relative shrink-0">
-        <div className="shrink-0">
-          <NeuralBoard isAuthorized={isAuthorized} className="hidden md:block" />
-          <div className="md:hidden w-full flex justify-center mb-2">
-             <NeuralBoard isAuthorized={isAuthorized} className="scale-75 origin-top" />
-          </div>
-        </div>
-        
-        <div className="flex-1 w-full">
-          <TerminalInput
-            ref={inputRef}
-            input={input}
-            setInput={setInput}
-            isProcessing={isProcessing}
-            isAuthorized={isAuthorized}
-            commandHistory={commandHistory}
-            historyIndex={historyIndex}
-            setHistoryIndex={setHistoryIndex}
-            processCommand={processCommand}
-            addLine={addLine}
-          />
-        </div>
+      {/* Input area - minimal, no NeuralBoard */}
+      <div className="p-2 sm:p-3 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 relative shrink-0">
+        <TerminalInput
+          ref={inputRef}
+          input={input}
+          setInput={setInput}
+          isProcessing={isProcessing}
+          isAuthorized={isAuthorized}
+          commandHistory={commandHistory}
+          historyIndex={historyIndex}
+          setHistoryIndex={setHistoryIndex}
+          processCommand={processCommand}
+          addLine={addLine}
+        />
       </div>
     </div>
   );

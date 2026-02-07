@@ -72,3 +72,5 @@ __mocks__/
 
 # OpenCode / Cursor snapshots
 .opencode/
+.vercel
+.env*.local

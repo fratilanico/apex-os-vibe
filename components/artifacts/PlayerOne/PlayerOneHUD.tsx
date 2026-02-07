@@ -377,18 +377,18 @@ export const PlayerOneHUD: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Emergency Close Button - Always visible when HUD is open */}
+      {/* Close Button - aligned with HUD design language */}
       <AnimatePresence>
         {isOpen && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             onClick={() => setIsOpen(false)}
-            className="fixed right-4 top-4 z-[10001] flex h-12 w-12 items-center justify-center rounded-full bg-red-500/80 text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-red-500"
-            aria-label="Emergency close"
+            className="fixed right-4 top-4 z-[10001] flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 border border-white/10 text-white/60 shadow-lg backdrop-blur-sm transition-all hover:text-cyan-400 hover:border-cyan-400/50 hover:scale-105"
+            aria-label="Close HUD"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </motion.button>
         )}
       </AnimatePresence>

@@ -27,12 +27,13 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  type LucideIcon,
 } from 'lucide-react';
 import { useAgentSwarm } from '../../hooks/useAgentSwarm';
 import type { Agent, AgentTask } from '../../types/swarm';
 
 // Agent Icon Mapping
-const AGENT_ICONS: Record<string, React.ElementType> = {
+const AGENT_ICONS: Record<string, LucideIcon> = {
   orchestrator: Radio,
   'deployment-automation': Server,
   'security-monitor': Shield,
@@ -121,7 +122,7 @@ const AgentCard: React.FC<{
   onInvoke: (agentId: string) => void;
   isInvoking: boolean;
 }> = ({ agent, onInvoke, isInvoking }) => {
-  const Icon = AGENT_ICONS[agent.id] || Bot;
+  const Icon = (AGENT_ICONS[agent.id] || Bot) as any;
   
   return (
     <motion.div
@@ -140,12 +141,12 @@ const AgentCard: React.FC<{
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-            ${agent.type === 'orchestrator' ? 'bg-cyan-500/20 text-cyan-400' :
-              agent.type === 'devops' ? 'bg-violet-500/20 text-violet-400' :
-              agent.type === 'curriculum' ? 'bg-emerald-500/20 text-emerald-400' :
+            ${(agent.type as string) === 'orchestrator' ? 'bg-cyan-500/20 text-cyan-400' :
+              (agent.type as string) === 'devops' ? 'bg-violet-500/20 text-violet-400' :
+              (agent.type as string) === 'curriculum' ? 'bg-emerald-500/20 text-emerald-400' :
               'bg-white/10 text-white/60'}`}
           >
-            <Icon className="w-5 h-5" />
+            {React.createElement(Icon as any, { className: "w-5 h-5" })}
           </div>
           <div>
             <h3 className="font-bold text-sm text-white">{agent.name}</h3>
@@ -369,7 +370,7 @@ export const AgentStatusDashboard: React.FC = () => {
                   <Radio className="w-4 h-4 text-cyan-400" />
                   <h2 className="text-sm font-bold text-white/80">Orchestrator</h2>
                   <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 text-[10px]">
-                    {orchestratorAgents.filter(a => a.status === 'online').length} online
+                    {orchestratorAgents.filter(a => (a.status as string) === 'online' || (a.status as string) === 'active').length} online
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
