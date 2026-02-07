@@ -1,0 +1,211 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-02-04",
+  "sources": {
+    "rss": {
+      "marketing": [
+        {
+          "id": "hubspot-marketing",
+          "name": "HubSpot Marketing",
+          "url": "https://blog.hubspot.com/marketing/rss.xml",
+          "category": "marketing",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "copyblogger",
+          "name": "Copyblogger",
+          "url": "https://www.copyblogger.com/feed/",
+          "category": "copywriting",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "mailchimp",
+          "name": "Mailchimp",
+          "url": "https://mailchimp.com/resources/feed/",
+          "category": "email-marketing",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "activecampaign",
+          "name": "ActiveCampaign",
+          "url": "https://www.activecampaign.com/blog/feed/",
+          "category": "automation",
+          "priority": "medium",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "convertkit",
+          "name": "ConvertKit",
+          "url": "https://convertkit.com/feed",
+          "category": "email-marketing",
+          "priority": "medium",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "neil-patel",
+          "name": "Neil Patel",
+          "url": "https://neilpatel.com/blog/feed/",
+          "category": "marketing",
+          "priority": "medium",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "backlinko",
+          "name": "Backlinko",
+          "url": "https://backlinko.com/feed",
+          "category": "seo",
+          "priority": "medium",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "marketing-profs",
+          "name": "MarketingProfs",
+          "url": "https://www.marketingprofs.com/feed",
+          "category": "marketing",
+          "priority": "low",
+          "status": "active",
+          "lastFetch": null
+        }
+      ],
+      "tech": [
+        {
+          "id": "hacker-news",
+          "name": "Hacker News",
+          "url": "https://news.ycombinator.com/rss",
+          "category": "tech",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "dev-to",
+          "name": "Dev.to",
+          "url": "https://dev.to/feed",
+          "category": "tech",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "product-hunt",
+          "name": "Product Hunt",
+          "url": "https://www.producthunt.com/feed",
+          "category": "tech",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "indie-hackers",
+          "name": "Indie Hackers",
+          "url": "https://www.indiehackers.com/feed",
+          "category": "tech",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null
+        },
+        {
+          "id": "github-trending",
+          "name": "GitHub Trending",
+          "url": "https://github.com/trending/javascript",
+          "category": "tech",
+          "priority": "medium",
+          "status": "active",
+          "lastFetch": null
+        }
+      ],
+      "business": [
+        {
+          "id": "saas-scout",
+          "name": "SaaS Scout Intelligence",
+          "url": "internal://saas-scout/reports",
+          "category": "business",
+          "priority": "high",
+          "status": "active",
+          "lastFetch": null,
+          "internal": true
+        }
+      ]
+    },
+    "social": {
+      "x": {
+        "accounts": [
+          "@naval",
+          "@paulg",
+          "@shreyas",
+          "@jasonfried",
+          "@dhh",
+          "@sama",
+          "@elonmusk",
+          "@patrickc",
+          "@tobi",
+          "@stewart"
+        ],
+        "hashtags": [
+          "#marketing",
+          "#copywriting",
+          "#emailmarketing",
+          "#saas",
+          "#startup",
+          "#growth"
+        ]
+      },
+      "linkedin": {
+        "influencers": [
+          "https://www.linkedin.com/in/sethgodin/",
+          "https://www.linkedin.com/in/annhandley/",
+          "https://www.linkedin.com/in/joepulizzi/",
+          "https://www.linkedin.com/in/michaelbrenner/"
+        ],
+        "companies": [
+          "HubSpot",
+          "Mailchimp",
+          "ActiveCampaign",
+          "ConvertKit"
+        ]
+      },
+      "reddit": {
+        "subreddits": [
+          "r/marketing",
+          "r/copywriting",
+          "r/emailmarketing",
+          "r/growthhacking",
+          "r/saas",
+          "r/entrepreneur",
+          "r/startups",
+          "r/webdev"
+        ]
+      }
+    }
+  },
+  "schedule": {
+    "rss": {
+      "frequency": "daily",
+      "time": "06:00",
+      "timezone": "UTC"
+    },
+    "social": {
+      "frequency": "every-3-days",
+      "time": "09:00",
+      "timezone": "UTC"
+    }
+  },
+  "processing": {
+    "aiAnalysis": true,
+    "extractPrinciples": true,
+    "generateSummaries": true,
+    "storeInKnowledgeBase": true,
+    "sentimentAnalysis": true,
+    "trendDetection": true
+  }
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX OS // 6‑Page Deck (Variant A)</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    :root { --bg:#030305; --cyan:#22d3ee; --emerald:#10b981; --violet:#8b5cf6; --amber:#f59e0b; --text:#fff; --muted:rgba(255,255,255,.65); --border:rgba(255,255,255,.08);} 
+    *{margin:0;padding:0;box-sizing:border-box;} body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .page{width:210mm;height:297mm;padding:20mm;position:relative;overflow:hidden;} .grid{position:absolute;inset:0;background-image:linear-gradient(var(--border)1px,transparent 1px),linear-gradient(90deg,var(--border)1px,transparent 1px);background-size:40px 40px;opacity:.12;} .content{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;}
+    .logo{font-size:38pt;font-weight:900;color:var(--cyan);text-align:center;margin-bottom:10pt;} h1{font-size:26pt;line-height:1.05;margin-bottom:10pt;} h2{font-size:14pt;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6pt;} p{font-size:10.5pt;color:var(--muted);line-height:1.6;margin-bottom:10pt;}
+    .card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:14pt;} .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10pt;margin-top:8pt;} .stat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10pt;text-align:center;} .stat .v{font-size:18pt;font-weight:900;color:var(--cyan);} .stat .l{font-size:7pt;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);} .split{display:grid;grid-template-columns:1fr 1fr;gap:12pt;}
+    table{width:100%;border-collapse:collapse;font-size:9pt;margin-top:8pt;} th{font-size:7pt;letter-spacing:.1em;text-transform:uppercase;color:var(--cyan);text-align:left;padding:6pt;border-bottom:1px solid var(--border);} td{padding:6pt;border-bottom:1px solid var(--border);color:var(--muted);} tr.highlight{background:rgba(16,185,129,.12);} tr.highlight td{color:var(--emerald);font-weight:700;}
+    .footer{margin-top:auto;border-top:1px solid var(--border);padding-top:8pt;display:flex;justify-content:space-between;font-size:7pt;color:var(--muted);font-family:JetBrains Mono,monospace;}
+  </style>
+</head>
+<body>
+  <!-- Page 1: Narrative -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <div class="logo">APEX OS</div>
+    <h1>We industrialize founder creation.</h1>
+    <p>AI has crossed the threshold from assistance to execution. Speed is now the advantage. We empower builders to become founders using a continuously updated, AI‑native system.</p>
+    <p><strong>Why now:</strong> agentic technology enables daily iteration. <strong>Why us:</strong> 32,000 proven InfoAcademy customers + trusted B2B relationships. <strong>Why this works:</strong> learn → build → ship → GTM, with equity preserved for founders.</p>
+    <div class="stats"><div class="stat"><div class="v">32K</div><div class="l">Academy Base</div></div><div class="stat"><div class="v">1.4%</div><div class="l">Conversion</div></div><div class="stat"><div class="v">18M</div><div class="l">Horizon</div></div><div class="stat"><div class="v">1,000</div><div class="l">Target</div></div></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 1/6</span></div>
+  </div></div>
+
+  <!-- Page 2: Problem -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <h2>The Problem</h2>
+    <p>Founders burn capital before they learn. Slow development cycles and equity dilution delay market validation.</p>
+    <div class="card"><p>Legacy model: 6–12 months to MVP, $500K+ burn, equity dilution, late GTM.</p></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 2/6</span></div>
+  </div></div>
+
+  <!-- Page 3: Solution -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <h2>The APEX Protocol</h2>
+    <p>AI‑native orchestration replaces the dev tax and delivers production outcomes on a 30‑day cadence.</p>
+    <div class="card"><p>System: learn → build → ship → GTM. 17‑agent swarm. Equity preserved for builders.</p></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 3/6</span></div>
+  </div></div>
+
+  <!-- Page 4: Partnerships -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <h2>Distribution & Partners</h2>
+    <p>InfoAcademy base is real and paid. Serbia partner extends reach. Orange Romania B2B discussions underway.</p>
+    <div class="card"><p>We show only academy numbers. Accelerator projections are intentionally excluded.</p></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 4/6</span></div>
+  </div></div>
+
+  <!-- Page 5: Numbers -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <h2>Numbers (Conservative)</h2>
+    <table><thead><tr><th>Phase</th><th>Timeline</th><th>Customers</th><th>MRR</th><th>ARR</th></tr></thead><tbody>
+      <tr><td>Validation</td><td>M3</td><td>100</td><td>$20K</td><td>$240K</td></tr>
+      <tr><td>Product‑Market Fit</td><td>M6</td><td>300</td><td>$60K</td><td>$720K</td></tr>
+      <tr><td>Scale</td><td>M12</td><td>600</td><td>$120K</td><td>$1.44M</td></tr>
+      <tr class="highlight"><td>Series A Ready</td><td>M18</td><td>1,000</td><td>$200K</td><td>$2.4M</td></tr>
+    </tbody></table>
+    <div class="card"><p><strong>ARPU:</strong> $200 • <strong>CAC:</strong> $150 • <strong>LTV:</strong> $2,400 • <strong>LTV:CAC:</strong> 16:1 • <strong>Gross Margin:</strong> 85%</p></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 5/6</span></div>
+  </div></div>
+
+  <!-- Page 6: Ask -->
+  <div class="page"><div class="grid"></div><div class="content">
+    <h2>The Ask</h2>
+    <div class="card"><p><strong>Seed:</strong> $1.2M • <strong>Pre‑money:</strong> $6.8M • <strong>Equity:</strong> 15%</p></div>
+    <div class="card" style="margin-top:10pt;"><p><strong>Milestones:</strong> Waitlist live Friday • Webinar in 2–3 weeks • Cohort selection in 4 weeks.</p></div>
+    <div class="card" style="margin-top:10pt;text-align:center;"><p>Contact: nico.f@infoacademy.net</p></div>
+    <div class="footer"><span>APEX OS // Deck (A)</span><span>Page 6/6</span></div>
+  </div></div>
+</body>
+</html>

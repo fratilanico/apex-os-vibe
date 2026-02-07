@@ -1,0 +1,180 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX OS // EXEC_SUMMARY_v1</title>
+  <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #05060a;
+      --panel: rgba(10, 12, 20, 0.92);
+      --cyan: #22d3ee;
+      --emerald: #10b981;
+      --violet: #a78bfa;
+      --orange: #f59e0b;
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.6);
+      --border: rgba(255,255,255,0.12);
+    }
+
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 18mm 20mm;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 16pt;
+    }
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 36px 36px;
+      opacity: 0.25;
+      z-index: 0;
+    }
+
+    .glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.22;
+      z-index: 0;
+    }
+    .glow.cyan { width: 60%; height: 60%; top: -20%; left: -10%; background: var(--cyan); }
+    .glow.violet { width: 60%; height: 60%; bottom: -25%; right: -15%; background: var(--violet); }
+    .glow.emerald { width: 45%; height: 45%; top: 20%; right: 10%; background: var(--emerald); }
+
+    .content { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 16pt; }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 6pt;
+      margin-bottom: 6pt;
+    }
+    .logo img { width: 70%; max-width: 520px; filter: drop-shadow(0 0 18px rgba(34,211,238,0.45)); }
+
+    .terminal-header {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9pt;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10pt 14pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 { font-size: 28pt; line-height: 1.1; font-weight: 800; }
+    h2 { font-size: 16pt; color: var(--cyan); margin-bottom: 6pt; font-weight: 700; }
+    p { font-size: 11pt; color: var(--muted); line-height: 1.45; }
+
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--cyan);
+      border-radius: 14px;
+      padding: 14pt 16pt;
+    }
+    .section.emerald { border-left-color: var(--emerald); }
+    .section.violet { border-left-color: var(--violet); }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10pt; }
+    .stat { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 10pt; text-align: center; }
+    .stat .value { font-family: 'JetBrains Mono', monospace; font-size: 16pt; font-weight: 800; color: var(--cyan); }
+    .stat .label { font-size: 7pt; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+    .risk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; }
+    .risk-cell { border: 1px solid var(--border); border-radius: 10px; padding: 6pt; font-size: 8pt; color: var(--muted); background: rgba(255,255,255,0.03); }
+    .risk-cell.critical { border-color: #ef4444; color: #fecaca; }
+    .risk-cell.high { border-color: #f59e0b; color: #fde68a; }
+    .risk-cell.med { border-color: #22d3ee; color: #cffafe; }
+
+    .footnote { font-size: 7pt; color: rgba(255,255,255,0.45); line-height: 1.4; }
+    .two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14pt; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="grid"></div>
+    <div class="glow cyan"></div>
+    <div class="glow violet"></div>
+    <div class="glow emerald"></div>
+
+    <div class="content">
+      <div class="logo">
+        <img src="assets/apex-logo-cyan.svg" alt="APEX OS" />
+      </div>
+
+      <div class="terminal-header">
+        <span>EXEC_SUMMARY // STRATEGIC_ADVISOR_BRIEF</span>
+        <span>APEX OS · 2026</span>
+      </div>
+
+      <div class="section">
+        <h1>The Terminal‑Native Inflection Point</h1>
+        <p>AI is no longer a chatbot layer. It’s the orchestration layer. Claude Code already authors ~4% of public GitHub commits and is on track to exceed 20% by the end of 2026. This is the quiet inflection point: the command line becomes the control surface for outcomes, not syntax.</p>
+        <div class="stats">
+          <div class="stat"><div class="value">4%</div><div class="label">GitHub commits</div></div>
+          <div class="stat"><div class="value">20%+</div><div class="label">2026 projection</div></div>
+          <div class="stat"><div class="value">4–7 mo</div><div class="label">Task horizon doubling</div></div>
+          <div class="stat"><div class="value">$15T</div><div class="label">Info‑work TAM</div></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="section emerald">
+          <h2>APEX OS Advantage</h2>
+          <p>APEX OS is a terminal‑native accelerator that turns solo founders and small teams into multi‑agent execution units. We sell speed, outcome, and control. Module 00 is free to onboard; Modules 01+ are paid and progressively unlock higher‑leverage systems.</p>
+          <p>We’re not teaching prompts — we’re delivering orchestration. The platform is the swarm.</p>
+        </div>
+        <div class="section violet">
+          <h2>Business Model</h2>
+          <p>Academy revenue establishes a SaaS floor; Accelerator equity + B2B licensing expands the ceiling. Distribution starts with a 32k lead list and compounds via partner programs and community loops.</p>
+          <p>Target: $2M ARR within 18 months, with capital deployed to engineering, growth, and accelerator pool.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Smart Risk Matrix (Annex)</h2>
+        <div class="risk-grid">
+          <div class="risk-cell med">Adoption friction</div>
+          <div class="risk-cell high">Provider latency</div>
+          <div class="risk-cell high">Model access</div>
+          <div class="risk-cell med">Regulatory shift</div>
+          <div class="risk-cell med">Competitive response</div>
+          <div class="risk-cell high">GTM execution</div>
+          <div class="risk-cell med">RAG accuracy</div>
+          <div class="risk-cell critical">Capital efficiency</div>
+        </div>
+      </div>
+
+      <div class="footnote">
+        Sources: SemiAnalysis “Claude Code is the Inflection Point” (Feb 2026), METR Task Horizon, StackOverflow Dev Survey 2025, McKinsey & industry TAM research.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX OS // INVESTOR_PROTOCOL_v2.0</title>
+    <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-primary: #030305;
+            --bg-secondary: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --cyan: #22d3ee;
+            --emerald: #10b981;
+            --violet: #a78bfa;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .pagedjs_page {
+            background: var(--bg-primary) !important;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background Effects */
+        .glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.15;
+        }
+
+        .glow-1 { top: -10%; left: -10%; width: 60%; height: 60%; background: var(--cyan); }
+        .glow-2 { bottom: -10%; right: -10%; width: 60%; height: 60%; background: var(--violet); }
+
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Typography */
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-black { font-weight: 900; }
+        .italic { font-style: italic; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-tighter { letter-spacing: -0.05em; }
+        .tracking-widest { letter-spacing: 0.2em; }
+
+        h1 { font-size: 48pt; line-height: 0.9; margin-bottom: 20pt; }
+        h2 { font-size: 32pt; line-height: 1; margin-bottom: 15pt; }
+        h3 { font-size: 20pt; line-height: 1.1; margin-bottom: 10pt; color: var(--cyan); }
+        p { font-size: 12pt; margin-bottom: 10pt; color: var(--text-secondary); }
+
+        /* Components */
+        .terminal-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10pt 15pt;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9pt;
+            color: var(--text-muted);
+            margin-bottom: 25pt;
+            position: relative;
+        }
+
+        .terminal-header::after {
+            content: "● ● ●";
+            position: absolute;
+            right: 15pt;
+            top: 10pt;
+            letter-spacing: 3px;
+        }
+
+        .protocol-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--cyan);
+            border-radius: 12px;
+            padding: 20pt;
+            margin-bottom: 20pt;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .protocol-box::before {
+            content: attr(data-label);
+            position: absolute;
+            top: -8pt;
+            left: 15pt;
+            background: var(--bg-primary);
+            padding: 0 8pt;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: var(--cyan);
+            font-weight: 800;
+        }
+
+        .protocol-box.emerald { border-left-color: var(--emerald); }
+        .protocol-box.emerald::before { color: var(--emerald); }
+        .protocol-box.violet { border-left-color: var(--violet); }
+        .protocol-box.violet::before { color: var(--violet); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15pt;
+            margin-bottom: 25pt;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 15pt;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 24pt;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4pt;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 7pt;
+            font-weight: 900;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20pt;
+            margin-bottom: 25pt;
+        }
+
+        .compare-card {
+            padding: 20pt;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .compare-card.legacy { border-top: 4px solid #ef4444; }
+        .compare-card.apex { border-top: 4px solid var(--emerald); }
+
+        .compare-title {
+            font-size: 10pt;
+            font-weight: 900;
+            margin-bottom: 15pt;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .list-item {
+            display: flex;
+            gap: 10pt;
+            margin-bottom: 8pt;
+            font-size: 10pt;
+            color: var(--text-secondary);
+        }
+
+        .list-bullet { color: var(--cyan); font-weight: 900; }
+
+        .footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 15pt;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: var(--text-muted);
+        }
+
+        .ascii-art {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 6px;
+            line-height: 1;
+            color: var(--cyan);
+            white-space: pre;
+            text-align: center;
+            margin-bottom: 20pt;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20pt;
+        }
+
+        th {
+            text-align: left;
+            padding: 10pt;
+            font-size: 8pt;
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        td {
+            padding: 10pt;
+            font-size: 10pt;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10pt;
+        }
+
+        .tier-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12pt;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tier-name { font-size: 10pt; font-weight: 900; margin-bottom: 5pt; }
+        .tier-price { font-size: 18pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: var(--cyan); }
+
+        /* Phased Plan */
+        .phase-item {
+            display: flex;
+            gap: 20pt;
+            margin-bottom: 15pt;
+            align-items: center;
+        }
+
+        .phase-number {
+            width: 40pt;
+            height: 40pt;
+            border-radius: 12px;
+            background: var(--bg-card);
+            border: 2px solid var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16pt;
+            color: var(--cyan);
+            flex-shrink: 0;
+        }
+
+        .phase-content h4 { font-size: 14pt; font-weight: 900; margin-bottom: 2pt; }
+        .phase-content p { font-size: 9pt; color: var(--text-muted); margin: 0; }
+
+    </style>
+</head>
+<body>
+    <!-- PAGE 1: COVER -->
+    <div class="page">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="terminal-header">
+                user@apex-os:~$ ./initialize_investor_protocol.sh<br>
+                [INIT] Loading 32,000 warm lead vectors... OK<br>
+                [INIT] Synchronizing neural build swarm... OK<br>
+                [STATUS] SEED_ROUND_v2.0_READY
+            </div>
+            
+            <div class="ascii-art">
+ █████╗ ██████╗ ███████╗██╗  ██╗      ██████╗ ███████╗
+██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔═══██╗██╔════╝
+███████║██████╔╝█████╗   ╚███╔╝ █████╗██║   ██║███████╗
+██╔══██║██╔═══╝ ██╔══╝   ██╔██╗ ╚════╝██║   ██║╚════██║
+██║  ██║██║     ███████╗██╔╝ ██╗      ╚██████╔╝███████║
+╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝       ╚═════╝ ╚══════╝</div>
+
+            <h1 class="font-black uppercase italic tracking-tighter text-center">APEX OS</h1>
+            <p class="subtitle font-mono uppercase tracking-widest text-center" style="font-size: 14pt; color: var(--cyan);">
+                $1.2M SEED ROUND // $6.8M PRE // $8M POST
+            </p>
+
+            <div style="margin-top: 40pt; text-align: center;">
+                <div class="protocol-box" data-label="PROTOCOL_ID" style="display: inline-block; width: auto; padding: 15pt 30pt;">
+                    <span class="font-black uppercase italic" style="font-size: 18pt;">The Sovereign Interface</span>
+                </div>
+            </div>
+
+            <div class="stats-grid" style="margin-top: auto;">
+                <div class="stat-card">
+                    <div class="stat-value">32K</div>
+                    <div class="stat-label">WARM LEADS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">18M</div>
+                    <div class="stat-label">TARGET HORIZON</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1000</div>
+                    <div class="stat-label">BUILDER GOAL</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$1.2M</div>
+                    <div class="stat-label">SEED ASK</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_01/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: THE VISION -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">MISSION_MANIFESTO</div>
+            <h2 class="font-black uppercase italic tracking-tighter">Democratizing<br><span class="text-cyan" style="color: var(--cyan);">Human Potential.</span></h2>
+            
+            <div class="protocol-box" data-label="VISION_STATEMENT">
+                <p style="font-size: 16pt; line-height: 1.6; color: var(--text-primary);">
+                    The old world requires $500K and 6 months to build an app. We do it in <strong>30 days for $149/month.</strong>
+                </p>
+            </div>
+
+            <p style="font-size: 14pt;">
+                We are empowering students, employees, and freelancers to become true builders and founders. By repurposing talent and applying an accelerated mindset, we cut the cost of innovation by 1000x.
+            </p>
+
+            <div class="protocol-box emerald" data-label="CORE_VALUES" style="margin-top: 20pt;">
+                <div class="list-item"><span class="list-bullet">▸</span> THE LEARNING: InfoAcademy Curriculum</div>
+                <div class="list-item"><span class="list-bullet">▸</span> THE DOING: Hands-on AI Orchestration</div>
+                <div class="list-item"><span class="list-bullet">▸</span> THE BUILDING: 30-Day Project Sprints</div>
+                <div class="list-item"><span class="list-bullet">▸</span> THE GTM: Integrated Distribution Network</div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_02/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: THE PROBLEM -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">MARKET_INEFFICIENCY</div>
+            <h2 class="font-black uppercase italic tracking-tighter">The Legacy<br><span style="color: #ef4444;">Failure Loop.</span></h2>
+
+            <div class="compare-grid" style="margin-top: 20pt;">
+                <div class="compare-card legacy">
+                    <div class="compare-title">⚠ LEGACY_MODEL</div>
+                    <div class="list-item"><span class="list-bullet">✕</span> CTO Salary: $200K+</div>
+                    <div class="list-item"><span class="list-bullet">✕</span> Dev Team: $600K+</div>
+                    <div class="list-item"><span class="list-bullet">✕</span> 6-12 Months to MVP</div>
+                    <div class="list-item"><span class="list-bullet">✕</span> Slow, Rigid, Expensive</div>
+                    <div class="list-item"><span class="list-bullet">✕</span> 90% Startup Failure Rate</div>
+                </div>
+                <div class="compare-card apex" style="opacity: 0.5;">
+                    <div class="compare-title">▸ APEX_PROTOCOL</div>
+                    <p style="font-size: 9pt; margin-top: 40pt; text-align: center;">UPGRADE REQUIRED TO VIEW SOLUTION</p>
+                </div>
+            </div>
+
+            <div class="protocol-box" data-label="THE_PROBLEM" style="border-left-color: #ef4444;">
+                <p>The barrier to entry for building software is too high. Founders waste capital on expensive development cycles before validating product-market fit. This isn't just inefficient—it's obsolete.</p>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_03/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: THE SOLUTION -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">SYSTEM_UPGRADE</div>
+            <h2 class="font-black uppercase italic tracking-tighter">The APEX<br><span style="color: var(--emerald);">Protocol.</span></h2>
+
+            <div class="compare-grid" style="margin-top: 20pt;">
+                <div class="compare-card legacy" style="opacity: 0.3;">
+                    <div class="compare-title">⚠ LEGACY_MODEL</div>
+                </div>
+                <div class="compare-card apex">
+                    <div class="compare-title">▸ APEX_PROTOCOL</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Subscription: $149 - $589/mo</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> 17 AI Agents as your team</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> 30 Days to Revenue</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Fast Iteration Attitude</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Success-Aligned Equity</div>
+                </div>
+            </div>
+
+            <div class="protocol-box emerald" data-label="TECHNICAL_EDGE">
+                <p>We replace the traditional dev team with an AI-powered orchestration layer. Our builders don't code manually—they orchestrate swarms of specialized agents to deliver production-grade software at 1000x less cost.</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">17</div>
+                    <div class="stat-label">AI AGENTS</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">10D</div>
+                    <div class="stat-label">MVP SPEED</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">GROSS MARGIN</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1000x</div>
+                    <div class="stat-label">COST REDUCTION</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_04/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 5: WHY NOW -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">MARKET_TIMING</div>
+            <h2 class="font-black uppercase italic tracking-tighter">The Perfect<br><span style="color: var(--violet);">Convergence.</span></h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30pt; margin-top: 20pt;">
+                <div>
+                    <h3 style="color: var(--violet);">1. AI Capability</h3>
+                    <p>Large Language Models have reached the "Agentic" stage. They can now reason, code, test, and deploy with minimal human supervision.</p>
+                </div>
+                <div>
+                    <h3 style="color: var(--violet);">2. Builder Desire</h3>
+                    <p>A global shift towards entrepreneurship. Employees and freelancers want to own their output, not just sell their time.</p>
+                </div>
+                <div>
+                    <h3 style="color: var(--violet);">3. Distribution Collapse</h3>
+                    <p>Traditional EdTech is failing. Students want skills that lead to income, not certificates. They want to BUILD.</p>
+                </div>
+                <div>
+                    <h3 style="color: var(--violet);">4. Capital Efficiency</h3>
+                    <p>Investors are moving away from high-burn models. They want sustainable, AI-native businesses with immediate GTM.</p>
+                </div>
+            </div>
+
+            <div class="protocol-box violet" data-label="2024-2025_INFLECTION" style="margin-top: 30pt;">
+                <p style="font-size: 14pt; text-align: center;">The window for AI-native software manufacturing is <strong>WIDE OPEN.</strong></p>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_05/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 6: DISTRIBUTION -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">DISTRIBUTION_ADVANTAGE</div>
+            <h2 class="font-black uppercase italic tracking-tighter">32,000<br><span style="color: var(--cyan);">Proven Buyers.</span></h2>
+
+            <div class="protocol-box" data-label="THE_UNFAIR_ADVANTAGE">
+                <p>We are linked with <strong>InfoAcademy</strong>, the oldest IT academy in Romania. This gives us immediate access to 32,000 paying customers who are already invested in their technical growth.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20pt; margin-top: 10pt;">
+                <div class="stat-card" style="height: auto; justify-content: center; display: flex; flex-direction: column;">
+                    <div class="stat-value" style="font-size: 40pt;">$0</div>
+                    <div class="stat-label">CUSTOMER ACQUISITION COST</div>
+                </div>
+                <div class="protocol-box emerald" data-label="THE_HYPERLOOP">
+                    <div class="list-item"><span class="list-bullet">▸</span> <strong>Academy:</strong> Lead Magnet & Talent Scout</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> <strong>Accelerator:</strong> Building & GTM Engine</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> <strong>Network:</strong> Successful founders mentor new students</div>
+                </div>
+            </div>
+
+            <div class="code-block" style="margin-top: 20pt;">
+                <div class="code-line"><span class="code-comment">// Lead Conversion Pipeline</span></div>
+                <div class="code-line"><span class="code-keyword">const</span> basePool = <span class="code-number">32000</span>;</div>
+                <div class="code-line"><span class="code-keyword">const</span> conservativeConversion = <span class="code-number">0.014</span>; <span class="code-comment">// 1.4%</span></div>
+                <div class="code-line"><span class="code-keyword">const</span> targetCustomers = basePool * conservativeConversion; <span class="code-comment">// 448 initial</span></div>
+                <div class="code-line"><span class="code-keyword">const</span> organicGrowthMultiplier = <span class="code-number">2.2</span>;</div>
+                <div class="code-line"><span class="code-keyword">const</span> totalM18 = <span class="code-number">1000</span>;</div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_06/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 7: THE ACCELERATOR -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">EXECUTION_ENGINE</div>
+            <h2 class="font-black uppercase italic tracking-tighter">Selective<br><span style="color: var(--emerald);">Acceleration.</span></h2>
+
+            <div class="phase-item">
+                <div class="phase-number">01</div>
+                <div class="phase-content">
+                    <h4>Selective Intake</h4>
+                    <p>Top 1% from Academy. Technical assessment & founder commitment.</p>
+                </div>
+            </div>
+            <div class="phase-item">
+                <div class="phase-number">02</div>
+                <div class="phase-content">
+                    <h4>30-Day Build Sprint</h4>
+                    <p>Daily architectural reviews. Agent swarm orchestration. Scale-ready infra.</p>
+                </div>
+            </div>
+            <div class="phase-item">
+                <div class="phase-number">03</div>
+                <div class="phase-content">
+                    <h4>GTM & Demo Day</h4>
+                    <p>100 customer target. Pitch audit. VC & Angel introductions.</p>
+                </div>
+            </div>
+            <div class="phase-item">
+                <div class="phase-number">04</div>
+                <div class="phase-content">
+                    <h4>Post-Launch Care</h4>
+                    <p>2-week hyper-care. Performance monitoring. Series A preparation.</p>
+                </div>
+            </div>
+
+            <div class="protocol-box emerald" data-label="BUILDER_INCENTIVES" style="margin-top: 10pt;">
+                <p>Builders become co-founders of successful projects, unlocking equity from a reserved <strong>5% builder pool.</strong> Teams of max 5 people ensures high individual skin in the game.</p>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_07/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 8: BUSINESS MODEL -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">REVENUE_CAPTURE</div>
+            <h2 class="font-black uppercase italic tracking-tighter">Global Pricing<br><span style="color: var(--cyan);">Architecture.</span></h2>
+
+            <h3 class="font-mono uppercase tracking-widest" style="font-size: 10pt; margin-bottom: 10pt;">REGION: WEST (US/UK/EU)</h3>
+            <div class="tier-grid" style="margin-bottom: 20pt;">
+                <div class="tier-card">
+                    <div class="tier-name">FREE</div>
+                    <div class="tier-price">$0</div>
+                    <p style="font-size: 7pt; margin-top: auto;">Module 0 + Community</p>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-name">ENTRY</div>
+                    <div class="tier-price">$150</div>
+                    <p style="font-size: 7pt; margin-top: auto;">Core Tracks + Support</p>
+                </div>
+                <div class="tier-card" style="border-color: var(--cyan);">
+                    <div class="tier-name">CORE</div>
+                    <div class="tier-price">$270</div>
+                    <p style="font-size: 7pt; margin-top: auto;">Full Curriculum + Live</p>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-name">PRO</div>
+                    <div class="tier-price">$589</div>
+                    <p style="font-size: 7pt; margin-top: auto;">Advanced Agents + Reviews</p>
+                </div>
+                <div class="tier-card" style="border-color: var(--emerald);">
+                    <div class="tier-name">SPRINT</div>
+                    <div class="tier-price">$500</div>
+                    <p style="font-size: 7pt; margin-top: auto;">One-off Accelerator</p>
+                </div>
+            </div>
+
+            <h3 class="font-mono uppercase tracking-widest" style="font-size: 10pt; margin-bottom: 10pt;">REGION: EMERGING (RO/IN/LATAM)</h3>
+            <div class="tier-grid">
+                <div class="tier-card">
+                    <div class="tier-name">FREE</div>
+                    <div class="tier-price">$0</div>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-name">SPRINT</div>
+                    <div class="tier-price">$89</div>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-name">BUILDER</div>
+                    <div class="tier-price">$149</div>
+                </div>
+                <div class="tier-card">
+                    <div class="tier-name">FOUNDER</div>
+                    <div class="tier-price">$249</div>
+                </div>
+                <div class="tier-card" style="border-color: var(--emerald);">
+                    <div class="tier-name">SPRINT</div>
+                    <div class="tier-price">$300</div>
+                </div>
+            </div>
+
+            <div class="protocol-box" data-label="B2B_ADD_ONS" style="margin-top: 20pt;">
+                <div class="list-item"><span class="list-bullet">▸</span> <strong>Team Access:</strong> $500 - $1000+ based on requirements</div>
+                <div class="list-item"><span class="list-bullet">▸</span> <strong>Elite Track:</strong> Dedicated 1-to-1 consultancy (Service model)</div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_08/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 9: FINANCIALS -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">FINANCIAL_TRAJECTORY</div>
+            <h2 class="font-black uppercase italic tracking-tighter">Conservative<br><span style="color: var(--emerald);">Scale.</span></h2>
+
+            <div class="protocol-box emerald" data-label="18-MONTH_FORECAST">
+                <p>Starting with 1.4% conversion of our 32,000 base leads, we reach 1,000 customers in 18 months with a conservative blended ARPU of $200.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>MILESTONE</th>
+                        <th>TIMELINE</th>
+                        <th>CUSTOMERS</th>
+                        <th>MRR (EST)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Beta Launch</td>
+                        <td>Month 3</td>
+                        <td>100</td>
+                        <td>$20,000</td>
+                    </tr>
+                    <tr>
+                        <td>Revenue Proof</td>
+                        <td>Month 6</td>
+                        <td>300</td>
+                        <td>$60,000</td>
+                    </tr>
+                    <tr>
+                        <td>Network Scaling</td>
+                        <td>Month 12</td>
+                        <td>600</td>
+                        <td>$120,000</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>Series A Ready</td>
+                        <td>Month 18</td>
+                        <td>1,000</td>
+                        <td>$200,000</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">$2.4M</div>
+                    <div class="stat-label">ARR TARGET (M18)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">9.8:1</div>
+                    <div class="stat-label">LTV:CAC RATIO</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1.4%</div>
+                    <div class="stat-label">CONV. RATE</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">GROSS MARGIN</div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_09/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 10: EQUITY & ASK -->
+    <div class="page">
+        <div class="grid-overlay"></div>
+        <div class="content">
+            <div class="section-header">CAPITAL_SYNCHRONIZATION</div>
+            <h2 class="font-black uppercase italic tracking-tighter">The $1.2M<br><span style="color: var(--cyan);">Seed Ask.</span></h2>
+
+            <div class="compare-grid" style="margin-top: 10pt;">
+                <div class="compare-card apex" style="border-top-color: var(--violet);">
+                    <div class="compare-title">▸ EQUITY_STRUCTURE</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> APEX OS Core: 70-72%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Seed Investors: 15%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> InfoAcademy: 9-10%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Builder Pool: 5%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Advisors: 3-5%</div>
+                </div>
+                <div class="compare-card apex">
+                    <div class="compare-title">▸ USE_OF_FUNDS</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> R&D (Agents): 40%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Distribution: 30%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Operations: 20%</div>
+                    <div class="list-item"><span class="list-bullet">▸</span> Reserve: 10%</div>
+                </div>
+            </div>
+
+            <div class="cta-box">
+                <div class="cta-title">Waitlist Live this Friday.</div>
+                <p>First Webinar scheduled in 2-3 weeks (50-100 expected high-intent builders).</p>
+                <p style="font-size: 10pt; color: var(--cyan); margin-top: 15pt;" class="font-mono">
+                    CONTACT: nico.f@infoacademy.net<br>
+                    URL: apex-os-vibe.vercel.app
+                </p>
+            </div>
+
+            <div style="margin-top: auto; text-align: center;">
+                <p class="font-mono" style="font-size: 8pt; color: var(--text-muted);">
+                    Built with APEX OS. Powered by AI. Owned by Builders.
+                </p>
+            </div>
+
+            <div class="footer">
+                <span>APEX_OS // INVESTOR_PROTOCOL_v2.0</span>
+                <span>[PAGE_10/10] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
