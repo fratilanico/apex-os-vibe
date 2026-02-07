@@ -65,7 +65,8 @@ export const PlayerOneHUD: React.FC = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const dragRef = useRef({ startX: 0, startY: 0, originX: 0, originY: 0 });
   const emergencyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const tapCountRef = useRef(0);
+  const processingRef = useRef(false);
+  const prewarmRef = useRef(false);
 
   const { addDMLog, narrativeContext } = useSkillTreeStore();
 
@@ -94,7 +95,7 @@ export const PlayerOneHUD: React.FC = () => {
         e.preventDefault();
         setIsOpen(prev => !prev);
       }
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && !processingRef.current) {
         setIsOpen(false);
       }
       // Tab switching (only when HUD is open)
@@ -124,25 +125,22 @@ export const PlayerOneHUD: React.FC = () => {
     return () => window.removeEventListener('apexos:close', handleExternalClose);
   }, []);
 
-  // Triple-tap emergency escape
   useEffect(() => {
-    if (!isOpen) return;
+    if (isMobile) {
+      setActiveView('terminal');
+    }
+  }, [isMobile]);
 
-    const handleTripleTap = () => {
-      tapCountRef.current++;
-      if (tapCountRef.current >= 3) {
-        console.warn('[PlayerOneHUD] Triple-tap emergency escape triggered');
-        setIsOpen(false);
-        tapCountRef.current = 0;
-      }
-      setTimeout(() => {
-        tapCountRef.current = 0;
-      }, 500);
+  useEffect(() => {
+    const handleProcessing = (event: Event) => {
+      const detail = (event as CustomEvent).detail as { isProcessing?: boolean } | undefined;
+      processingRef.current = Boolean(detail?.isProcessing);
     };
+    window.addEventListener('apexos:processing', handleProcessing as EventListener);
+    return () => window.removeEventListener('apexos:processing', handleProcessing as EventListener);
+  }, []);
 
-    document.addEventListener('click', handleTripleTap);
-    return () => document.removeEventListener('click', handleTripleTap);
-  }, [isOpen]);
+  // Triple-tap emergency escape disabled (prevents accidental HUD close)
 
   // On open: initialize centered position, lock body scroll (desktop only)
   useEffect(() => {
@@ -152,6 +150,11 @@ export const PlayerOneHUD: React.FC = () => {
 
     addDMLog(`Apex OS Access Protocol Initiated. Welcome back, Player One.`);
     addDMLog(`Current Objective: ${narrativeContext}`);
+
+    if (!prewarmRef.current) {
+      prewarmRef.current = true;
+      window.dispatchEvent(new CustomEvent('apexos:prewarm'));
+    }
 
     // Lock body scroll - prevent background scrolling only ON DESKTOP
     // Mobile: Don't lock body scroll - it breaks everything on iOS
@@ -177,11 +180,7 @@ export const PlayerOneHUD: React.FC = () => {
     
     setIsMaximized(false);
 
-    // Emergency timeout - auto-close after 30 seconds
-    emergencyTimeoutRef.current = setTimeout(() => {
-      console.warn('[PlayerOneHUD] Emergency timeout triggered - auto-closing HUD');
-      setIsOpen(false);
-    }, 30000);
+    // Emergency timeout disabled to prevent HUD auto-closing mid-session
 
     // Cleanup function
     return () => {
@@ -354,6 +353,10 @@ export const PlayerOneHUD: React.FC = () => {
           whileHover={{ scale: 1.1, backgroundColor: 'rgba(6, 182, 212, 0.2)' }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            setIsOpen(true);
+          }}
           className="fixed bottom-20 sm:bottom-8 right-4 sm:right-8 z-[9998] w-12 h-12 sm:w-14 sm:h-14 bg-zinc-900 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.2)] transition-all group pointer-events-auto touch-manipulation"
           style={{ touchAction: 'manipulation' }}
           title="Open Player One HUD (Ctrl + `)"
@@ -371,24 +374,25 @@ export const PlayerOneHUD: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[9998] pointer-events-auto ${isMobile ? 'bg-black/80' : 'bg-black/20 backdrop-blur-sm'}`}
-            onClick={() => setIsOpen(false)}
+            className={`fixed inset-0 z-[9998] pointer-events-auto ${isMobile ? 'bg-black/60' : 'bg-black/20 backdrop-blur-sm'}`}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           />
         )}
       </AnimatePresence>
 
-      {/* Close Button - aligned with HUD design language */}
+      {/* Emergency Close Button - Always visible when HUD is open */}
       <AnimatePresence>
         {isOpen && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => setIsOpen(false)}
-            className="fixed right-4 top-4 z-[10001] flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 border border-white/10 text-white/60 shadow-lg backdrop-blur-sm transition-all hover:text-cyan-400 hover:border-cyan-400/50 hover:scale-105"
-            aria-label="Close HUD"
+            className="fixed right-4 top-4 z-[10001] flex h-12 w-12 items-center justify-center rounded-full bg-red-500/80 text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-red-500"
+            aria-label="Emergency close"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -431,7 +435,10 @@ export const PlayerOneHUD: React.FC = () => {
               </div>
               <div className="flex items-center gap-0.5 pointer-events-auto">
                 <button
-                  onClick={toggleMaximize}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMaximize();
+                  }}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/30 hover:text-cyan-400 hover:bg-white/5 rounded transition-colors pointer-events-auto touch-manipulation"
                   style={{ touchAction: 'manipulation' }}
                   title={isMaximized ? 'Restore' : 'Maximize'}
@@ -439,7 +446,10 @@ export const PlayerOneHUD: React.FC = () => {
                   {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!processingRef.current) setIsOpen(false);
+                  }}
                   className="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/5 rounded transition-colors pointer-events-auto touch-manipulation"
                   style={{ touchAction: 'manipulation' }}
                   title="Close"
@@ -515,8 +525,9 @@ export const PlayerOneHUD: React.FC = () => {
                     activeView === 'terminal' ? 'overflow-hidden' : 'overflow-y-auto hud-scroll-container'
                   }`}
                 >
-                  {/* Mobile Tab Bar — only on small screens */}
-                  <div className="flex sm:hidden border-b border-white/5 mb-3 flex-shrink-0">
+                  {/* Mobile Tab Bar — disabled (terminal-only on mobile) */}
+                  {!isMobile && (
+                    <div className="flex sm:hidden border-b border-white/5 mb-3 flex-shrink-0">
                     <button
                       onClick={() => setActiveView('skills')}
                       className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider transition-all pointer-events-auto touch-manipulation min-h-[44px] ${activeView === 'skills' ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-500/5' : 'text-white/60'}`}
@@ -538,10 +549,11 @@ export const PlayerOneHUD: React.FC = () => {
                     >
                       Matrix
                     </button>
-                  </div>
+                    </div>
+                  )}
 
                   {/* ─── Views ─── */}
-                  {activeView === 'skills' && (
+                  {!isMobile && activeView === 'skills' && (
                     <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-y-auto no-scrollbar pb-4">
                       {/* Left Column: Skill Tree */}
                       <div className="flex-[2] space-y-6">
@@ -584,7 +596,7 @@ export const PlayerOneHUD: React.FC = () => {
                     </div>
                   )}
 
-                  {activeView === 'terminal' && (
+                  {(isMobile || activeView === 'terminal') && (
                     <div
                       className="flex-1 flex flex-col overflow-hidden min-h-0"
                     >
@@ -592,7 +604,7 @@ export const PlayerOneHUD: React.FC = () => {
                     </div>
                   )}
 
-                  {activeView === 'matrix' && (
+                  {!isMobile && activeView === 'matrix' && (
                     <div className="flex-1 flex flex-col overflow-y-auto hud-scroll-container bg-black/40 rounded-2xl border border-white/5 relative">
                       <ApexMatrixHUD />
                     </div>

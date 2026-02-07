@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AgentSwarmState } from '../types';
+import type { AgentSwarmState } from '../../types/swarm';
 
 interface AgentSwarmPanelProps {
   swarm: AgentSwarmState;
@@ -74,8 +74,8 @@ export const AgentSwarmPanel: React.FC<AgentSwarmPanelProps> = ({ swarm }) => {
             )}
 
             <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-              <span>✓ {agent.tasksCompleted} completed</span>
-              {agent.tasksFailed > 0 && (
+              <span>✓ {agent.tasksCompleted ?? 0} completed</span>
+              {(agent.tasksFailed ?? 0) > 0 && (
                 <span className="text-red-400">✗ {agent.tasksFailed} failed</span>
               )}
             </div>

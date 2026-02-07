@@ -21,6 +21,7 @@ import type { ApexTerminalLine } from '@/lib/terminal/types';
 import { TerminalHeader } from './components/TerminalHeader';
 import { TerminalOutput } from './components/TerminalOutput';
 import { TerminalInput } from './components/TerminalInput';
+import { NeuralPixelBranding } from './components/NeuralPixelBranding';
 import { ProviderBadge } from '@/components/ai/ProviderBadge';
 import { queryAI, type AIResponse } from '@/lib/ai/globalAIService';
 import { TERMINAL_SYSTEM_PROMPT } from '@/lib/ai/prompts/terminal';
@@ -32,7 +33,7 @@ import * as CLIFormatter from '@/lib/cliFormatter';
 
 // Idempotency key generator for API calls
 const generateIdempotencyKey = (): string =>
-  `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${crypto.randomUUID().slice(0, 8)}`;
+  `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 8)}`;
 
 const generateId = (): string => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -50,10 +51,12 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   const [isProcessing, setIsProcessing] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
   const [hasRestoredSession, setHasRestoredSession] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline'>('offline');
+  const [currentProvider, setCurrentProvider] = useState<'vertex-ai' | 'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline'>('offline');
   const [currentModel, setCurrentModel] = useState('');
   const [currentLatency, setCurrentLatency] = useState(0);
   const [currentTier, setCurrentTier] = useState(0);
+  const [preferredProvider, setPreferredProvider] = useState<'auto' | 'vertex' | 'perplexity'>('auto');
+  const [preferredModel, setPreferredModel] = useState<'auto' | 'fast' | 'pro'>('auto');
   
   // 2. Store hooks
   const { syncTerminalContext, processDirectorResponse, nodes, edges } = useMatrixStore();
@@ -65,27 +68,11 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   const outputRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const latestSessionRef = useRef<Partial<SessionState<ApexTerminalLine>>>({});
+  const prewarmedRef = useRef(false);
   
   // LRU Cache for processed commands - prevents memory leak
   const MAX_COMMAND_HISTORY = 100;
   const processedCommands = useRef<Map<string, number>>(new Map());
-  
-  const addProcessedCommand = useCallback((commandId: string) => {
-    const now = Date.now();
-    processedCommands.current.set(commandId, now);
-    
-    // Remove old entries if over limit
-    if (processedCommands.current.size > MAX_COMMAND_HISTORY) {
-      const sorted = Array.from(processedCommands.current.entries())
-        .sort((a, b) => a[1] - b[1]);
-      const toDelete = sorted.slice(0, sorted.length - MAX_COMMAND_HISTORY);
-      toDelete.forEach(([key]) => processedCommands.current.delete(key));
-    }
-  }, []);
-  
-  const isProcessed = useCallback((commandId: string) => {
-    return processedCommands.current.has(commandId);
-  }, []);
 
   // 4. Session management
   const { loadState, saveState, clearSession, setupAutoSave } = useSession<ApexTerminalLine>({
@@ -101,7 +88,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
       content,
       timestamp: new Date(),
     };
-    setLines(prev => [...prev.slice(-99), newLine]);
+    setLines(prev => [...prev.slice(-(MAX_COMMAND_HISTORY - 1)), newLine]);
   }, []);
 
   // 6. AI Interaction Logic with Global Multi-Tier Service
@@ -111,7 +98,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
     if (processedCommands.current.has(idempotencyKey)) {
       return ERROR_MESSAGES.ALREADY_PROCESSING;
     }
-    processedCommands.current.add(idempotencyKey);
+    processedCommands.current.set(idempotencyKey, Date.now());
 
     // Prepare history for AI
     const history: { role: 'user' | 'assistant'; content: string }[] = lines
@@ -130,7 +117,8 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         message,
         history,
         systemPrompt: TERMINAL_SYSTEM_PROMPT,
-        preferredProvider: 'auto', // Let it choose based on availability
+        preferredProvider,
+        preferredModel,
       });
 
       // Update provider state for UI
@@ -173,7 +161,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         processedCommands.current.delete(idempotencyKey);
       }, 60000);
     }
-  }, [lines, nodes, edges, syncTerminalContext, processDirectorResponse]);
+  }, [lines, nodes, edges, syncTerminalContext, processDirectorResponse, preferredProvider, preferredModel]);
 
   // 7. Command Processing Logic
   const processCommand = useCallback(async (rawInput: string) => {
@@ -206,6 +194,10 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
       skillTree,
       matrixStore: { syncTerminalContext, processDirectorResponse, nodes, edges },
       callAI,
+      preferredProvider,
+      setPreferredProvider,
+      preferredModel,
+      setPreferredModel,
       setIsProcessing,
       clearSession,
       setLines: (lines) => setLines(lines.map(l => ({ ...l, timestamp: new Date(l.timestamp) }))),
@@ -246,6 +238,43 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   }, [addLine, callAI, gameEngine, skillTree, syncTerminalContext, processDirectorResponse, nodes, edges, clearSession]);
 
   // 8. Effects
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('apexos:processing', { detail: { isProcessing } }));
+  }, [isProcessing]);
+
+  useEffect(() => {
+    const handlePrewarm = () => {
+      if (prewarmedRef.current) return;
+      prewarmedRef.current = true;
+      queryAI({
+        message: 'handshake',
+        history: [],
+        systemPrompt: TERMINAL_SYSTEM_PROMPT,
+        preferredProvider,
+      })
+        .then((aiResponse) => {
+          setCurrentProvider(aiResponse.provider);
+          setCurrentModel(aiResponse.model);
+          setCurrentLatency(aiResponse.latency);
+          setCurrentTier(aiResponse.tier);
+        })
+        .catch((error) => {
+          console.warn('[ApexTerminalHUD] Prewarm failed:', error?.message || error);
+        });
+    };
+
+    window.addEventListener('apexos:prewarm', handlePrewarm);
+    return () => window.removeEventListener('apexos:prewarm', handlePrewarm);
+  }, [preferredProvider]);
+
+  useEffect(() => {
+    if (!isProcessing) return;
+    const timer = setTimeout(() => {
+      console.warn('[ApexTerminalHUD] Processing timeout - forcing reset');
+      setIsProcessing(false);
+    }, 60000);
+    return () => clearTimeout(timer);
+  }, [isProcessing]);
   useEffect(() => {
     const restored = loadState();
     if (!restored) return;
@@ -320,11 +349,14 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
     const boot = async () => {
       setIsBooting(true);
       await new Promise(resolve => setTimeout(resolve, 300));
-      addLine('branding', `${APEX_LOGO_ASCII}\n${PLAYER_ONE_ASCII}`);
+      const hasBranding = lines.some((line) => line.type === 'branding');
+      if (!hasBranding) {
+        addLine('branding', <NeuralPixelBranding isAuthorized={isAuthorized} />);
+      }
       setIsBooting(false);
     };
     boot();
-  }, [addLine, hasRestoredSession, isAuthorized]);
+  }, [addLine, hasRestoredSession, isAuthorized, lines]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -345,7 +377,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   return (
     <div
       ref={terminalRef}
-      className={`flex-1 flex flex-col bg-zinc-950 rounded-none sm:rounded-2xl border-0 sm:border sm:border-cyan-500/10 overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
+      className={`flex-1 flex flex-col bg-zinc-950 rounded-2xl border border-cyan-500/10 overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
       onClick={() => inputRef.current?.focus()}
       style={{ touchAction: 'manipulation' }}
     >
@@ -366,20 +398,21 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         isProcessing={isProcessing}
       />
 
-      {/* Input area - minimal, no NeuralBoard */}
-      <div className="p-2 sm:p-3 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 relative shrink-0">
-        <TerminalInput
-          ref={inputRef}
-          input={input}
-          setInput={setInput}
-          isProcessing={isProcessing}
-          isAuthorized={isAuthorized}
-          commandHistory={commandHistory}
-          historyIndex={historyIndex}
-          setHistoryIndex={setHistoryIndex}
-          processCommand={processCommand}
-          addLine={addLine}
-        />
+      <div className="p-4 flex flex-col md:flex-row items-center gap-3 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 relative shrink-0">
+        <div className="flex-1 w-full">
+          <TerminalInput
+            ref={inputRef}
+            input={input}
+            setInput={setInput}
+            isProcessing={isProcessing}
+            isAuthorized={isAuthorized}
+            commandHistory={commandHistory}
+            historyIndex={historyIndex}
+            setHistoryIndex={setHistoryIndex}
+            processCommand={processCommand}
+            addLine={addLine}
+          />
+        </div>
       </div>
     </div>
   );

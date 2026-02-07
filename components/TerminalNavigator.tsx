@@ -188,7 +188,9 @@ export const TerminalNavigator: React.FC<TerminalNavigatorProps> = ({ onContactR
       });
       if (!response.ok) throw new Error('AI request failed');
       const data = await response.json();
-      const formatted = CLIFormatter.convertMarkdownToCLI(data.content || '');
+      const formatted = CLIFormatter.stripCliTags(
+        CLIFormatter.convertMarkdownToCLI(data.content || '')
+      );
       appendLog(['', ...formatted.split('\n'), '']);
     } catch (error: any) {
       appendLog([

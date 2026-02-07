@@ -34,6 +34,16 @@ export const AGENTS: AgentDefinition[] = [
     capabilities: ['docs', 'markdown', 'readme', 'technical-writing'],
     model: 'claude-3-5-sonnet',
   },
+  {
+    id: 'readme-agent',
+    name: 'README Agent',
+    module: 'Foundation',
+    tier: 'pro',
+    credits: 15,
+    description: 'Generates, validates, and maintains README documentation with Tony Stark visual style compliance',
+    capabilities: ['readme-generation', 'documentation-validation', 'ascii-formatting', 'compliance-checking', 'markdown-synthesis', 'project-analysis'],
+    model: 'claude-3-5-sonnet',
+  },
   
   // Module 01: Frontend (Free)
   {
@@ -215,6 +225,23 @@ export const AGENTS: AgentDefinition[] = [
     description: 'Game logic, physics, and AI behaviors',
     capabilities: ['game', 'physics', 'unity', 'unreal', 'game-ai'],
     model: 'claude-3-opus',
+  },
+  {
+    id: 'golden-standard-enforcer',
+    name: 'Golden Standard Enforcer',
+    module: 'Foundation',
+    tier: 'business',
+    credits: 25,
+    description: 'Validates all output against Golden Standard Visual Protocol. Mandatory compliance enforcement.',
+    capabilities: [
+      'ascii-validation',
+      'progress-bar-formatting',
+      'tone-checking',
+      'auto-formatting',
+      'compliance-reporting',
+      'golden-standard-enforcement'
+    ],
+    model: 'claude-3-5-sonnet',
   },
 ];
 

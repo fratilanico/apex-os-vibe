@@ -8,179 +8,181 @@ interface GridLoaderProps {
 
 export const GridLoader: React.FC<GridLoaderProps> = ({ isLoading, onLoadingComplete }) => {
   const [progress, setProgress] = useState(0);
-  const [currentText, setCurrentText] = useState('INITIALIZING_SECURE_CONNECTION...');
+  const [currentText, setCurrentText] = useState('IGNITION_SEQUENCE_START');
+  const [glitchActive, setGlitchActive] = useState(false);
 
   const loadingTexts = [
-    'INITIALIZING_SECURE_CONNECTION...',
-    'DECRYPTING_FINANCIAL_VAULT...',
-    'LOADING_BUSINESS_PLAN_V1.0...',
-    'VERIFYING_SOVEREIGN_CLEARANCE...',
-    'ESTABLISHING_NEURAL_HANDSHAKE...',
-    'ACCESSING_FUNDRAISING_STRATEGY...',
-    'CALCULATING_VALUATION_MODELS...',
-    'LOADING_EXIT_STRATEGIES...',
-    'SYNCHRONIZING_MARKET_DATA...',
-    'HANDSHAKE_AUTHORIZED',
-    'CLEARANCE_GRANTED'
+    'BOOTING_CORE_ENGINE...',
+    'SYNCING_NEURAL_STREAMS...',
+    'KIMI_PRINCIPAL_LINK_STABLE',
+    'CALIBRATING_QUANT_ARCS...',
+    'DIVERGING_TIMELINES...',
+    'ACCELERATING_VECTORS...',
+    'BYPASSING_CONVENTIONAL_LIMITS...',
+    'STARK_PROTOCOLS_ENGAGED',
+    'SYSTEM_READY'
   ];
 
   useEffect(() => {
     if (!isLoading) {
       setProgress(100);
-      setCurrentText('CLEARANCE_GRANTED');
+      setCurrentText('READY');
       setTimeout(() => {
         onLoadingComplete?.();
-      }, 500);
+      }, 300);
       return;
     }
 
     setProgress(0);
-    setCurrentText(loadingTexts[0] ?? 'INITIALIZING...');
     
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      currentIndex++;
-      if (currentIndex < loadingTexts.length) {
-        setCurrentText(loadingTexts[currentIndex] ?? 'PROCESSING...');
-        setProgress((currentIndex / (loadingTexts.length - 1)) * 100);
+    // High-frequency text switching (Stark vibe)
+    let textIndex = 0;
+    const textInterval = setInterval(() => {
+      textIndex++;
+      if (textIndex < loadingTexts.length) {
+        setCurrentText(loadingTexts[textIndex]!);
       }
+    }, 80); // Fast text transition
+
+    // Rapid progress bar
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        // Accelerating progress
+        const step = Math.random() * 15 + 5; 
+        return Math.min(prev + step, 100);
+      });
+    }, 50);
+
+    // Occasional glitches
+    const glitchInterval = setInterval(() => {
+      setGlitchActive(true);
+      setTimeout(() => setGlitchActive(false), 50);
     }, 400);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(textInterval);
+      clearInterval(progressInterval);
+      clearInterval(glitchInterval);
+    };
   }, [isLoading, onLoadingComplete]);
 
-  // Fixed dense grid - 20x12 = 240 cells total
-  const cols = 20;
-  const rows = 12;
+  const cols = 24;
+  const rows = 14;
   const totalCells = cols * rows;
-  
-  // Calculate which cells should be active based on progress
-  // At 100%, ALL cells should be active
   const targetActiveCells = Math.ceil((progress / 100) * totalCells);
   
-  // Create array of cell indices and shuffle for random fill pattern
-  const cellOrder = React.useMemo(() => {
-    const indices: number[] = Array.from({ length: totalCells }, (_, i) => i);
-    // Shuffle using Fisher-Yates
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = indices[i]!;
-      indices[i] = indices[j]!;
-      indices[j] = temp;
-    }
-    return indices;
-  }, []);
-
   return (
     <AnimatePresence>
       {isLoading && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-[9999] bg-zinc-950 flex flex-col items-center justify-center"
+          animate={{ 
+            opacity: 1,
+            filter: glitchActive ? 'hue-rotate(90deg) brightness(1.5) contrast(2)' : 'none'
+          }}
+          exit={{ 
+            scale: 2,
+            opacity: 0,
+            filter: 'blur(20px) brightness(2)',
+            transition: { duration: 0.4, ease: [0.23, 1, 0.32, 1] }
+          }}
+          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden"
         >
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-900/50 to-zinc-950" />
+          {/* Stark scanline effect */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] pointer-events-none z-50" />
           
-          {/* Grid Container - Fixed size, centered */}
-          <div className="relative z-10 flex flex-col items-center gap-6">
-            {/* Grid Pattern - Fixed 20x12 grid */}
-            <div className="relative p-6 rounded-xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm">
+          <div className="relative z-10 flex flex-col items-center gap-12">
+            {/* The Warp Speed Logo Placeholder */}
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.05, 1],
+                rotate: glitchActive ? [0, 2, -2, 0] : 0
+              }}
+              transition={{ duration: 0.1, repeat: Infinity }}
+              className="relative w-24 h-24 border-2 border-cyan-500 rounded-full flex items-center justify-center"
+            >
+              <div className="w-16 h-16 border border-cyan-400 rounded-full animate-ping" />
+              <div className="absolute inset-0 border-t-2 border-emerald-400 rounded-full animate-spin" />
+            </motion.div>
+
+            {/* High-Density Grid */}
+            <div className="relative group">
               <div 
-                className="grid gap-1.5"
+                className="grid gap-[2px]"
                 style={{ 
                   gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-                  width: '480px',
-                  height: '288px'
+                  width: '600px',
                 }}
               >
                 {Array.from({ length: totalCells }).map((_, index) => {
-                  // Check if this cell should be active based on shuffled order
-                  const cellIndex = cellOrder[index] ?? 0;
-                  const isActive = cellIndex < targetActiveCells;
-                  const row = Math.floor(index / cols);
-                  const col = index % cols;
-                  
-                  // Checkerboard pattern for color variation
-                  const isCheckerboard = (row + col) % 2 === 0;
+                  const isActive = index < targetActiveCells;
+                  const intensity = Math.random();
                   
                   return (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, scale: 0 }}
                       animate={{ 
-                        opacity: isActive ? 1 : 0.15,
-                        scale: 1,
-                        backgroundColor: isActive 
-                          ? isCheckerboard 
-                            ? 'rgba(6, 182, 212, 0.8)' // cyan-400
-                            : 'rgba(16, 185, 129, 0.6)' // emerald-500
-                          : 'rgba(255, 255, 255, 0.03)'
+                        opacity: isActive ? (intensity > 0.5 ? 1 : 0.7) : 0.05,
+                        backgroundColor: isActive ? '#06b6d4' : '#111'
                       }}
-                      transition={{ 
-                        duration: 0.15,
-                        delay: isActive ? Math.random() * 0.1 : 0,
-                        ease: "easeOut"
-                      }}
-                      className="w-5 h-5 rounded-[2px]"
+                      className="w-5 h-2 rounded-[1px]"
                     />
                   );
                 })}
               </div>
               
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 blur-2xl -z-10" />
+              {/* Telemetry Overlays */}
+              <div className="absolute -top-12 -left-12 font-mono text-[8px] text-cyan-500/60 leading-tight">
+                KERNEL_LOAD: 0.003s<br/>
+                MEMORY_MAP: SUCCESS<br/>
+                NEURAL_LINK: ACTIVE
+              </div>
+              <div className="absolute -bottom-12 -right-12 font-mono text-[8px] text-emerald-500/60 text-right leading-tight">
+                COORD_X: {Math.random().toFixed(4)}<br/>
+                COORD_Y: {Math.random().toFixed(4)}<br/>
+                STARK_V6.0_STABLE
+              </div>
             </div>
 
-            {/* Loading Text */}
-            <div className="text-center space-y-3">
-              <motion.div
-                key={currentText}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="font-mono text-sm text-cyan-400 tracking-widest uppercase"
-              >
-                {currentText}
-              </motion.div>
+            {/* Status Bar */}
+            <div className="w-[600px] space-y-4">
+              <div className="flex justify-between items-end">
+                <div className="font-black font-mono text-xs text-white tracking-[0.4em] uppercase">
+                  {currentText}
+                </div>
+                <div className="font-mono text-[10px] text-cyan-400">
+                  {Math.round(progress)}%
+                </div>
+              </div>
               
-              {/* Progress bar */}
-              <div className="w-72 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-1 w-full bg-white/5 relative overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400"
-                  initial={{ width: 0 }}
+                  className="h-full bg-cyan-400 shadow-[0_0_15px_#22d3ee]"
                   animate={{ width: `${progress}%` }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                />
+                {/* Traveling spark */}
+                <motion.div 
+                  animate={{ left: ['0%', '100%'] }}
+                  transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
+                  className="absolute top-0 w-20 h-full bg-gradient-to-r from-transparent via-white/40 to-transparent"
                 />
               </div>
-              
-              <div className="text-xs font-mono text-zinc-500 tracking-wider">
-                {Math.round(progress)}% COMPLETE
-              </div>
             </div>
           </div>
 
-          {/* Corner decorations */}
-          <div className="absolute top-4 left-4 font-mono text-[10px] text-zinc-600 space-y-1">
-            <div>SOVEREIGN_VAULT_ACCESS</div>
-            <div>ENCRYPTION: AES-256</div>
-          </div>
-          
-          <div className="absolute top-4 right-4 font-mono text-[10px] text-zinc-600 text-right space-y-1">
-            <div>SESSION_ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
-            <div>NODE: ZURICH-04</div>
-          </div>
-          
-          <div className="absolute bottom-4 left-4 font-mono text-[10px] text-zinc-600 space-y-1">
-            <div>LATENCY: 14ms</div>
-            <div>BANDWIDTH: 10Gbps</div>
-          </div>
-          
-          <div className="absolute bottom-4 right-4 font-mono text-[10px] text-zinc-600 text-right space-y-1">
-            <div>PROTOCOL: TLS_1.3</div>
-            <div>CIPHER_SUITE: CHACHA20_POLY1305</div>
-          </div>
+          {/* Flash Effect on Finish */}
+          {progress === 100 && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0] }}
+              className="absolute inset-0 bg-white z-[10000]"
+            />
+          )}
         </motion.div>
       )}
     </AnimatePresence>

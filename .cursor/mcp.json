@@ -1,0 +1,60 @@
+{
+  "mcpServers": {
+    "orchestrator": {
+      "command": "node",
+      "args": ["../devops-agents/orchestrator/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "infrastructure-architect": {
+      "command": "node",
+      "args": ["../devops-agents/infrastructure-architect/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "security-monitor": {
+      "command": "node",
+      "args": ["../devops-agents/security-monitor/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "compliance-guardian": {
+      "command": "node",
+      "args": ["../devops-agents/compliance-guardian/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "deployment-automation": {
+      "command": "node",
+      "args": ["../devops-agents/deployment-automation/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "incident-response": {
+      "command": "node",
+      "args": ["../devops-agents/incident-response/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "cost-optimizer": {
+      "command": "node",
+      "args": ["../devops-agents/cost-optimizer/src/index.ts"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "error-handler": {
+      "command": "npx",
+      "args": ["tsx", "src/lib/agent-client.ts"],
+      "env": {
+        "AGENT_MODE": "error-handler"
+      }
+    }
+  }
+}

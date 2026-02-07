@@ -1,79 +1,8 @@
-# ============================================================================
-# APEX OS - .gitignore
-# This repo is STANDALONE. It is NOT a subdirectory of any other repo.
-# Working directory: /Users/nico/apex-os-clean
-# ============================================================================
-
-# Dependencies
 node_modules/
-
-# Build output
 dist/
-dist-ssr/
-
-# Environment variables (NEVER commit these)
 .env
-.env.*
 .env.local
 .env.production
-.env.staging
-!.env.example
-
-# Secrets
-service-account.json
-*.pem
-*.key
-
-# Vercel
-.vercel/
-
-# Editor / IDE
-.vscode/
-.idea/
-.cursor/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS files
-.DS_Store
-.localized
-Thumbs.db
-Drop Box/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Agent coordination (runtime only, not source)
-.agent_sync_state.json
-.agent_live_connection.json
-.agent_recursive_coordination.json
-
-# PM2 (BANNED - never use)
-ecosystem.config.*
-.pm2/
-
-# Test artifacts
-coverage/
-__mocks__/
-
-# Backup files (never commit backups)
-*.backup
-*.backup.*
-*.bak
-
-# OpenCode / Cursor snapshots
-.opencode/
 .vercel
-.env*.local
-
-# Legacy duplicate src directory (root-level is canonical)
-src/
+.DS_Store
+*.log

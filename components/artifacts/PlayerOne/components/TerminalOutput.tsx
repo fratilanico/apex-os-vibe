@@ -1,9 +1,11 @@
 'use client';
 
 import { forwardRef } from 'react';
+import { InlineRenderer } from '@/components/ui/Terminal/InlineRenderer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import type { ApexTerminalLine } from '@/lib/terminal/types';
+import { NeuralPixelBranding } from './NeuralPixelBranding';
 
 interface TerminalOutputProps {
   lines: ApexTerminalLine[];
@@ -30,15 +32,22 @@ const getLineStyles = (type: ApexTerminalLine['type']): string => {
   }
 };
 
+
 export const TerminalOutput = forwardRef<HTMLDivElement, TerminalOutputProps>(
   ({ lines, isProcessing, className = '' }, ref) => {
+    let brandingRendered = false;
     return (
       <div
         ref={ref}
         className={`flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent ${className}`}
       >
         <AnimatePresence mode="popLayout">
-          {lines.map((line, index) => (
+          {lines.map((line, index) => {
+            if (line.type === 'branding') {
+              if (brandingRendered) return null;
+              brandingRendered = true;
+            }
+            return (
             <motion.div
               key={line.id}
               initial={{ opacity: 0, x: -10 }}
@@ -48,16 +57,15 @@ export const TerminalOutput = forwardRef<HTMLDivElement, TerminalOutputProps>(
               className={getLineStyles(line.type)}
             >
               {line.type === 'branding' ? (
-                <pre className="text-xs leading-tight">
-                  {typeof line.content === 'string' ? line.content : ''}
-                </pre>
+                <NeuralPixelBranding isAuthorized={true} />
               ) : (
-                <span className="text-sm leading-relaxed">
-                  {typeof line.content === 'string' ? line.content : line.content}
+                <span className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words">
+                  {typeof line.content === 'string' ? <InlineRenderer text={line.content} /> : line.content}
                 </span>
               )}
             </motion.div>
-          ))}
+          );
+          })}
         </AnimatePresence>
 
         {isProcessing && (

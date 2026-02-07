@@ -28,7 +28,6 @@ const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
 
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
 const WaitlistPage = lazy(() => import('./components/WaitlistV2').then(m => ({ default: m.default })));
-const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -130,11 +129,6 @@ const ProtectedRoutes: React.FC = () => {
           <Route path="/matrix" element={
             <ErrorBoundary fallback={<RouteErrorFallback error={new Error('Matrix page error')} />}>
               <MatrixPage />
-            </ErrorBoundary>
-          } />
-          <Route path="/newsletter-hub" element={
-            <ErrorBoundary fallback={<RouteErrorFallback error={new Error('Newsletter Hub error')} />}>
-              <NewsletterHubPage />
             </ErrorBoundary>
           } />
         </Route>

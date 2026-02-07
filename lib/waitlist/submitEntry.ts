@@ -2,7 +2,7 @@ import { supabaseServer } from '../supabaseServer.js';
 import { sendWaitlistNotifications } from '../notifications/waitlist.js';
 import { calculateAiScore, WaitlistFormData } from './calculateAiScore.js';
 
-const REQUIRED_FIELDS = ['name', 'email', 'goal', 'consent'];
+const REQUIRED_FIELDS = ['name', 'email', 'phone', 'goal', 'consent'];
 
 const generateReferralCode = () => `APEX${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SecondBrainState, MemoryNode } from '../types';
+import type { SecondBrainState } from '../../types/brain';
 
 interface SecondBrainPanelProps {
   brain: SecondBrainState;
@@ -9,6 +9,16 @@ export const SecondBrainPanel: React.FC<SecondBrainPanelProps> = ({ brain }) => 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [expandedNode, setExpandedNode] = useState<string | null>(null);
+
+  // Guard against undefined stats
+  if (!brain?.stats) {
+    return (
+      <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center">
+        <span className="text-4xl mb-2">🧠</span>
+        <p className="text-gray-400">Loading Second Brain...</p>
+      </div>
+    );
+  }
 
   // Filter nodes based on search and type
   const filteredNodes = brain.memoryGraph.nodes.filter(node => {
@@ -42,13 +52,6 @@ export const SecondBrainPanel: React.FC<SecondBrainPanelProps> = ({ brain }) => 
       default: return 'bg-gray-800 text-gray-400 border-gray-700';
     }
   };
-
-  // Group nodes by type for mobile view
-  const nodesByType = filteredNodes.reduce((acc, node) => {
-    if (!acc[node.type]) acc[node.type] = [];
-    acc[node.type].push(node);
-    return acc;
-  }, {} as Record<string, MemoryNode[]>);
 
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
@@ -130,9 +133,9 @@ export const SecondBrainPanel: React.FC<SecondBrainPanelProps> = ({ brain }) => 
                     
                     <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
                       <span>
-                        {new Date(node.metadata.createdAt).toLocaleDateString()}
+                        {node.metadata?.createdAt ? new Date(node.metadata.createdAt).toLocaleDateString() : 'Unknown date'}
                       </span>
-                      {node.metadata.moduleId && (
+                      {node.metadata?.moduleId && (
                         <span className="px-1.5 py-0.5 bg-black/20 rounded">
                           {node.metadata.moduleId}
                         </span>
@@ -143,21 +146,21 @@ export const SecondBrainPanel: React.FC<SecondBrainPanelProps> = ({ brain }) => 
                     {expandedNode === node.id && (
                       <div className="mt-3 pt-3 border-t border-current border-opacity-20">
                         <div className="space-y-2 text-xs">
-                          {node.metadata.agentId && (
+                          {node.metadata?.agentId && (
                             <p><span className="opacity-60">Agent:</span> {node.metadata.agentId}</p>
                           )}
-                          {node.metadata.fileType && (
+                          {node.metadata?.fileType && (
                             <p><span className="opacity-60">Type:</span> {node.metadata.fileType}</p>
                           )}
-                          {node.metadata.size && (
+                          {node.metadata?.size && (
                             <p><span className="opacity-60">Size:</span> {(node.metadata.size / 1024).toFixed(1)} KB</p>
                           )}
-                          {node.metadata.creditsUsed && (
+                          {node.metadata?.creditsUsed && (
                             <p><span className="opacity-60">Credits:</span> {node.metadata.creditsUsed}</p>
                           )}
-                          {node.metadata.tags && node.metadata.tags.length > 0 && (
+                          {node.metadata?.tags && node.metadata.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {node.metadata.tags.map(tag => (
+                              {node.metadata.tags.map((tag: string) => (
                                 <span key={tag} className="px-1.5 py-0.5 bg-black/20 rounded">
                                   #{tag}
                                 </span>

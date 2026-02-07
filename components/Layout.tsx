@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { CurriculumModal } from './CurriculumModal';
 import { BackgroundGrid } from './BackgroundGrid';
 import { StickyCTA } from './StickyCTA';
-import { JarvisIntegration } from './jarvis/JarvisIntegration';
 
 export const Layout: React.FC = () => {
   const [curriculumOpen, setCurriculumOpen] = useState(false);
-  const navigate = useNavigate();
 
   // Auto-open modal if hash is present (for deep linking)
   useEffect(() => {
@@ -52,9 +50,6 @@ export const Layout: React.FC = () => {
 
       {/* Sticky CTA - shows after scrolling */}
       <StickyCTA />
-
-      {/* JARVIS AI Assistant - global, available on all pages */}
-      <JarvisIntegration onNavigate={(section) => navigate(`/${section}`)} />
     </div>
   );
 };

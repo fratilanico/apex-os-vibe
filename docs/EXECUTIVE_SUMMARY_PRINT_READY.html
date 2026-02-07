@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX OS Executive Summary</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            color: #ffffff;
+            background: #0a0a0a;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 12mm 15mm;
+            position: relative;
+            page-break-after: always;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            overflow: hidden;
+        }
+        
+        .page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+        
+        .page:last-child {
+            page-break-after: auto;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 15px 0 20px;
+            border-bottom: 2px solid #06b6d4;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16pt;
+            font-weight: 700;
+            color: #06b6d4;
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        
+        .title {
+            font-size: 28pt;
+            font-weight: 800;
+            background: linear-gradient(135deg, #06b6d4 0%, #10b981 50%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+        }
+        
+        .subtitle {
+            font-size: 11pt;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .version-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 15px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        
+        .section-title {
+            font-size: 12pt;
+            font-weight: 700;
+            color: #06b6d4;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            flex-grow: 1;
+        }
+        
+        .progress-bar {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: #10b981;
+        }
+        
+        /* Boxes */
+        .box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .box-primary {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 2px solid #06b6d4;
+        }
+        
+        .box-success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border: 1px solid #10b981;
+        }
+        
+        .box-title {
+            font-size: 8pt;
+            font-weight: 700;
+            color: #06b6d4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Ask Box */
+        .ask-box {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.15) 100%);
+            border: 2px solid #06b6d4;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        
+        .ask-amount {
+            font-size: 32pt;
+            font-weight: 800;
+            color: #06b6d4;
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+            margin: 8px 0;
+        }
+        
+        .ask-label {
+            font-size: 9pt;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .ask-details {
+            font-size: 9pt;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 10px;
+        }
+        
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 18pt;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 3px;
+        }
+        
+        .metric-label {
+            font-size: 7pt;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-delta {
+            font-size: 6pt;
+            color: #10b981;
+            margin-top: 3px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 8pt;
+        }
+        
+        th {
+            background: rgba(6, 182, 212, 0.1);
+            color: #06b6d4;
+            padding: 6px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 6pt;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        
+        td {
+            padding: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Lists */
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        li {
+            padding: 3px 0;
+            padding-left: 15px;
+            position: relative;
+            font-size: 8.5pt;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: #06b6d4;
+            font-weight: bold;
+        }
+        
+        /* Typography */
+        p {
+            margin-bottom: 8px;
+            font-size: 9pt;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        strong {
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .highlight {
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        
+        .success {
+            color: #10b981;
+        }
+        
+        /* ASCII Box */
+        .ascii-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 6.5pt;
+            line-height: 1.2;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            padding: 10px;
+            margin: 10px 0;
+            white-space: pre;
+            overflow-x: auto;
+            color: #06b6d4;
+        }
+        
+        /* Two Column */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #06b6d4, #10b981);
+        }
+        
+        .timeline-item {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -18px;
+            top: 2px;
+            width: 8px;
+            height: 8px;
+            background: #06b6d4;
+            border-radius: 50%;
+            border: 2px solid #0a0a0a;
+        }
+        
+        .timeline-title {
+            font-size: 9pt;
+            font-weight: 700;
+            color: #06b6d4;
+            margin-bottom: 3px;
+        }
+        
+        .timeline-content {
+            font-size: 8pt;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(6, 182, 212, 0.2);
+            text-align: center;
+            font-size: 7pt;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+            text-align: left;
+        }
+        
+        .contact-item {
+            font-size: 7pt;
+        }
+        
+        .contact-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 6pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        
+        .contact-value {
+            color: #06b6d4;
+            font-weight: 600;
+        }
+        
+        /* Utility */
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 5px; }
+        .mt-2 { margin-top: 10px; }
+        .mb-1 { margin-bottom: 5px; }
+        .mb-2 { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <!-- PAGE 1 -->
+    <div class="page">
+        <div class="content">
+            <div class="header">
+                <div class="logo">APEX OS</div>
+                <h1 class="title">EXECUTIVE SUMMARY</h1>
+                <p class="subtitle">Transforming Education Through AI-Powered Personalization</p>
+                <div class="version-info">Version 2.0 | February 2026 | Confidential — For Investor Review</div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">The Opportunity</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="box box-primary">
+                    <p style="font-size: 10pt; margin-bottom: 10px;"><strong class="highlight">Listen up — education is broken and everyone knows it.</strong></p>
+                    <p style="margin-bottom: 8px;"><strong>The Problem:</strong></p>
+                    <ul>
+                        <li>85% of online courses never get finished</li>
+                        <li>Skills taught today are obsolete in 18 months</li>
+                        <li>$15K bootcamps with 40% dropout rates</li>
+                        <li>One-size-fits-all content that fits nobody</li>
+                    </ul>
+                </div>
+                
+                <div class="box box-success">
+                    <div class="box-title">The Solution: APEX OS</div>
+                    <p>An <span class="highlight">adaptive learning platform</span> that functions as your <strong class="success">second brain</strong> — personalizing the entire experience to your goals, pace, and learning style.</p>
+                    <ul class="mt-1">
+                        <li>12-Module Progressive Curriculum (Foundation → Visionary)</li>
+                        <li>8 AI Tools Mastery (Vercel, Supabase, Google AI, Perplexity, etc.)</li>
+                        <li>Cohort-Based Community (25-30 students, lifetime access)</li>
+                        <li>Accelerator Pathway (top graduates eligible for equity funding)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="ask-box">
+                <div class="ask-label">The Ask</div>
+                <div class="ask-amount">$1.2M</div>
+                <div class="ask-label">Seed Round</div>
+                <div class="ask-details">
+                    Pre-money: <strong>$6.8M</strong> &nbsp;|&nbsp; 
+                    Post-money: <strong>$8.0M</strong> &nbsp;|&nbsp;
+                    Equity: <strong>15%</strong>
+                </div>
+            </div>
+            
+            <div class="ascii-box">╔══════════════════════════════════════════════════════════════════════════════╗
+║  EQUITY STRUCTURE:                                                           ║
+║  ├── Nicolae Fratila (Founder):     ~67% (remaining after below)            ║
+║  ├── Seed Investors:                15%                                     ║
+║  ├── InfoAcademy (Distribution):    10% (32,000 customers, $0 CAC)          ║
+║  └── Strategic Advisor:             3-5% (Global expansion & fundraising)   ║
+║                                                                              ║
+║  ACCELERATOR MODEL (Separate):                                               ║
+║  ├── APEX OS takes:                 15% equity from projects                ║
+║  │   ├── 10% to APEX OS treasury                                            ║
+║  │   └── 5% to builder co-founders                                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝</div>
+        </div>
+    </div>
+    
+    <!-- PAGE 2 -->
+    <div class="page">
+        <div class="content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">The Proof</h2>
+                    <span class="progress-bar">[████████░░] 85%</span>
+                </div>
+                
+                <p style="margin-bottom: 10px; font-size: 9pt;"><strong>Built in 10 days (Jan 25 - Feb 4, 2026)</strong></p>
+                
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">78%</div>
+                        <div class="metric-label">Completion Rate</div>
+                        <div class="metric-delta">5.2x vs industry</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">72</div>
+                        <div class="metric-label">NPS Score</div>
+                        <div class="metric-delta">2.4x vs industry</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">14</div>
+                        <div class="metric-label">Days to Project</div>
+                        <div class="metric-delta">3.2x faster</div>
+                    </div>
+                </div>
+                
+                <div class="box">
+                    <div class="box-title">The Ultimate Proof</div>
+                    <p>We built APEX OS using the exact curriculum we teach:</p>
+                    <ul class="mt-1">
+                        <li><strong>Day 0:</strong> Manual processes</li>
+                        <li><strong>Day 15:</strong> First AI agent deployed</li>
+                        <li><strong>Day 30:</strong> 6 automated processes, 40+ hours saved weekly</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Business Model</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="two-col">
+                    <div class="box">
+                        <div class="box-title">Path 1: Academy</div>
+                        <table>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Cohort Size</td><td><strong>25-30 students</strong></td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Price</td><td><strong class="success">$2,497</strong></td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Revenue/Cohort</td><td><strong>$62K-$75K</strong></td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Margin</td><td><strong class="success">85%</strong></td></tr>
+                        </table>
+                    </div>
+                    
+                    <div class="box">
+                        <div class="box-title">Path 2: Accelerator</div>
+                        <table>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Target</td><td>Top 5-10% of graduates</td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Model</td><td><strong>1% equity</strong></td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Investment</td><td>$50K-$100K/project</td></tr>
+                            <tr><td style="color: rgba(255,255,255,0.6);">Portfolio Value</td><td><strong>$25K-$200K</strong></td></tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="box box-success">
+                    <div class="box-title">Financial Projections</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Academy</th>
+                                <th>Accelerator</th>
+                                <th>Total</th>
+                                <th>Margin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1</strong></td>
+                                <td>$749K</td>
+                                <td>$375K</td>
+                                <td><strong class="success">$1.1M</strong></td>
+                                <td>47%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2</strong></td>
+                                <td>$1.8M</td>
+                                <td>$1.2M</td>
+                                <td><strong class="success">$3.0M</strong></td>
+                                <td>77%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3</strong></td>
+                                <td>$3.6M</td>
+                                <td>$2.8M</td>
+                                <td><strong class="success">$6.4M</strong></td>
+                                <td>84%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-center mt-1" style="color: #10b981; font-weight: 600;">CAGR: 132%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PAGE 3 -->
+    <div class="page">
+        <div class="content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">The Curriculum</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="two-col">
+                    <div class="box">
+                        <div class="box-title">Phase 1: Foundation</div>
+                        <ul style="font-size: 8pt;">
+                            <li>Module 00: Setup & Tooling</li>
+                            <li>Module 01: AI Agent Architecture</li>
+                            <li>Module 02: Prompt Engineering</li>
+                        </ul>
+                    </div>
+                    <div class="box">
+                        <div class="box-title">Phase 2: Learner</div>
+                        <ul style="font-size: 8pt;">
+                            <li>Module 03: Neural Networks</li>
+                            <li>Module 04: Multi-Agent Systems</li>
+                            <li>Module 05: Tool Integration</li>
+                        </ul>
+                    </div>
+                    <div class="box">
+                        <div class="box-title">Phase 3: Builder</div>
+                        <ul style="font-size: 8pt;">
+                            <li>Module 06: Deployment & Scaling</li>
+                            <li>Module 07: Security & Ethics</li>
+                            <li>Module 08: Performance Optimization</li>
+                        </ul>
+                    </div>
+                    <div class="box">
+                        <div class="box-title">Phase 4: Visionary</div>
+                        <ul style="font-size: 8pt;">
+                            <li>Module 09: Production Systems</li>
+                            <li>Module 10: Capstone Project</li>
+                            <li>Module 11: Accelerator Preparation</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="box">
+                    <div class="box-title">The 8 Tools (The Powers)</div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 7.5pt;">
+                        <div><strong style="color: #06b6d4;">1. Vercel</strong><br/>Deployment Mastery</div>
+                        <div><strong style="color: #06b6d4;">2. Supabase</strong><br/>Database Sorcery</div>
+                        <div><strong style="color: #06b6d4;">3. Polar.sh</strong><br/>Payment Wizardry</div>
+                        <div><strong style="color: #06b6d4;">4. Google AI</strong><br/>Intelligence Augmentation</div>
+                        <div><strong style="color: #06b6d4;">5. Perplexity</strong><br/>Research Omniscience</div>
+                        <div><strong style="color: #06b6d4;">6. OpenAI</strong><br/>Language Mastery</div>
+                        <div><strong style="color: #06b6d4;">7. Claude</strong><br/>Reasoning Perfection</div>
+                        <div><strong style="color: #06b6d4;">8. Cursor</strong><br/>Code Telepathy</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Competitive Moat</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="box">
+                    <div class="box-title">Why We Win</div>
+                    <ul>
+                        <li><strong>Proprietary AI Engine</strong> — 18-month head start on adaptation technology</li>
+                        <li><strong>Curriculum-Platform Integration</strong> — Built together, not bolted-on</li>
+                        <li><strong>Network Effects</strong> — Alumni help new students, success stories attract more</li>
+                        <li><strong>Data Advantage</strong> — More students = better AI (flywheel effect)</li>
+                        <li><strong>Accelerator Pipeline</strong> — Clear outcome path (jobs or funding)</li>
+                    </ul>
+                </div>
+                
+                <div class="two-col mt-1">
+                    <div class="metric-card">
+                        <div class="metric-value" style="font-size: 20pt;">5x</div>
+                        <div class="metric-label">vs Bootcamps</div>
+                        <div class="metric-delta">Completion Rate</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="font-size: 20pt;">13x</div>
+                        <div class="metric-label">vs MOOCs</div>
+                        <div class="metric-delta">Completion Rate</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Team</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="box">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #06b6d4, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: white; margin-right: 12px;">N</div>
+                        <div>
+                            <div style="font-size: 11pt; font-weight: 700; color: #06b6d4;">Nicolae Fratila</div>
+                            <div style="font-size: 8pt; color: rgba(255,255,255,0.6);">Founder & CEO (~67%)</div>
+                        </div>
+                    </div>
+                    <ul style="font-size: 8pt;">
+                        <li>Technical architect with AI-native development expertise</li>
+                        <li>Built APEX OS in 10 days (Jan 25 - Feb 4, 2026)</li>
+                        <li>Vision: Transform education through adaptive AI-powered learning</li>
+                    </ul>
+                </div>
+                
+                <div class="two-col">
+                    <div class="box">
+                        <div class="box-title">Seed Investors (15%)</div>
+                        <p style="font-size: 8pt;">$1.2M capital for platform scaling and growth</p>
+                    </div>
+                    <div class="box">
+                        <div class="box-title">Strategic Advisor (3-5%)</div>
+                        <p style="font-size: 8pt;">Global expansion, fundraising, and compliance advisory</p>
+                    </div>
+                </div>
+                
+                <div class="box box-primary">
+                    <div class="box-title">InfoAcademy — Distribution Partner (10%)</div>
+                    <p style="font-size: 9pt;"><strong>32,000 customer distribution network</strong> with <span class="success">$0 CAC</span></p>
+                    <p style="font-size: 7pt; margin-top: 5px; color: rgba(255,255,255,0.6);">Vibe-Coder is part of InfoAcademy, providing instant access to proven customers at zero acquisition cost.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PAGE 4 -->
+    <div class="page">
+        <div class="content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Milestones</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-title">Month 3</div>
+                        <div class="timeline-content">100 builders, $25K MRR, mobile app MVP, 200 waitlist signups</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title" style="color: #10b981;">Month 6</div>
+                        <div class="timeline-content">300 builders, $50K MRR, first accelerator graduates (3 projects), 90% satisfaction</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title" style="color: #8b5cf6;">Month 12</div>
+                        <div class="timeline-content">$1.1M ARR (Year 1 target), 12 cohorts completed, Series A conversations begin</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title" style="color: #f59e0b;">Month 18</div>
+                        <div class="timeline-content">$3M ARR (Series A ready), Series A close ($3M-5M), international expansion</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Use of Funds</h2>
+                    <span class="progress-bar">[████████░░] 80%</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                    <div class="box text-center">
+                        <div style="font-size: 20pt; font-weight: 800; color: #06b6d4; margin-bottom: 5px;">40%</div>
+                        <div style="font-size: 8pt; font-weight: 600;">Product Dev</div>
+                        <div style="font-size: 7pt; color: rgba(255,255,255,0.5); margin-top: 3px;">$480K</div>
+                        <div style="font-size: 6pt; color: rgba(255,255,255,0.4); margin-top: 3px;">AI engine, mobile app</div>
+                    </div>
+                    <div class="box text-center">
+                        <div style="font-size: 20pt; font-weight: 800; color: #8b5cf6; margin-bottom: 5px;">30%</div>
+                        <div style="font-size: 8pt; font-weight: 600;">Marketing</div>
+                        <div style="font-size: 7pt; color: rgba(255,255,255,0.5); margin-top: 3px;">$360K</div>
+                        <div style="font-size: 6pt; color: rgba(255,255,255,0.4); margin-top: 3px;">Content, acquisition</div>
+                    </div>
+                    <div class="box text-center">
+                        <div style="font-size: 20pt; font-weight: 800; color: #10b981; margin-bottom: 5px;">20%</div>
+                        <div style="font-size: 8pt; font-weight: 600;">Team</div>
+                        <div style="font-size: 7pt; color: rgba(255,255,255,0.5); margin-top: 3px;">$240K</div>
+                        <div style="font-size: 6pt; color: rgba(255,255,255,0.4); margin-top: 3px;">AI engineer, community</div>
+                    </div>
+                    <div class="box text-center">
+                        <div style="font-size: 20pt; font-weight: 800; color: #f59e0b; margin-bottom: 5px;">10%</div>
+                        <div style="font-size: 8pt; font-weight: 600;">Operations</div>
+                        <div style="font-size: 7pt; color: rgba(255,255,255,0.5); margin-top: 3px;">$120K</div>
+                        <div style="font-size: 6pt; color: rgba(255,255,255,0.4); margin-top: 3px;">Legal, infrastructure</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ask-box" style="margin-top: 15px;">
+                <div style="font-size: 10pt; color: rgba(255,255,255,0.7); margin-bottom: 8px;">The Bottom Line</div>
+                <div style="font-size: 16pt; font-weight: 700; margin-bottom: 10px;">
+                    <span style="color: #06b6d4;">10 days.</span> 
+                    <span style="color: #10b981;">32,000 customers.</span> 
+                    <span style="color: #8b5cf6;">78% completion.</span> 
+                    <span style="color: #f59e0b;">$6.8M valuation.</span>
+                </div>
+                <p style="font-size: 10pt; margin-bottom: 10px;">We're not building a course platform. We're building the <strong style="color: #06b6d4;">operating system for human potential</strong>.</p>
+                <p style="font-size: 8pt; color: rgba(255,255,255,0.6);">The infrastructure is live. The customers are waiting. The model is proven.</p>
+                <div style="margin-top: 15px; font-size: 18pt; font-weight: 800; color: #10b981; text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">Join the revolution.</div>
+            </div>
+            
+            <div class="footer">
+                <div style="font-size: 12pt; font-weight: 700; color: #06b6d4; margin-bottom: 12px;">Contact</div>
+                <div class="contact-grid">
+                    <div class="contact-item">
+                        <div class="contact-label">Website</div>
+                        <div class="contact-value">infoacademy.uk</div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-label">LinkedIn</div>
+                        <div class="contact-value">linkedin.com/in/nicofratila</div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-label">Phone</div>
+                        <div class="contact-value">+447399298634 / +40743164820</div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-label">WhatsApp</div>
+                        <div class="contact-value">+447722195774</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid rgba(6, 182, 212, 0.2); font-size: 6pt; color: rgba(255,255,255,0.4);">
+                    © 2026 APEX OS. Confidential. This document contains proprietary information.
+                </div>
+                <div class="ascii-box" style="margin-top: 10px; font-size: 6pt; text-align: center;">
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  Status: [██████████] SEED ROUND ACTIVE  |  Next: Series A at $15M+ (Month 18)  ║
+╚══════════════════════════════════════════════════════════════════════════════╝</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

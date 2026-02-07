@@ -20,11 +20,7 @@ export type TerminalLineType =
   | 'error' 
   | 'system' 
   | 'ai' 
-  | 'branding'
-  | 'ascii'
-  | 'matrix'
-  | 'glitch'
-  | 'success';
+  | 'branding';
 
 export type CommandType = 
   | 'help'

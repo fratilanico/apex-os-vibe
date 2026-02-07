@@ -26,6 +26,59 @@ const VALID_CREDENTIALS = [
 ];
 
 const STORAGE_KEY = 'vibe-auth';
+const RATE_LIMIT_KEY = 'vibe-auth-attempts';
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+
+// Audit logging function
+const logAudit = (action: string, username: string, success: boolean, metadata?: object) => {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    action,
+    username,
+    success,
+    userAgent: navigator.userAgent,
+    ip: 'client-side', // Server would capture real IP
+    metadata: metadata || {}
+  };
+  
+  // Store in localStorage for now (in production, send to server)
+  const logs = JSON.parse(localStorage.getItem('vibe-audit-logs') || '[]');
+  logs.push(logEntry);
+  localStorage.setItem('vibe-audit-logs', JSON.stringify(logs.slice(-100))); // Keep last 100
+  
+  // Also log to console for debugging
+  console.log('[AUDIT]', logEntry);
+};
+
+// Rate limiting check
+const checkRateLimit = (): { allowed: boolean; remaining: number; lockedUntil?: number } => {
+  const attempts = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '[]');
+  const now = Date.now();
+  
+  // Filter attempts within lockout window
+  const recentAttempts = attempts.filter((t: number) => now - t < LOCKOUT_DURATION);
+  
+  if (recentAttempts.length >= MAX_ATTEMPTS) {
+    const oldestAttempt = Math.min(...recentAttempts);
+    const lockedUntil = oldestAttempt + LOCKOUT_DURATION;
+    return { allowed: false, remaining: 0, lockedUntil };
+  }
+  
+  return { allowed: true, remaining: MAX_ATTEMPTS - recentAttempts.length };
+};
+
+// Record failed attempt
+const recordFailedAttempt = () => {
+  const attempts = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '[]');
+  attempts.push(Date.now());
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(attempts));
+};
+
+// Clear attempts on successful login
+const clearAttempts = () => {
+  localStorage.removeItem(RATE_LIMIT_KEY);
+};
 
 interface PasswordGateProps {
   children: React.ReactNode;
@@ -39,6 +92,8 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const [remainingAttempts, setRemainingAttempts] = useState(MAX_ATTEMPTS);
 
   useEffect(() => {
     // Detect mobile/tablet - don't auto-show form on touch devices
@@ -81,6 +136,17 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ children }) => {
     e.preventDefault();
     setError('');
 
+    // Check rate limiting
+    const rateLimit = checkRateLimit();
+    if (!rateLimit.allowed) {
+      const minutesLeft = Math.ceil((rateLimit.lockedUntil! - Date.now()) / 60000);
+      setError(`Too many failed attempts. Please try again in ${minutesLeft} minutes.`);
+      logAudit('rate_limit_exceeded', username, false, { lockedUntil: rateLimit.lockedUntil });
+      return;
+    }
+
+    setRemainingAttempts(rateLimit.remaining);
+
     // Validate against allowed credentials
     const isValid = VALID_CREDENTIALS.some(
       c => c.user === username && c.pass === password
@@ -89,9 +155,28 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ children }) => {
     if (isValid) {
       sessionStorage.setItem(STORAGE_KEY, 'true');
       setIsAuthenticated(true);
+      clearAttempts();
+      logAudit('login_success', username, true);
     } else {
-      setError('Invalid credentials');
+      recordFailedAttempt();
+      const newRemaining = rateLimit.remaining - 1;
+      setRemainingAttempts(newRemaining);
+      
+      if (newRemaining <= 0) {
+        const newRateLimit = checkRateLimit();
+        if (!newRateLimit.allowed) {
+          const minutesLeft = Math.ceil((newRateLimit.lockedUntil! - Date.now()) / 60000);
+          setError(`Account locked due to too many failed attempts. Try again in ${minutesLeft} minutes.`);
+
+        } else {
+          setError('Invalid credentials. Please try again.');
+        }
+      } else {
+        setError(`Invalid credentials. ${newRemaining} attempts remaining.`);
+      }
+      
       setPassword('');
+      logAudit('login_failure', username, false, { remainingAttempts: newRemaining });
     }
   };
 
@@ -158,8 +243,10 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ children }) => {
         {showForm && (
           <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
             <div>
-              <label className="block text-xs font-mono text-white/40 uppercase mb-2">Username</label>
+              <label htmlFor="username" className="block text-xs font-mono text-white/40 uppercase mb-2">Username</label>
               <input
+                id="username"
+                name="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -168,24 +255,37 @@ export const PasswordGate: React.FC<PasswordGateProps> = ({ children }) => {
                 autoComplete="username"
                 autoCapitalize="off"
                 autoCorrect="off"
+                aria-label="Username"
+                required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-white/40 uppercase mb-2">Password</label>
+              <label htmlFor="password" className="block text-xs font-mono text-white/40 uppercase mb-2">Password</label>
               <input
+                id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full min-h-[48px] px-4 py-3 bg-white/[0.04] border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.06] transition-all font-mono text-base"
                 placeholder="Enter password"
                 autoComplete="current-password"
+                aria-label="Password"
+                required
               />
             </div>
 
             {error && (
               <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                 {error}
+              </div>
+            )}
+
+            {/* Rate limit warning */}
+            {remainingAttempts < MAX_ATTEMPTS && remainingAttempts > 0 && (
+              <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
+                Warning: {remainingAttempts} login {remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining
               </div>
             )}
 

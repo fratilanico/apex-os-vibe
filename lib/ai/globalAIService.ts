@@ -1,10 +1,5 @@
 import { complianceEnforcer } from '../agents/complianceEnforcer.js';
 
-export interface AIAttachment {
-  data: string;
-  mimeType: string;
-}
-
 export interface AIRequest {
   message: string;
   context?: string;
@@ -12,12 +7,8 @@ export interface AIRequest {
   systemPrompt?: string;
   preferredProvider?: 'auto' | 'vertex' | 'vertex-ai' | 'gemini' | 'perplexity' | 'groq' | 'cohere';
   preferredModel?: 'auto' | 'fast' | 'pro';
-  /** Optional user email for entitlement tracking */
-  email?: string;
   /** Optional base URL override for server-side calls */
   baseUrl?: string;
-  /** Optional attachments for multimodal vision */
-  attachments?: AIAttachment[];
 }
 
 export interface AIResponse {
@@ -73,8 +64,6 @@ export async function queryAI(request: AIRequest): Promise<AIResponse> {
         systemPrompt: request.systemPrompt,
         preferredProvider: request.preferredProvider,
         preferredModel: request.preferredModel,
-        attachments: request.attachments,
-        email: request.email,
       }),
     });
 

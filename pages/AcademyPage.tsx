@@ -18,8 +18,7 @@ import { BentoCard, StatsBar, ViewToggle } from '../components/AcademyPage';
 import { ToolArsenal } from '../components/artifacts/ToolArsenal/ToolArsenal';
 import { CurriculumLog } from '../components/artifacts/CurriculumLog/CurriculumLog';
 import { AuthenticatedTerminal } from '../components/artifacts/AuthenticatedTerminal';
-import { curriculumData } from '../data/curriculumData';
-const { modules } = curriculumData;
+import { modules } from '../data/curriculumData';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuthStore } from '../stores';
 import { useAcademyStore } from '../stores';
@@ -51,32 +50,72 @@ export const AcademyPage: React.FC = () => {
 
   return (
     <main className="relative z-10 px-3 sm:px-4 lg:px-6 max-w-5xl mx-auto pb-16 overflow-x-hidden">
-      {/* Enhanced Hero Section */}
+      {/* Enhanced Hero Section with Floating Particles */}
       <section className="relative text-center max-w-4xl mx-auto pt-6 sm:pt-8 pb-8 sm:pb-12">
+        {/* Animated gradient background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse" />
           <div className="absolute top-10 right-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-[100px] animate-pulse delay-1000" />
         </div>
 
+        {/* Floating particles */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-cyan-400/30 rounded-full"
+              initial={{ 
+                x: Math.random() * 100 + '%', 
+                y: Math.random() * 100 + '%',
+                scale: Math.random() * 0.5 + 0.5
+              }}
+              animate={{
+                y: [null, Math.random() * -100 - 50],
+                opacity: [0, 1, 0],
+              }}
+              transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                delay: Math.random() * 2,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Social proof badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-6"
+          className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/20 mb-4 sm:mb-6"
         >
+          <div className="flex -space-x-2 shrink-0">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-cyan-400 to-violet-400 border-2 border-black" />
+            ))}
+          </div>
           <span className="text-xs sm:text-sm font-medium text-cyan-400">
-            Join 500+ founders building the future of AI
+            Join 500+ founders building without tech co-founders
           </span>
         </motion.div>
 
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400 mb-4 tracking-wide"
+        >
+          MASTER AI ORCHESTRATION IN 6 MODULES
+        </motion.p>
+        
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter mb-6"
+          transition={{ delay: 0.1 }}
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6"
         >
-          <span className="text-white">Master AI</span>
+          <span className="text-white">The Complete</span>
           <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#06b6d4] via-[#8b5cf6] to-[#10b981]">
-            Orchestration
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-violet-400 to-emerald-400">
+            AI Engineering Curriculum
           </span>
         </motion.h1>
         
@@ -84,24 +123,119 @@ export const AcademyPage: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-lg sm:text-xl text-white/60 mb-8 max-w-2xl mx-auto leading-relaxed"
+          className="text-base sm:text-lg md:text-xl text-white/60 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0"
         >
           From autocomplete mindset to orchestrator mastery.
-          Ship production features in days, not months.
+          <br />
+          <span className="text-white/80 font-semibold">Ship production features in days, not months.</span>
         </motion.p>
+
+        {/* Value proposition cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8 max-w-3xl mx-auto px-2 sm:px-0"
+        >
+          {[
+            { label: 'Investment', value: '$200/mo', color: 'from-cyan-500 to-cyan-600' },
+            { label: 'vs Co-Founder', value: '$200K/yr', color: 'from-violet-500 to-violet-600' },
+            { label: 'Time to Ship', value: 'Today', color: 'from-emerald-500 to-emerald-600' },
+          ].map((item, idx) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 + idx * 0.1 }}
+              className="relative group"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-20 group-hover:opacity-30 rounded-xl blur-lg transition-opacity`} />
+              <div className="relative p-3 sm:p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
+                <div className="text-[10px] sm:text-xs text-white/40 mb-1 font-mono uppercase">{item.label}</div>
+                <div className={`text-lg sm:text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-br ${item.color}`}>
+                  {item.value}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* CTA Badges */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="flex flex-wrap justify-center gap-2 sm:gap-3 text-xs sm:text-sm px-2 sm:px-0"
+        >
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
+            <span className="text-cyan-400 font-medium">20+ hours</span>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-400" />
+            <span className="text-violet-400 font-medium">Lifetime</span>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
+            <span className="text-emerald-400 font-medium">Certificate</span>
+          </div>
+        </motion.div>
       </section>
 
-      <StatsBar />
+      {/* Enhanced Stats Bar */}
+      <section className="pb-8 sm:pb-12 px-2 sm:px-0">
+        <StatsBar />
+      </section>
 
-      {/* Curriculum Control Center */}
-      <section className="pb-16" data-curriculum-section>
-        <div className="flex flex-col items-center mb-12">
-          <ViewToggle activeView={displayMode} onViewChange={setView} />
+      {/* Modules Section with View Toggle */}
+      <section className="pb-8 sm:pb-12" data-curriculum-section>
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 px-2 sm:px-0">
+          {/* Section badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500/10 to-violet-500/10 border border-cyan-500/20 mb-3 sm:mb-4"
+          >
+            <GraduationCap className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs sm:text-sm font-medium text-cyan-400">COMPLETE LEARNING PATH</span>
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4"
+          >
+            <span className="text-white">Explore the </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400">
+              Curriculum
+            </span>
+          </motion.h2>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm sm:text-base text-white/60 mb-4 sm:mb-6 leading-relaxed px-2 sm:px-0"
+          >
+            {isAuthenticated 
+              ? 'Choose your view: visual grid or interactive terminal. Both designed for rapid mastery.' 
+              : 'Explore the visual grid below, or authenticate to access the interactive terminal experience.'}
+          </motion.p>
+          
+          {/* View Toggle - Available to all users on all devices */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <ViewToggle activeView={displayMode} onViewChange={setView} />
+          </motion.div>
         </div>
 
-        <div className="relative min-h-[600px]">
-          {/* Grid View */}
-          <div className={displayMode !== 'grid' ? 'hidden' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'}>
+        {/* Grid View - Use CSS hiding instead of unmount to prevent re-renders (flickering fix) */}
+        <div className={displayMode !== 'grid' ? 'hidden' : ''}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 px-2 sm:px-0">
             {modulesWithIcons.map((module) => (
               <BentoCard
                 key={module.id}
@@ -116,49 +250,60 @@ export const AcademyPage: React.FC = () => {
               />
             ))}
           </div>
-
-          {/* Terminal View */}
-          {displayMode === 'terminal' && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full"
-            >
-              {isAuthenticated ? (
-                <ErrorBoundary>
-                  <CurriculumLog />
-                </ErrorBoundary>
-              ) : (
-                <div className="text-center py-20 border-2 border-white/5 rounded-3xl bg-white/[0.02] backdrop-blur-xl">
-                  <Terminal className="w-16 h-16 mx-auto mb-6 text-cyan-400/20" />
-                  <h3 className="text-xl font-bold text-white mb-4">Sovereign Access Required</h3>
-                  <p className="text-white/40 mb-8 max-w-sm mx-auto text-sm">You must authenticate via the terminal to access the interactive curriculum.</p>
-                  <button
-                    onClick={() => setShowAuthTerminal(true)}
-                    className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-[#06b6d4] text-black font-black uppercase tracking-widest hover:scale-105 transition-all"
-                  >
-                    <Terminal className="w-5 h-5" />
-                    <span>Initialize Protocol</span>
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
         </div>
+
+        {/* Terminal View - Keep mounted to preserve state (flickering fix) */}
+        {isAuthenticated && (
+          <div className={displayMode !== 'terminal' ? 'hidden' : ''}>
+            <ErrorBoundary>
+              <CurriculumLog />
+            </ErrorBoundary>
+          </div>
+        )}
+
+        {/* Locked State - Show when not authenticated and terminal view selected */}
+        {!isAuthenticated && displayMode === 'terminal' && (
+          <div className="text-center py-12 sm:py-16 border border-white/10 rounded-xl bg-white/[0.02] mx-2 sm:mx-0">
+            <Terminal className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-cyan-400/30" />
+            <p className="text-white/50 mb-4 sm:mb-6 text-sm sm:text-base">Terminal access requires authentication.</p>
+            <button
+              onClick={() => setShowAuthTerminal(true)}
+              className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 font-medium transition-all min-h-[44px]"
+            >
+              <Terminal className="w-4 h-4" />
+              <span>Access Terminal</span>
+            </button>
+          </div>
+        )}
       </section>
 
-      {/* Auth Terminal Modal */}
+      {/* Auth Terminal Modal - No outer AnimatePresence to prevent double-animation conflict */}
       {showAuthTerminal && !isAuthenticated && (
         <ErrorBoundary>
           <AuthenticatedTerminal
+            key="auth-terminal"
             onAuthenticated={(user) => {
+              // Close terminal FIRST to prevent scroll conflicts
               setShowAuthTerminal(false);
-              login({
-                email: user.email,
-                name: user.name || 'Founder',
-                authMethod: 'cli',
+              
+              // Use requestAnimationFrame to batch state updates after render
+              requestAnimationFrame(() => {
+                // Convert AuthUser to store's AuthUser format (ensure name is defined)
+                login({
+                  email: user.email,
+                  name: user.name || 'User',
+                  authMethod: 'cli', // Enforce CLI OAuth
+                });
+                setView('terminal');  // Zustand action
+                
+                // Scroll to curriculum section smoothly after a brief delay
+                setTimeout(() => {
+                  const curriculumSection = document.querySelector('[data-curriculum-section]');
+                  if (curriculumSection) {
+                    curriculumSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 300);
               });
-              setView('terminal');
             }}
             onClose={() => setShowAuthTerminal(false)}
           />
@@ -166,29 +311,115 @@ export const AcademyPage: React.FC = () => {
       )}
 
       {/* Tools Section */}
-      <section className="pb-20 border-t border-white/5 pt-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tight">Your C-Suite of AI Tools</h2>
-          <p className="text-white/40 text-sm">Master the 12 tools that power the modern technical founder.</p>
+      <section className="pb-8 sm:pb-12">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8 px-2 sm:px-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
+            Your C-Suite of AI Tools
+          </h2>
+          <p className="text-xs sm:text-sm text-white/50">
+            Each tool serves a founder-focused role in your technical team.
+          </p>
         </div>
         <ErrorBoundary>
           <ToolArsenal />
         </ErrorBoundary>
       </section>
 
-      {/* CTA Section */}
-      <section className="text-center py-20 border-t border-white/5">
-        <h2 className="text-3xl sm:text-4xl font-black text-white mb-6 uppercase">Ready to Orchestrate?</h2>
-        <p className="text-white/50 mb-10 max-w-2xl mx-auto text-lg">
-          Stop hunting for a technical co-founder. Deploy your own swarm today.
+      {/* What You'll Master - Compact horizontal cards */}
+      <section className="pb-8 sm:pb-12">
+        <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-6 px-2 sm:px-0">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
+            What You'll Master
+          </h2>
+          <p className="text-xs sm:text-sm text-white/50">
+            By the end, you'll orchestrate AI agents like a senior engineer manages a team.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-3xl mx-auto px-2 sm:px-0">
+          {[
+            { icon: Wrench, title: 'Hands-On Projects', desc: 'Build real features with multi-agent orchestration' },
+            { icon: Zap, title: 'Tool Mastery', desc: 'Master all 12 tools in the modern AI stack' },
+            { icon: GraduationCap, title: 'Certification', desc: 'Earn certification with solo practicum project' },
+          ].map((item, idx) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="p-3 sm:p-4 rounded-lg border border-white/10 bg-white/[0.02] text-center"
+            >
+              <div className="inline-flex w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 items-center justify-center mx-auto mb-2 sm:mb-3 flex-shrink-0">
+                <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 flex-shrink-0" strokeWidth={2} />
+              </div>
+              <h3 className="text-xs sm:text-sm font-semibold text-white mb-1">{item.title}</h3>
+              <p className="text-[10px] sm:text-xs text-white/50">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Core Principles - Compact */}
+      <section className="pb-8 sm:pb-12">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 sm:p-6 max-w-3xl mx-auto mx-2 sm:mx-auto">
+          <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4 text-center">Core Principles You'll Learn</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-1.5 sm:gap-y-2">
+            {[
+              'AI orchestration beats AI assistance',
+              'Context windows enable repository-aware reasoning',
+              'Specialization beats generalization',
+              'Cost-quality-speed triangle requires optimization',
+              'Configuration files prevent prompt fatigue',
+              'Multi-agent systems scale, chatbots don\'t',
+              'Verification gates ensure quality',
+              'Parallel execution saves hours',
+            ].map((principle, idx) => (
+              <div key={idx} className="flex items-start gap-2">
+                <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-white/60">{principle}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - Founder Focused with CLI Animation */}
+      <section className="text-center py-8 sm:py-10 border-t border-white/5 px-2 sm:px-0">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-2">
+          Ready to Build Your AI Engineering Team?
+        </h2>
+        <p className="text-xs sm:text-sm text-white/50 mb-4 sm:mb-6 max-w-2xl mx-auto">
+          Stop hunting for a technical co-founder. Start deploying specialized agents that work 24/7 for $200/month instead of $200K/year.
         </p>
-        {!isAuthenticated && (
+        {!isAuthenticated ? (
           <CLITypingButton
-            initialText="Join the Academy"
-            finalButtonText="Initialize Terminal"
+            initialText="Start the Academy"
+            finalButtonText="Start Terminal"
             onFinalClick={() => setShowAuthTerminal(true)}
-            typingSpeed={50}
+            typingSpeed={60}
           />
+        ) : (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+            <button
+              onClick={() => {
+                setView('terminal');  // Zustand action
+                const curriculumSection = document.querySelector('[data-curriculum-section]');
+                if (curriculumSection) {
+                  curriculumSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+              className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-medium transition-colors min-h-[44px]"
+            >
+              <span>Explore Terminal View</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="text-xs sm:text-sm text-white/40 hover:text-white/60 transition-colors min-h-[44px]"
+            >
+              Back to Home
+            </button>
+          </div>
         )}
       </section>
     </main>

@@ -4,7 +4,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, X, Send, Command } from 'lucide-react';
+import { Terminal, X, Send } from 'lucide-react';
 
 interface GlobalTerminalProps {
   onCommand?: (command: string) => void;

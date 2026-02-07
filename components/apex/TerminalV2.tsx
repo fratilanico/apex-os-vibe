@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Send, X, MessageSquare, BookOpen, Rocket, Lock, Unlock } from 'lucide-react';
+import { Terminal, Send, X, MessageSquare, BookOpen, Rocket } from 'lucide-react';
 
 interface Message {
   id: string;

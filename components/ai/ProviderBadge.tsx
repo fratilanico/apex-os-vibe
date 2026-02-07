@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Zap, Diamond, Cpu, Cloud, X, Activity } from 'lucide-react';
+import { Zap, Diamond, Cpu, Cloud, X, Activity, Sparkles } from 'lucide-react';
 
 export interface ProviderBadgeProps {
-  provider: 'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline';
+  provider: 'vertex-ai' | 'kimi' | 'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline';
   model?: string;
   latency?: number;
   tier?: number;
@@ -21,7 +21,27 @@ interface ProviderConfig {
   tier: number;
 }
 
-const providerConfigs: Record<'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline', ProviderConfig> = {
+const providerConfigs: Record<'vertex-ai' | 'kimi' | 'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline', ProviderConfig> = {
+  'vertex-ai': {
+    icon: <Cloud className="w-3 h-3" />,
+    label: 'Vertex',
+    defaultModel: 'gemini-2.5-pro',
+    color: 'text-sky-400',
+    bgColor: 'bg-sky-500/10',
+    glowColor: 'shadow-[0_0_8px_rgba(56,189,248,0.4)]',
+    borderColor: 'border-sky-500/30',
+    tier: 1,
+  },
+  kimi: {
+    icon: <Sparkles className="w-3 h-3" />,
+    label: 'Kimi',
+    defaultModel: 'moonshot-v1-8k',
+    color: 'text-fuchsia-400',
+    bgColor: 'bg-fuchsia-500/10',
+    glowColor: 'shadow-[0_0_8px_rgba(217,70,239,0.4)]',
+    borderColor: 'border-fuchsia-500/30',
+    tier: 2,
+  },
   perplexity: {
     icon: <Zap className="w-3 h-3" />,
     label: 'Perplexity',

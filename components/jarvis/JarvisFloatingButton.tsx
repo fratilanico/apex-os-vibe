@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, X, MessageCircle, Sparkles } from 'lucide-react';
+import { Mic, Sparkles } from 'lucide-react';
 import { gsap } from 'gsap';
 
 interface JarvisFloatingButtonProps {
