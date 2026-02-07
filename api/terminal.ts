@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { queryAI } from '../lib/ai/globalAIService.js';
-import { resolveBaseUrl } from '../lib/ai/resolveBaseUrl.js';
 
 // Types
 interface ChatMessage {
@@ -83,7 +82,8 @@ export default async function handler(
     role: item.role === 'model' ? 'assistant' : item.role,
     content: item.content,
   }));
-  const baseUrl = resolveBaseUrl(req.headers, process.env.INTERNAL_API_BASE);
+  const host = req.headers.host;
+  const baseUrl = host ? `https://${host}` : process.env.INTERNAL_API_BASE;
   try {
     const aiResponse = await queryAI({
       message,

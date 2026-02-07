@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sendWaitlistNotifications } from '../lib/notifications/waitlist.ts';
+import { sendWaitlistNotifications } from '../lib/notifications/waitlist.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

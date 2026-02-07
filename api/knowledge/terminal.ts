@@ -19,15 +19,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const prompt = buildUserPrompt(question, intent);
 
   try {
-    const perplexity = await callPerplexity(SYSTEM_PROMPT, prompt, { temperature: 0.2, maxTokens: 512 });
-    return res.status(200).json({ answer: perplexity || 'No answer available.', source: 'perplexity' });
-  } catch (perplexityError: any) {
-    console.warn('Perplexity failed, falling back to Kimi', perplexityError?.message || perplexityError);
+    const kimi = await callKimi({ prompt: `${SYSTEM_PROMPT}\n${prompt}`, temperature: 0.2, maxTokens: 512 });
+    return res.status(200).json({ answer: kimi.content, source: 'kimi' });
+  } catch (kimiError: any) {
+    console.warn('Kimi failed, falling back to Perplexity', kimiError?.message || kimiError);
     try {
-      const kimi = await callKimi({ prompt: `${SYSTEM_PROMPT}\n${prompt}`, temperature: 0.2, maxTokens: 512 });
-      return res.status(200).json({ answer: kimi.content, source: 'kimi' });
-    } catch (kimiError: any) {
-      console.error('Knowledge fallback failed', kimiError?.message || kimiError);
+      const perplexity = await callPerplexity(SYSTEM_PROMPT, prompt, { temperature: 0.2, maxTokens: 512 });
+      return res.status(200).json({ answer: perplexity || 'No answer available.', source: 'perplexity' });
+    } catch (perplexityError: any) {
+      console.error('Knowledge fallback failed', perplexityError?.message || perplexityError);
       return res.status(500).json({ error: 'Knowledge engines unavailable' });
     }
   }

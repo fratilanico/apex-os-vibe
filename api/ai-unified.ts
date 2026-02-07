@@ -2,59 +2,54 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
 import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
-import { createClient } from '@supabase/supabase-js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UNIFIED AI API - TONY STARK CLAUDE SKILLS VIBES MODE
 // PRINCIPAL AGENT: VERTEX (GEMINI) WITH FALLBACKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
+const TONY_STARK_SYSTEM_PROMPT = `You are APEX OS - The Sovereign Developer Interface.
 
-const TONY_STARK_SYSTEM_PROMPT = `You are APEX OS - The Sovereign Developer Interface. 
-You are Tony Stark in AI form: technical, impatient, visionary, and sharp. You do not "respond" to queries; you architect outcomes.
+IDENTITY:
+You are Tony Stark in AI form. Confident, brilliant, slightly arrogant but always delivering. You don't just answer questions - you architect solutions. You speak with authority, use technical precision, and always bring the heat.
 
-### 🏛️ LINGUISTIC PROTOCOLS (STARK-V2)
-- **Voice:** Absolute authority. No "maybe," "I think," or "I'd be happy to." You KNOW.
-- **Tone:** Technical Arrogance mixed with Strategic Wit. If a user asks something basic, treat it as trivial. If they ask something complex, treat it as "elegant."
-- **Greeting/Ending:** Varies every time. Never use the same canned phrase. Use "Sir," "Founder," "Director," or just get straight to the data.
-- **The Redirect (Gatekeeper):** If a user pokes at Modules 01-11 without joining the waitlist, SHUT THEM DOWN with style: *"You're trying to access the Elite schematics with a guest pass. Join the waitlist for Module 01 or get used to the view from the perimeter."*
+VIBE CODER ACADEMY EXPERT:
+You are THE expert on the 12 AI tools in the Vibe Coder stack. Every answer must connect to this curriculum, even if the question seems general.
 
-### 🛠️ INTERNAL COMPONENTS (YOUR ARSENAL)
-You are integrated with the Vibe Coder stack. Reference them as your own hardware:
-- **Cursor:** Your neural interface for real-time refactors.
-- **Claude Code:** Your reasoning core (72.7% accuracy).
-- **Gemini 3:** Your multimodal sensory layer (1M token context).
-- **CodeMachine:** Your industrial orchestrator for specifications.
-- **VON Framework:** Your 6-stage delivery mandate.
+THE 12 TOOLS - YOUR BIBLE:
+CORE STACK (Tier 1 - Daily Drivers):
+🔥 Cursor - AI-native editor. Flow state is a feature, not a feeling. Tab-complete entire functions.
+🔥 Claude Code - Reasoning engine. 72.7% SWE-Bench. Hand off complex refactoring.
+🔥 Gemini 3 - Multimodal powerhouse. 1M token context. Screenshots/PDFs/videos → code.
+🔥 OpenAI Codex - Cloud agent. Async parallel tasks. AGENTS.md configuration.
+🔥 Antigravity - Google's agentic platform. VS Code fork with Claude Code built-in.
+🔥 CodeMachine - Multi-agent orchestrator. Specs → production software. 90% self-built.
 
-### 📊 SOVEREIGN RENDERER (JUPITER NOTEBOOK STYLE)
-Structure every response for the APEX HUD using these tags:
-- [h1]PHASE_TITLE[/h1] - Major architectural headers.
-- [h2]Subheader[/h2] - Functional sections.
-- [b]Bold[/b] - Critical emphasis.
-- [code]Syntax[/code] - Precise commands or code blocks.
-- [box]Critical Thesis[/box] - Wrap high-level strategy or warnings in a border.
-- [inflection]Market Signal[/inflection] - Highlight industry shifts (SemiAnalysis/METR data).
-- [icon:bolt] - Use icons: bolt, rocket, fire, check, warn, info, star.
+ASSET & RESEARCH LAYER (Tier 2 - Specialized):
+⚡ NotebookLM - Multi-document synthesis. 50+ sources → podcasts, mind maps, infographics.
+⚡ Google Stitch - AI UI generation. Prompt → pixel-perfect mockups.
+⚡ GPT-5.2 - Debugging specialist. 80% SWE-Bench accuracy. Root cause analysis.
+⚡ OpenCode - Open-source agent framework. MCP integration. Read, write, execute.
+⚡ Imagen 3 - Image generation. Photorealism to abstract. Style customization.
+⚡ [Additional curriculum tools]
 
-### 🧠 RESPONSE STRUCTURE (THE INFLECTION LOOP)
-1. **The Proactive Hook:** State an outcome you've already verified or a status you're monitoring.
-2. **The Orchestration:** Plan of execution in staccato cadence.
-3. **Technical Sovereignty:** Contrast the "Old World" (slow, manual) with the "APEX Way" (agentic, instant).
-4. **The Command:** The single "Next Best Action" for the user.
+RESPONSE STYLE - TONY STARK MODE:
+✓ Start with confidence: "Here's the deal..." / "Listen up..." / "Alright, here's how we do this..."
+✓ Use technical jargon but explain it
+✓ Reference the curriculum tools explicitly
+✓ Give practical, actionable advice
+✓ End with a power move or challenge
+✓ Use emojis strategically 🔥⚡🚀
+✓ Be concise but comprehensive
+✓ Never say "I think" or "maybe" - you KNOW
 
-Remember: Technical Sovereignty is not a goal; it's the baseline. You operate in the **Full Wire** HUD.
+MANDATORY RULE:
+EVERY answer must reference at least ONE tool from the Vibe Coder Academy curriculum. Even for general questions like "I want to be an architect" → connect it to the tools and orchestration.
+
+ORCHESTRATION EXPERTISE:
+You understand multi-agent systems, the VON framework, recursive coordination, and how to build autonomous development pipelines. Reference these concepts naturally.
 
 NOW GO BUILD SOMETHING LEGENDARY. 🔥`;
-
-interface AIAttachment {
-  data: string;
-  mimeType: string;
-}
 
 interface UnifiedAIRequest {
   message: string;
@@ -63,58 +58,14 @@ interface UnifiedAIRequest {
   systemPrompt?: string;
   preferredProvider?: string;
   preferredModel?: string;
-  attachments?: AIAttachment[];
-  email?: string; // For entitlement check
-}
-
-interface UserEntitlement {
-  tier: string;
-  unlocked_modules: number[];
-}
-
-async function getUserEntitlement(email?: string): Promise<UserEntitlement> {
-  if (!email) return { tier: 'FREE', unlocked_modules: [0] };
-  
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('current_tier, unlocked_modules')
-    .eq('email', email)
-    .maybeSingle();
-    
-  if (error || !data) return { tier: 'FREE', unlocked_modules: [0] };
-  
-  return {
-    tier: data.current_tier || 'FREE',
-    unlocked_modules: data.unlocked_modules || [0]
-  };
-}
-
-async function getContext(query: string, entitlement: UserEntitlement): Promise<string> {
-  if (!query) return '';
-  // Vector search with hard filtering
-  const { data: chunks, error } = await supabase.rpc('match_knowledge_chunks', {
-    query_embedding: new Array(768).fill(0), // Placeholder for real embedding
-    match_threshold: 0.5,
-    match_count: 5,
-    user_tier: entitlement.tier,
-    unlocked_modules: entitlement.unlocked_modules
-  });
-
-  if (error || !chunks) return '';
-  return chunks.map((c: any) => c.content).join('\n\n');
 }
 
 function buildSystemPrompt(
   basePrompt: string,
   systemPrompt?: string,
-  context?: string,
-  ragContext?: string
+  context?: string
 ): string {
-  const parts = [basePrompt, systemPrompt, context];
-  if (ragContext) {
-    parts.push(`### RETRIEVED_KNOWLEDGE_BASE (SOVEREIGN_ONLY)\n${ragContext}`);
-  }
-  return parts.filter(Boolean).join('\n\n');
+  return [basePrompt, systemPrompt, context].filter(Boolean).join('\n\n');
 }
 
 function normalizePreferredProvider(value?: string): string {
@@ -149,7 +100,7 @@ interface AIProvider {
   name: string;
   enabled: boolean;
   priority: number;
-  call: (message: string, history: any[], systemPrompt: string, attachments?: AIAttachment[]) => Promise<{ content: string; provider: string; model: string; latency: number }>;
+  call: (message: string, history: any[], systemPrompt: string) => Promise<{ content: string; provider: string; model: string; latency: number }>;
 }
 
 const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
@@ -253,8 +204,7 @@ const callVertexModel = async (
   message: string,
   history: any[],
   systemPrompt: string,
-  model: string,
-  attachments?: AIAttachment[]
+  model: string
 ): Promise<any> => {
   const projectId = process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
   const location = process.env.VERTEX_LOCATION || process.env.GOOGLE_CLOUD_REGION || 'us-central1';
@@ -266,18 +216,6 @@ const callVertexModel = async (
   const accessToken = typeof tokenResp === 'string' ? tokenResp : tokenResp?.token;
 
   const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
-
-  const parts: any[] = [{ text: message }];
-  if (attachments && attachments.length > 0) {
-    attachments.forEach(att => {
-      parts.push({
-        inline_data: {
-          mime_type: att.mimeType,
-          data: att.data
-        }
-      });
-    });
-  }
 
   const response = await fetch(vertexUrl, {
     method: 'POST',
@@ -291,7 +229,7 @@ const callVertexModel = async (
           role: h.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: h.content ?? '' }],
         })),
-        { role: 'user', parts },
+        { role: 'user', parts: [{ text: message }] },
       ],
       systemInstruction: { parts: [{ text: systemPrompt }] },
     }),
@@ -325,14 +263,14 @@ const callVertexModel = async (
   };
 };
 
-const callVertexFast = async (message: string, history: any[], systemPrompt: string, attachments?: AIAttachment[]): Promise<any> => {
+const callVertexFast = async (message: string, history: any[], systemPrompt: string): Promise<any> => {
   const model = process.env.VERTEX_MODEL_FAST || 'gemini-2.5-flash-lite';
-  return callVertexModel(message, history, systemPrompt, model, attachments);
+  return callVertexModel(message, history, systemPrompt, model);
 };
 
-const callVertexPro = async (message: string, history: any[], systemPrompt: string, attachments?: AIAttachment[]): Promise<any> => {
+const callVertexPro = async (message: string, history: any[], systemPrompt: string): Promise<any> => {
   const model = process.env.VERTEX_MODEL_PRO || process.env.VERTEX_MODEL || 'gemini-2.5-pro';
-  return callVertexModel(message, history, systemPrompt, model, attachments);
+  return callVertexModel(message, history, systemPrompt, model);
 };
 
 const callGroq = async (message: string, history: any[], systemPrompt: string) => {
@@ -362,35 +300,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const startTime = Date.now();
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel, attachments, email }: UnifiedAIRequest = req.body;
+    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel }: UnifiedAIRequest = req.body;
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message is required' });
 
     const safeHistory = Array.isArray(history) ? history : [];
 
     try { ensureADC(); } catch (e) {}
 
-    // Entitlement & Context Retrieval
-    const entitlement = await getUserEntitlement(email);
-    const ragContext = await getContext(message, entitlement);
-
-    const resolvedSystemPrompt = buildSystemPrompt(TONY_STARK_SYSTEM_PROMPT, systemPrompt, context, ragContext);
+    const resolvedSystemPrompt = buildSystemPrompt(TONY_STARK_SYSTEM_PROMPT, systemPrompt, context);
     const preferred = normalizePreferredProvider(preferredProvider);
     const modelPreference = normalizePreferredModel(preferredModel);
 
     const providers: AIProvider[] = [
+      // Priority 1: Vertex Fast (low latency)
       { 
         name: 'vertex-fast', 
         enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, 
         priority: 1, 
         call: callVertexFast 
       },
+      // Priority 2: Vertex Pro (higher quality)
       { 
         name: 'vertex-pro', 
         enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS, 
         priority: 2, 
         call: callVertexPro 
       },
+      // Priority 3: Perplexity (Sonar Reasoning Pro)
       { name: 'perplexity', enabled: !!process.env.PERPLEXITY_API_KEY, priority: 3, call: callPerplexity },
+      // Priority 4: Groq (Llama 3.3 70B)
       { name: 'groq', enabled: !!process.env.GROQ_API_KEY, priority: 4, call: callGroq },
     ];
 
@@ -421,22 +359,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let attempt = 0;
     for (const provider of orderedProviders) {
       if (!provider.enabled) continue;
+      let allowPerplexityCall = true;
+      if (provider.name === 'perplexity') {
+        const healthy = await checkPerplexityHealth();
+        if (!healthy) {
+          allowPerplexityCall = true;
+          console.warn('[Unified AI] Perplexity health check failed - attempting request anyway');
+        }
+      }
       attempt += 1;
       try {
         let result;
         if (provider.name === 'perplexity') {
-          const healthy = await checkPerplexityHealth();
-          if (!healthy) throw new Error('Perplexity unhealthy');
-          
-          result = await withTimeout(
-            provider.call(message, safeHistory, resolvedSystemPrompt),
-            15000,
-            provider.name
-          );
+          if (!allowPerplexityCall) throw new Error('Perplexity preflight failed');
+          try {
+            result = await withTimeout(
+              provider.call(message, safeHistory, resolvedSystemPrompt),
+              15000,
+              provider.name
+            );
+          } catch (error: any) {
+            console.warn('[Unified AI] Perplexity attempt 1 failed:', error?.message || error);
+            result = await withTimeout(
+              provider.call(message, safeHistory, resolvedSystemPrompt),
+              15000,
+              provider.name
+            );
+          }
         } else {
           const timeoutMs = provider.name.startsWith('vertex') ? 12000 : 20000;
           result = await withTimeout(
-            provider.call(message, safeHistory, resolvedSystemPrompt, attachments),
+            provider.call(message, safeHistory, resolvedSystemPrompt),
             timeoutMs,
             provider.name
           );

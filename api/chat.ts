@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { queryAI } from '../lib/ai/globalAIService.js';
-import { resolveBaseUrl } from '../lib/ai/resolveBaseUrl.js';
 
 // System prompt for GPT-5.2 Architect Companion
 const SYSTEM_PROMPT = `You are GPT-5.2 Architect Companion, an AI guide for the Vibe Coder Academy.
@@ -41,7 +40,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         }))
       : [];
 
-    const baseUrl = resolveBaseUrl(req.headers, process.env.INTERNAL_API_BASE);
+    const host = req.headers.host;
+    const baseUrl = host ? `https://${host}` : process.env.INTERNAL_API_BASE;
 
     const aiResponse = await queryAI({
       message,
