@@ -74,3 +74,6 @@ __mocks__/
 .opencode/
 .vercel
 .env*.local
+
+# Legacy duplicate src directory (root-level is canonical)
+src/
