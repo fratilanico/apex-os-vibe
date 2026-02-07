@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {  
-  Zap, Users, Globe, ArrowRight, Trophy, 
-  Activity, Clock, Target, Brain, Code, Sparkles, Terminal as TerminalIcon
+  Zap, Users, Globe, 
+  Activity, Clock, Target, Brain, Code, Sparkles, Terminal as TerminalIcon,
+  TrendingUp, DollarSign, BarChart3, ShieldCheck, Cpu
 } from 'lucide-react';
 import { TerminalBranding, TerminalBrandingMobile } from '../components/TerminalBranding';
-import { SocialHub } from '../components/SocialHub';
-import { TerminalHero } from '../components/TerminalHero';
+import { SpectacularTerminal } from '../components/SpectacularTerminal';
+import { useOnboardingStore } from '../stores/useOnboardingStore';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// APEX OS WAITLIST - SPECTACULAR EDITION
-// Support for Personal, Business, and Geek Mode journeys
+// APEX OS WAITLIST - SPECTACULAR EDITION (V2.1)
+// Support for Personal, Business, and Geek Mode journeys with Aura Morphing
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const TARGET_DAYS = 18;
 const targetDate = new Date(Date.now() + TARGET_DAYS * 24 * 60 * 60 * 1000);
 
-type JourneyMode = 'standard' | 'geek';
-type UserType = 'personal' | 'business';
+const QuantWidget: React.FC<{ label: string, value: string, icon: any, color: string }> = ({ label, value, icon: Icon, color }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-4 backdrop-blur-md"
+  >
+    <div className={`p-2 rounded-lg bg-${color}-500/20`}>
+      <Icon className={`w-5 h-5 text-${color}-400`} />
+    </div>
+    <div>
+      <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest">{label}</p>
+      <p className="text-lg font-bold text-white tracking-tight">{value}</p>
+    </div>
+  </motion.div>
+);
 
 const OldVsNewComparison = () => {
   const [activeTab, setActiveTab] = useState<'new' | 'old'>('new');
@@ -37,7 +51,7 @@ const OldVsNewComparison = () => {
   ];
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-xl h-full">
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => setActiveTab('new')}
@@ -47,10 +61,7 @@ const OldVsNewComparison = () => {
               : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
           }`}
         >
-          <span className="flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            APEX Protocol (NEW)
-          </span>
+          APEX Protocol (NEW)
         </button>
         <button
           onClick={() => setActiveTab('old')}
@@ -60,34 +71,17 @@ const OldVsNewComparison = () => {
               : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
           }`}
         >
-          <span className="flex items-center justify-center gap-2">
-            <Clock className="w-4 h-4" />
-            Legacy Way (OLD)
-          </span>
+          Legacy Way (OLD)
         </button>
       </div>
 
       <AnimatePresence mode="wait">
         {activeTab === 'new' ? (
-          <motion.div
-            key="new"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
+          <motion.div key="new" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 gap-4">
             {newFeatures.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-5 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-emerald-500/10 border border-cyan-500/30 hover:border-cyan-500/50 transition-all group"
-              >
+              <motion.div key={feature.title} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} className="p-4 rounded-2xl bg-white/5 border border-white/10 group">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-cyan-500/20 group-hover:bg-cyan-500/30 transition-colors">
-                    <feature.icon className="w-6 h-6 text-cyan-400" />
-                  </div>
+                  <div className="p-2 rounded-xl bg-cyan-500/20"><feature.icon className="w-5 h-5 text-cyan-400" /></div>
                   <div>
                     <h3 className="text-sm font-bold text-white mb-1">{feature.title}</h3>
                     <p className="text-xs text-white/60 leading-relaxed">{feature.desc}</p>
@@ -97,25 +91,11 @@ const OldVsNewComparison = () => {
             ))}
           </motion.div>
         ) : (
-          <motion.div
-            key="old"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
+          <motion.div key="old" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid grid-cols-1 gap-4">
             {oldProblems.map((problem, index) => (
-              <motion.div
-                key={problem.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="p-5 rounded-2xl bg-white/5 border border-white/10 opacity-60"
-              >
+              <motion.div key={problem.title} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }} className="p-4 rounded-2xl bg-white/5 border border-white/10 opacity-60">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-xl bg-white/10">
-                    <problem.icon className="w-6 h-6 text-white/40" />
-                  </div>
+                  <div className="p-2 rounded-xl bg-white/10"><problem.icon className="w-5 h-5 text-white/40" /></div>
                   <div>
                     <h3 className="text-sm font-bold text-white/60 mb-1">{problem.title}</h3>
                     <p className="text-xs text-white/40 leading-relaxed">{problem.desc}</p>
@@ -131,258 +111,191 @@ const OldVsNewComparison = () => {
 };
 
 export default function WaitlistPage() {
-  const [mode, setMode] = useState<JourneyMode>('standard');
-  const [userType, setUserType] = useState<UserType>('personal');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [aiResult, setAiResult] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [step, setStep] = useState(1);
-  
-  const [formData, setFormData] = useState({
-    name: '', email: '', linkedin: '', phone: '', goal: '', company: '', role: '', details: '', consent: false
-  });
-
+  const { mode, setMode, persona, isUnlocked } = useOnboardingStore();
   const [timeLeft, setTimeLeft] = useState(() => targetDate.getTime() - Date.now());
-  const [count] = useState(2847);
-  const [spotsLeft] = useState(153);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(targetDate.getTime() - Date.now());
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft(targetDate.getTime() - Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   const formatCountdown = (ms: number) => {
-    if (ms <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
     const totalSeconds = Math.floor(ms / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    return { days, hours, minutes, seconds };
+    return {
+      days: Math.floor(totalSeconds / 86400),
+      hours: Math.floor((totalSeconds % 86400) / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60
+    };
   };
 
   const countdown = formatCountdown(timeLeft);
-
-  const updateForm = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/waitlist/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, userType, platform: 'web_form' }),
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Submission failed');
-
-      setAiResult(result);
-      setSubmitted(true);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const auraColor = persona === 'BUSINESS' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(6, 182, 212, 0.15)';
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden font-mono selection:bg-cyan-500/30">
       <TerminalBranding />
       <TerminalBrandingMobile />
 
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/20 via-transparent to-emerald-950/20" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+      {/* Dynamic Background Orbs */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <motion.div 
+          animate={{ backgroundColor: auraColor }}
+          transition={{ duration: 2 }}
+          className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], x: [0, 20, 0] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[120px] transition-colors duration-1000"
+          style={{ backgroundColor: auraColor }}
+        />
+        <motion.div 
+          animate={{ scale: [1.1, 1, 1.1], x: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity }}
+          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] rounded-full blur-[150px] transition-colors duration-1000 opacity-50"
+          style={{ backgroundColor: auraColor }}
+        />
       </div>
 
-      <div className="relative z-10">
-        <section className="pt-20 pb-12 px-6 text-center">
-          <div className="max-w-6xl mx-auto">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-6">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider">Cohort 001 Applications Open</span>
-              </div>
-              <h1 className="text-5xl md:text-8xl font-black mb-6 tracking-tight">
-                <span className="bg-gradient-to-r from-cyan-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">Build at AI Speed</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-white/70 max-w-3xl mx-auto leading-relaxed mb-8">
-                Join <span className="text-cyan-400 font-bold">1,000 founders</span> shipping in 30 days.
-                <br /><span className="text-emerald-400">Zero equity. Maximum velocity.</span>
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-16">
-              {[
-                { icon: Users, value: count.toLocaleString(), label: 'Applied', color: 'cyan' },
-                { icon: Zap, value: spotsLeft.toString(), label: 'Spots', color: 'emerald' },
-                { icon: Globe, value: '30', label: 'Days', color: 'amber' },
-                { icon: Brain, value: '17', label: 'Agents', color: 'violet' },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 text-center">
-                  <stat.icon className={`w-8 h-8 mx-auto mb-3 text-${stat.color}-400`} />
-                  <div className={`text-4xl font-black text-${stat.color}-400 mb-1`}>{stat.value}</div>
-                  <div className="text-xs text-white/50 uppercase tracking-wider">{stat.label}</div>
+      <div className="relative z-10 p-4 md:p-12 lg:p-20">
+        <div className="max-w-7xl mx-auto space-y-12">
+          
+          {/* Header HUD */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-6">
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.3em] text-cyan-400 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Cohort 001 Active Handshake
                 </div>
-              ))}
-            </div>
-
-            <SocialHub />
-
-            <div className="max-w-3xl mx-auto mb-10 bg-black/40 border border-cyan-500/20 rounded-3xl p-6 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
-                <div className="text-xs font-mono text-cyan-400 uppercase tracking-[0.3em]">Live Webinar</div>
-                <div className="text-lg text-white/80">Launch Event in:</div>
-              </div>
-              <div className="grid grid-cols-4 gap-3 text-center">
-                {[{ label: 'D', v: countdown.days }, { label: 'H', v: countdown.hours }, { label: 'M', v: countdown.minutes }, { label: 'S', v: countdown.seconds }].map(i => (
-                  <div key={i.label} className="bg-white/5 border border-white/10 rounded-xl px-3 py-2">
-                    <div className="text-xl font-black text-cyan-400 font-mono">{String(i.v).padStart(2, '0')}</div>
-                    <div className="text-[10px] text-white/50 uppercase">{i.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-12 px-6" id="join">
-          <div className="max-w-4xl mx-auto">
-            {!submitted ? (
-              <div className="space-y-12">
-                {/* Journey Selector */}
-                <div className="flex flex-wrap justify-center gap-4">
-                  <button onClick={() => setMode('standard')} className={`px-8 py-4 rounded-2xl font-bold transition-all border-2 ${mode === 'standard' ? 'bg-white text-black border-white' : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'}`}>
-                    Standard Mode
-                  </button>
-                  <button onClick={() => setMode('geek')} className={`px-8 py-4 rounded-2xl font-bold transition-all border-2 flex items-center gap-2 ${mode === 'geek' ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-cyan-500/5 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/10'}`}>
-                    <TerminalIcon className="w-5 h-5" /> Geek Mode
-                  </button>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {mode === 'standard' ? (
-                    <motion.div key="std" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-10 max-w-2xl mx-auto shadow-2xl">
-                      <div className="mb-8 flex justify-center gap-4">
-                        <button onClick={() => setUserType('personal')} className={`flex-1 py-3 rounded-xl text-xs font-mono uppercase tracking-widest transition-all ${userType === 'personal' ? 'bg-cyan-500 text-black font-bold' : 'bg-white/5 text-white/40'}`}>Personal</button>
-                        <button onClick={() => setUserType('business')} className={`flex-1 py-3 rounded-xl text-xs font-mono uppercase tracking-widest transition-all ${userType === 'business' ? 'bg-violet-500 text-white font-bold' : 'bg-white/5 text-white/40'}`}>Business</button>
-                      </div>
-
-                      <form onSubmit={handleSubmit} className="space-y-6">
-                        {step === 1 && (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                            <h2 className="text-2xl font-bold text-center mb-6">Founder Identification</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <input type="text" placeholder="Full Name" value={formData.name} onChange={e => updateForm('name', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-cyan-400 outline-none" required />
-                              <input type="email" placeholder="Email Address" value={formData.email} onChange={e => updateForm('email', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-cyan-400 outline-none" required />
-                            </div>
-                            <input type="url" placeholder="LinkedIn Profile" value={formData.linkedin} onChange={e => updateForm('linkedin', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-cyan-400 outline-none" />
-                            <button type="button" onClick={() => setStep(2)} disabled={!formData.name || !formData.email} className="w-full py-4 bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-black rounded-xl">Next Step</button>
-                          </motion.div>
-                        )}
-                        {step === 2 && (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                            <h2 className="text-2xl font-bold text-center mb-6">{userType === 'business' ? 'Company Details' : 'Mission Goal'}</h2>
-                            {userType === 'business' && (
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" placeholder="Company Name" value={formData.company} onChange={e => updateForm('company', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-violet-400 outline-none" />
-                                <input type="text" placeholder="Role" value={formData.role} onChange={e => updateForm('role', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-violet-400 outline-none" />
-                              </div>
-                            )}
-                            <select value={formData.goal} onChange={e => updateForm('goal', e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-cyan-400 outline-none" required>
-                              <option value="">Select Primary Goal</option>
-                              <option value="ship">Ship AI Product</option>
-                              <option value="accelerator">Accelerator</option>
-                              <option value="b2b">B2B Partner</option>
-                            </select>
-                            <div className="flex gap-4">
-                              <button type="button" onClick={() => setStep(1)} className="flex-1 py-4 border border-white/10 rounded-xl">Back</button>
-                              <button type="button" onClick={() => setStep(3)} disabled={!formData.goal} className="flex-1 py-4 bg-white text-black font-bold rounded-xl">Almost Done</button>
-                            </div>
-                          </motion.div>
-                        )}
-                        {step === 3 && (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-                            <h2 className="text-2xl font-bold text-center mb-6">Final Verification</h2>
-                            <textarea placeholder="Tell us about your mission..." value={formData.details} onChange={e => updateForm('details', e.target.value)} rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-emerald-400 outline-none resize-none" />
-                            <label className="flex items-center gap-3 p-4 bg-black/20 rounded-xl cursor-pointer">
-                              <input type="checkbox" checked={formData.consent} onChange={e => updateForm('consent', e.target.checked)} className="w-5 h-5 accent-emerald-400" required />
-                              <span className="text-xs text-white/60">I agree to the Terms and Data Processing protocol.</span>
-                            </label>
-                            {error && <p className="text-red-400 text-xs">{error}</p>}
-                            <div className="flex gap-4">
-                              <button type="button" onClick={() => setStep(2)} className="flex-1 py-4 border border-white/10 rounded-xl">Back</button>
-                              <button type="submit" disabled={loading || !formData.consent} className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-black rounded-xl uppercase tracking-widest">{loading ? 'Processing...' : 'Secure Access'}</button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </form>
-                    </motion.div>
-                  ) : (
-                    <motion.div key="geek" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}>
-                      <TerminalHero onSuccess={(data) => { setAiResult(data); setSubmitted(true); }} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white/5 backdrop-blur-2xl border border-emerald-500/30 rounded-3xl p-12 text-center max-w-2xl mx-auto shadow-2xl">
-                <Trophy className="w-16 h-16 text-emerald-400 mx-auto mb-6" />
-                <h2 className="text-4xl font-black mb-4">ACCESS GRANTED</h2>
-                <p className="text-white/60 mb-10">Welcome to the swarm. Your identity has been verified.</p>
-                {aiResult && (
-                  <div className="space-y-6">
-                    <div className="bg-black/40 border border-white/5 p-8 rounded-2xl">
-                      <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-2">AI Readiness Score</div>
-                      <div className="text-7xl font-black text-emerald-400 mb-4">{aiResult.ai_score}</div>
-                      <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${aiResult.ai_score}%` }} className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-black/40 p-4 rounded-xl text-left border border-white/5">
-                        <p className="text-[10px] text-white/40 uppercase">Position</p>
-                        <p className="text-2xl font-bold text-cyan-400">#{aiResult.rank}</p>
-                      </div>
-                      <div className="bg-black/40 p-4 rounded-xl text-left border border-white/5">
-                        <p className="text-[10px] text-white/40 uppercase">Referral ID</p>
-                        <p className="text-xl font-mono font-bold text-emerald-400">{aiResult.referral_code}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <button onClick={() => setSubmitted(false)} className="mt-8 text-cyan-400 font-mono text-xs uppercase hover:underline tracking-widest">Register another identity</button>
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-none mb-6">
+                  BUILD AT <br />
+                  <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">AI SPEED.</span>
+                </h1>
+                <p className="text-white/50 text-lg max-w-xl leading-relaxed">
+                  Join the elite swarm of founders shipping products in 10 days. 
+                  Zero equity. Full sovereignty. Absolute velocity.
+                </p>
               </motion.div>
-            )}
-          </div>
-        </section>
+            </div>
 
-        <section className="py-20 px-6">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-12 text-center">Module 00: Access Protocols</h2>
-            <OldVsNewComparison />
+            <div className="lg:col-span-5 grid grid-cols-2 gap-4">
+              <AnimatePresence mode="wait">
+                {persona === 'BUSINESS' ? (
+                  <>
+                    <QuantWidget key="tam" label="Market TAM" value="$420B" icon={Globe} color="violet" />
+                    <QuantWidget key="roi" label="Agentic ROI" value="12.4x" icon={TrendingUp} color="violet" />
+                    <QuantWidget key="swarm" label="Active Swarm" value="17 Agents" icon={Cpu} color="violet" />
+                    <QuantWidget key="sec" label="Compliance" value="SOC2 Ready" icon={ShieldCheck} color="violet" />
+                  </>
+                ) : (
+                  <>
+                    <QuantWidget key="vel" label="Vibe Velocity" value="94 pts" icon={Activity} color="cyan" />
+                    <QuantWidget key="ltv" label="LTV:CAC" value="9.8:1" icon={DollarSign} color="cyan" />
+                    <QuantWidget key="users" label="Waitlist" value="2,855" icon={Users} color="cyan" />
+                    <QuantWidget key="skill" label="Skill Tier" value="Sovereign" icon={BarChart3} color="cyan" />
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </section>
 
-        <footer className="py-12 px-6 text-center border-t border-white/5">
-          <div className="text-white/30 text-xs font-mono uppercase tracking-widest">© 2026 APEX OS • Built with Neural Orchestration</div>
-        </footer>
+          {/* Main Interface */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[600px]">
+            {/* Left Sidebar - Comparison */}
+            <div className="lg:col-span-4 space-y-8">
+              <OldVsNewComparison />
+              
+              {/* Webinar Countdown */}
+              <div className="bg-black/40 border border-white/5 rounded-3xl p-6 backdrop-blur-md">
+                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-4">Webinar Countdown</p>
+                <div className="grid grid-cols-4 gap-4 text-center">
+                  {Object.entries(countdown).map(([unit, val]) => (
+                    <div key={unit}>
+                      <p className="text-2xl font-bold text-white">{String(val).padStart(2, '0')}</p>
+                      <p className="text-[8px] text-white/30 uppercase">{unit[0]}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Center Piece - Terminal / Form */}
+            <div className="lg:col-span-8 flex flex-col">
+              <AnimatePresence mode="wait">
+                {mode === 'GEEK' ? (
+                  <motion.div 
+                    key="terminal"
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    className="flex-1 flex flex-col"
+                  >
+                    <SpectacularTerminal />
+                    <button 
+                      onClick={() => setMode('STANDARD')}
+                      className="mt-4 text-[10px] text-white/20 hover:text-white transition-colors self-center"
+                    >
+                      [ RETURN_TO_STANDARD_INTERFACE ]
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div 
+                    key="form"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="bg-white/5 border border-white/10 rounded-3xl p-12 flex flex-col items-center justify-center text-center space-y-8 h-full backdrop-blur-xl"
+                  >
+                    <div className="w-20 h-20 rounded-3xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                      <TerminalIcon className="w-10 h-10 text-cyan-400" />
+                    </div>
+                    <div className="space-y-4">
+                      <h2 className="text-3xl font-bold">FOUNDER ONBOARDING</h2>
+                      <p className="text-white/40 max-w-sm">Standard web forms are for legacy builders. Founders use the Direct Neural Uplink.</p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setMode('GEEK')}
+                      className="group relative px-12 py-5 bg-cyan-500 text-black font-black rounded-2xl overflow-hidden hover:scale-105 transition-transform"
+                    >
+                      <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
+                      ACTIVATE GEEK MODE
+                    </button>
+
+                    <p className="text-[10px] text-white/20 uppercase tracking-widest pt-12">Encryption: AES-256 | Mode: Direct_Uplink_v2.1</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Success / Final Reward Layer */}
+          {isUnlocked && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-12 text-center">
+              <div className="inline-block p-1 rounded-2xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-violet-500">
+                <div className="px-8 py-4 bg-black rounded-[14px] flex items-center gap-4">
+                  <TrophyIcon className="w-5 h-5 text-amber-400" />
+                  <span className="text-sm font-bold">NEURAL LINK SECURED</span>
+                  <div className="w-px h-4 bg-white/10" />
+                  <span className="text-xs text-white/60 italic">"You're in the system now, Player One."</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+        </div>
       </div>
+
+      <footer className="relative z-10 py-12 text-center opacity-30 text-[10px] tracking-[0.5em] uppercase">
+        APEX OS // THE OPERATING SYSTEM FOR THE AI AGE // 2026
+      </footer>
     </div>
   );
 }
 
-const Trophy = ({ className }: { className?: string }) => (
+const TrophyIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
   </svg>

@@ -4,7 +4,6 @@ import {
   Terminal, TrendingUp, DollarSign, Users
 } from 'lucide-react';
 import { SpectacularTerminal } from '../components/SpectacularTerminal';
-import { JarvisIntegration } from '../components/jarvis/JarvisIntegration';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // APEX OS WAITING LIST - MASTERPIECE CONTAINER

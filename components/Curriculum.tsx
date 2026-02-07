@@ -1,29 +1,21 @@
 import React from 'react';
-import { GitBranch, Terminal, Box, ArrowRight } from 'lucide-react';
+import { GitBranch, Terminal, Box, ArrowRight, Zap, Layers, Award } from 'lucide-react';
+import { modules } from '../data/curriculumData';
 
 interface CurriculumProps {
   onOpenCurriculum: () => void;
 }
 
-export const Curriculum = React.memo<CurriculumProps>(function Curriculum({ onOpenCurriculum }) {
-  const modules = [
-    {
-      title: "Module 01: The Environment",
-      desc: "Setting up a local LLM toolchain. Installing Cursor, configuring API keys, and understanding the context window.",
-      icon: Box
-    },
-    {
-      title: "Module 02: Prompt Engineering",
-      desc: "Moving from 'chatting' to 'specifying'. How to write prompts that result in production-grade code, not just snippets.",
-      icon: Terminal
-    },
-    {
-      title: "Module 03: Agent Orchestration",
-      desc: "Building loops. How to make OpenCode and Claude work together to solve problems that require multiple steps and file edits.",
-      icon: GitBranch
-    }
-  ];
+const ICON_MAP: Record<string, any> = {
+  Zap,
+  Box,
+  Terminal,
+  GitBranch,
+  Layers,
+  Award
+};
 
+export const Curriculum = React.memo<CurriculumProps>(function Curriculum({ onOpenCurriculum }) {
   return (
     <section 
       onClick={onOpenCurriculum}
@@ -35,33 +27,44 @@ export const Curriculum = React.memo<CurriculumProps>(function Curriculum({ onOp
       <div className="space-y-16">
         <div className="text-center md:text-left md:pl-20">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">The Learning Path</h2>
-          <p className="text-white/50">From zero to autonomous engineer in three phases.</p>
+          <p className="text-white/50">From zero to autonomous engineer in six phases.</p>
         </div>
 
         <div className="space-y-12">
-          {modules.map((mod, idx) => (
-            <div 
-              key={idx}
-              className="relative flex gap-8 items-start group"
-            >
-              {/* Timeline Node */}
-              <div className="hidden md:flex flex-col items-center">
-                <div className="w-4 h-4 rounded-full bg-black border border-cyan-500/50 group-hover:bg-cyan-500 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.5)] transition-all duration-300 z-10" />
-              </div>
-
-              <div className="glass-card p-8 rounded-xl flex-1 hover:border-cyan-500/30 transition-colors">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-2 rounded-lg bg-white/5 text-cyan-400">
-                    <mod.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white">{mod.title}</h3>
+          {modules.map((mod, idx) => {
+            const Icon = ICON_MAP[mod.icon] || Box;
+            return (
+              <div 
+                key={mod.id}
+                className="relative flex gap-8 items-start group"
+              >
+                {/* Timeline Node */}
+                <div className="hidden md:flex flex-col items-center">
+                  <div className="w-4 h-4 rounded-full bg-black border border-cyan-500/50 group-hover:bg-cyan-500 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.5)] transition-all duration-300 z-10" />
                 </div>
-                <p className="text-white/60 leading-relaxed pl-14">
-                  {mod.desc}
-                </p>
+
+                <div className="glass-card p-8 rounded-xl flex-1 hover:border-cyan-500/30 transition-colors">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="p-2 rounded-lg bg-white/5 text-cyan-400">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest">Module {mod.number}</span>
+                      <h3 className="text-xl font-bold text-white">{mod.title}</h3>
+                    </div>
+                  </div>
+                  <p className="text-white/60 leading-relaxed pl-14">
+                    {mod.subtitle}
+                  </p>
+                  <div className="mt-4 pl-14 flex items-center gap-4">
+                    <span className="text-[10px] font-mono text-white/30 uppercase">{mod.duration}</span>
+                    <div className="w-1 h-1 rounded-full bg-white/10" />
+                    <span className="text-[10px] font-mono text-cyan-500/50 uppercase">{mod.objective}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Call to Action */}

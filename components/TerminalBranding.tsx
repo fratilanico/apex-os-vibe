@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // APEX OS TERMINAL BRANDING
-// Top corner branding with typing animation and color cycling
+// Top corner branding with chromatic aberration ASCII and color cycling
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const colorCycle = [
@@ -29,7 +29,7 @@ export const TerminalBranding: React.FC = () => {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
 
-  // Color cycling for both logos
+  // Color cycling
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setCurrentColorIndex((prev) => (prev + 1) % colorCycle.length);
@@ -55,9 +55,9 @@ export const TerminalBranding: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-4 left-6 z-50 flex flex-col items-start gap-0"
+        className="fixed top-4 left-6 z-50 flex flex-col items-start gap-0 pointer-events-none"
       >
-        <div className="relative group cursor-pointer">
+        <div className="relative group">
           {/* Chromatic Aberration Layers */}
           <pre 
             className="absolute top-0 left-[1px] font-mono text-[6px] md:text-[8px] leading-[1.1] select-none opacity-40 mix-blend-screen transition-colors duration-1000"
@@ -90,7 +90,7 @@ export const TerminalBranding: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-6 right-6 z-50 flex items-center gap-3"
+        className="fixed top-6 right-6 z-50 flex items-center gap-3 pointer-events-none"
       >
         {/* Health Bar */}
         <div className="flex items-center gap-1">
@@ -125,39 +125,11 @@ export const TerminalBranding: React.FC = () => {
             PLAYER 1
           </span>
         </div>
-
-        {/* Glitch effect overlay (occasional) */}
-        <motion.div
-          animate={{
-            x: [0, 2, -2, 0],
-            opacity: [0, 0.8, 0, 0]
-          }}
-          transition={{ 
-            duration: 0.2, 
-            repeat: Infinity, 
-            repeatDelay: 5,
-            times: [0, 0.25, 0.5, 1]
-          }}
-          className="absolute inset-0 font-mono text-xs font-bold tracking-wider"
-          style={{ color: currentColor }}
-        >
-          PLAYER 1
-        </motion.div>
       </motion.div>
-
-      {/* Mobile: Simplified version */}
-      <style>{`
-        @media (max-width: 768px) {
-          .terminal-branding-desktop {
-            display: none;
-          }
-        }
-      `}</style>
     </>
   );
 };
 
-// Simplified mobile version
 export const TerminalBrandingMobile: React.FC = () => {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
 

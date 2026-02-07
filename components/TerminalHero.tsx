@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wifi, Shield, ArrowRight, Bot, Loader2 } from 'lucide-react';
+import { Wifi, Shield, ArrowRight, Loader2 } from 'lucide-react';
 import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 

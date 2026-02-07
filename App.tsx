@@ -27,9 +27,9 @@ const FullPitch01Page = lazy(() => import('./pages/FullPitch01Page'));
 const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
 
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
-const WaitlistPage = lazy(() => import('./pages/Waitlist'));
+const WaitlistPage = lazy(() => import('./components/WaitlistV2'));
 const WaitingListPage = lazy(() => import('./pages/WaitingList'));
-const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
+// const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
