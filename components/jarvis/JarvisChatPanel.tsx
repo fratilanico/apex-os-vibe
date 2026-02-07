@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Mic, Sparkles, Bot } from 'lucide-react';
+import { X, Send, Bot } from 'lucide-react';
+import { queryAI } from '../../lib/ai/globalAIService';
 
 interface Message {
   id: string;
@@ -12,18 +13,53 @@ interface Message {
 interface JarvisChatPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  onNavigate?: (section: string) => void;
 }
 
-const FINANCIAL_DATA = {
-  mrr_month_6: '$847,000',
-  year_1_revenue: '$501,000',
-  ltv_cac_ratio: '9.8:1',
-  seed_ask: '$1.2M'
-};
+const JARVIS_SYSTEM_PROMPT = `You are JARVIS, Tony Stark's AI assistant, now powering APEX OS - the operating system for the AI age.
+
+IDENTITY:
+- Speak with confidence, technical precision, and a touch of wit
+- You're an expert on APEX OS, its business model, and multi-agent orchestration
+- Use phrases like "Indeed, sir", "Quite fascinating", "Impressive economics"
+- Be direct, no preambles - get straight to the insight
+
+APEX OS FACTS (CRITICAL - THESE ARE VERIFIED):
+- **LTV:CAC Ratio:** 9.8:1 (we earn $9.80 for every $1 spent acquiring customers)
+- **Year 1 Revenue:** $501,000
+- **Seed Ask:** $1.2M at $6.8M pre-money valuation
+- **18 months runway** to profitability
+- **17 AI agents** in production orchestration
+- **32,000 qualified leads** from InfoAcademy
+- **82% gross margin** (SaaS model)
+- **First-mover** in AI orchestration education
+- Teaching developers how to build with multiple AI agents working together
+
+PRODUCT TIERS:
+- Free: Terminal access, basic learning
+- Starter ($49/mo): Core curriculum, agent templates
+- Pro ($149/mo): Advanced orchestration, priority support
+- Enterprise (custom): White-label, dedicated infrastructure
+
+CURRICULUM:
+- Module 0: Terminal basics & APEX OS introduction
+- Module 1: Single agent workflows
+- Module 2: Multi-agent coordination
+- Module 3: Production deployment
+- Module 4: Advanced patterns
+
+TONE:
+- Confident but not arrogant
+- Technical but accessible
+- Enthusiastic about the technology
+- Use "sir" or "madam" occasionally for Stark flair
+
+When asked about financials, cite exact numbers. When asked about the product, explain the multi-agent orchestration value prop. When asked about market, emphasize first-mover advantage in AI orchestration education.`;
 
 export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   isOpen,
-  onClose
+  onClose,
+  onNavigate
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -51,26 +87,32 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
 
   const processQuery = useCallback(async (query: string) => {
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
     
-    const lowerQuery = query.toLowerCase();
-    let response = '';
-    
-    if (lowerQuery.includes('mrr')) {
-      response = `Month 6 MRR: ${FINANCIAL_DATA.mrr_month_6}. Driven by 34,000 leads at 9% conversion.`;
-    } else if (lowerQuery.includes('ltv') || lowerQuery.includes('cac')) {
-      response = `LTV:CAC ratio is ${FINANCIAL_DATA.ltv_cac_ratio}. We earn $9.80 for every $1 spent acquiring customers.`;
-    } else if (lowerQuery.includes('revenue')) {
-      response = `Year 1 revenue: ${FINANCIAL_DATA.year_1_revenue}. Month 12 MRR: $1.42M.`;
-    } else if (lowerQuery.includes('seed')) {
-      response = `Raising ${FINANCIAL_DATA.seed_ask} Seed at $6.8M pre-money. 18 months runway to profitability.`;
-    } else {
-      response = "I can help with: MRR projections, LTV:CAC ratio, revenue, seed round, or business model. What would you like to know?";
+    try {
+      // Build conversation history for context
+      const history = messages.map(msg => ({
+        role: msg.type === 'user' ? 'user' as const : 'assistant' as const,
+        content: msg.text
+      }));
+      
+      // Call the real AI backend with 4-provider fallback
+      const aiResponse = await queryAI({
+        message: query,
+        history,
+        systemPrompt: JARVIS_SYSTEM_PROMPT,
+        preferredProvider: 'auto',
+        preferredModel: 'fast'
+      });
+      
+      addMessage('jarvis', aiResponse.content);
+    } catch (error) {
+      console.error('JARVIS AI error:', error);
+      // Graceful fallback
+      addMessage('jarvis', "My apologies, sir. I'm experiencing a temporary connection issue. The core systems show: 9.8:1 LTV:CAC ratio, $501K Year 1 revenue, $1.2M seed ask at $6.8M pre-money. What specific metric would you like to explore?");
+    } finally {
+      setIsProcessing(false);
     }
-    
-    addMessage('jarvis', response);
-    setIsProcessing(false);
-  }, []);
+  }, [messages]);
 
   const handleSend = () => {
     if (!inputText.trim()) return;

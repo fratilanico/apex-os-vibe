@@ -34,7 +34,6 @@ import { PricingTab } from '@/components/showmethemoney/tabs/PricingTab';
 import { DashboardTab } from '@/components/showmethemoney/tabs/DashboardTab';
 import { AnalyticsTab } from '@/components/showmethemoney/tabs/AnalyticsTab';
 import { ComparablesTab } from '@/components/showmethemoney/tabs/ComparablesTab';
-import { JarvisIntegration } from '@/components/jarvis/JarvisIntegration';
 import {
   fundingRounds,
   capTable,
@@ -1311,15 +1310,6 @@ export const ShowMeTheMoneyPage: React.FC = () => {
         </div>
       </section>
     </main>
-    
-    {/* JARVIS AI Assistant */}
-    <JarvisIntegration 
-      onNavigate={(section) => {
-        setActiveSection(section);
-        // Scroll to top of page
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }}
-    />
     </>
   );
 };
