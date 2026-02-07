@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Wifi, Shield, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Wifi, Shield, ArrowRight, Bot, Loader2 } from 'lucide-react';
 import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 
@@ -45,6 +46,27 @@ const GOAL_OPTIONS = [
   { id: 'other', label: '💡 Other' },
 ];
 
+const MODULE_00_SNIPPET = `
+[h1]MODULE 00: THE ORCHESTRATOR MINDSET[/h1]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Section 1: The New Age of Building
+  └─ Moving from manual to agentic workflows
+  └─ Why founders must stay orchestrators
+  └─ The 30-day GTM framework
+
+Section 2: The Agent Swarm
+  └─ Meeting your 17 AI copilots
+  └─ Departmental synchronization
+  └─ Autonomous shipping protocols
+
+Section 3: GTM on Day 1
+  └─ Why building in a silo is death
+  └─ Integrating partner feedback loops
+  └─ Zero-equity scaling strategies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type [b]join[/b] to secure access to this curriculum.
+`;
+
 export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommandRecord }) => {
   const [state, setState] = useState<TerminalState>('boot');
   const [history, setHistory] = useState<Array<{text: string, type: string}>>([]);
@@ -87,12 +109,14 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
   }, []);
 
   const handleCommand = async (val: string) => {
-    addLine(`> ${val}`, 'input');
+    const trimmed = val.trim();
+    if (!trimmed) return;
+    addLine(`> ${trimmed}`, 'input');
     setInput('');
 
     if (onCommandRecord) {
         onCommandRecord({
-            command: val,
+            command: trimmed,
             intent: state === 'chat' ? 'faq' : 'system',
             timestamp: Date.now(),
             sessionId: sessionId.current
@@ -100,13 +124,13 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
     }
 
     if (state.startsWith('onboarding_')) {
-      handleOnboarding(val);
+      handleOnboarding(trimmed);
       return;
     }
 
-    const cmd = val.toLowerCase().trim();
+    const cmd = trimmed.toLowerCase();
     if (cmd === 'help') {
-      addLine('Available commands: help, join, about, modules, clear, status', 'system');
+      addLine('Available commands: help, join, about, modules, module00, clear, status', 'system');
     } else if (cmd === 'join' || cmd === 'contact') {
       setState('onboarding_name');
       addLine('', 'system');
@@ -121,6 +145,8 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
     } else if (cmd === 'modules') {
       addLine('Module 00: [ACCESS GRANTED]', 'success');
       addLine('Module 01-11: [LOCKED] - Join waitlist for access.', 'error');
+    } else if (cmd === 'module00') {
+      addLine(MODULE_00_SNIPPET, 'success');
     } else {
       // AI Fallback
       setLoading(true);
@@ -128,7 +154,7 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
         const res = await fetch('/api/ai-unified', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: val }),
+          body: JSON.stringify({ message: trimmed }),
         });
         const data = await res.json();
         const content = data?.content || 'No response from intelligence.';
@@ -240,7 +266,19 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
             <InlineRenderer text={line.text} />
           </div>
         ))}
-        {loading && <div className="text-cyan-400 animate-pulse text-xs">ORCHESTRATING...</div>}
+        <AnimatePresence>
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-cyan-400 animate-pulse text-xs"
+            >
+              <Loader2 className="w-3 h-3 inline mr-2 animate-spin" />
+              ORCHESTRATING...
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); handleCommand(input); }} 
