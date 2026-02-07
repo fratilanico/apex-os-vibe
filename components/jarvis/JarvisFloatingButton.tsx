@@ -6,13 +6,11 @@ import { gsap } from 'gsap';
 interface JarvisFloatingButtonProps {
   onClick: () => void;
   isOpen: boolean;
-  hasNotification?: boolean;
 }
 
 export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
   onClick,
   isOpen,
-  hasNotification = false
 }) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pulseRef = useRef<HTMLDivElement>(null);
@@ -142,14 +140,6 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Notification Badge */}
-        {hasNotification && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-900"
-          />
-        )}
       </motion.button>
 
       {/* Tooltip */}

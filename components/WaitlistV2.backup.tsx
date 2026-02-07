@@ -1,16 +1,17 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Terminal, TrendingUp, DollarSign, Users, Activity, Brain
+  Terminal, Activity, Brain, ShieldCheck, Cpu, Wifi, Database
 } from 'lucide-react';
 import { SpectacularTerminal } from './SpectacularTerminal';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
-import { TerminalBranding } from './TerminalBranding';
+import { TerminalBranding, TerminalBrandingMobile } from './TerminalBranding';
 import { modules as restoredModules } from '../data/curriculumData';
 import { NotionVaultOverlay } from './NotionVaultOverlay';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WAITLIST V2 - MULTI-PANEL FOUNDER INTERFACE
+// WAITLIST V2 - MULTI-PANEL FOUNDER HUD
+// Technical Telemetry | Real-time Swarm Status | Neural Handshake
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const VAULT_URL = "https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder";
@@ -38,7 +39,7 @@ const ModuleAccessPanel = () => {
     <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl h-full">
       <div className="flex items-center gap-2 mb-6">
         <Brain className="w-5 h-5 text-cyan-400" />
-        <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Curriculum Access</h3>
+        <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Curriculum Nodes</h3>
       </div>
       
       <div className="space-y-4">
@@ -61,7 +62,7 @@ const ModuleAccessPanel = () => {
                 MOD {module.number}: {module.title}
               </p>
               <p className="text-[9px] text-white/60">
-                {isModuleUnlocked ? `ACCESS GRANTED: ${module.subtitle}` : 'LOCKED: Awaiting Neural Sync'}
+                {isModuleUnlocked ? `ACTIVE: ${module.subtitle}` : 'LOCKED: Handshake Required'}
               </p>
             </div>
           );
@@ -72,12 +73,13 @@ const ModuleAccessPanel = () => {
 };
 
 export const WaitlistV2: React.FC = () => {
-  const { mode, persona, isUnlocked, isTerminalOnly, isVaultOpen, setVaultOpen } = useOnboardingStore();
+  const { mode, persona, isUnlocked, isTerminalOnly, isVaultOpen, setVaultOpen, secretTreatFound } = useOnboardingStore();
   const auraColor = persona === 'BUSINESS' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(6, 182, 212, 0.2)';
 
   return (
     <div className="h-screen w-screen bg-black text-white font-mono overflow-hidden relative selection:bg-cyan-500/30">
       <TerminalBranding />
+      <TerminalBrandingMobile />
       
       {/* Notion Vault Overlay */}
       <NotionVaultOverlay 
@@ -111,7 +113,7 @@ export const WaitlistV2: React.FC = () => {
             <div>
               <h1 className="text-2xl font-black tracking-tighter uppercase">APEX_OS <span className="text-cyan-400 font-bold">HUD</span></h1>
               <div className="flex items-center gap-2">
-                <p className="text-[10px] text-cyan-400/60 uppercase tracking-[0.3em]">Mode: {mode}</p>
+                <p className="text-[10px] text-cyan-400/60 uppercase tracking-[0.3em]">Neural Interface v2.6 // Mode: {mode}</p>
                 {isUnlocked && (
                   <motion.div 
                     initial={{ opacity: 0 }}
@@ -120,6 +122,14 @@ export const WaitlistV2: React.FC = () => {
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span className="text-[8px] text-emerald-400 font-bold tracking-tighter">PLAYER 1 // SYNCED</span>
+                    {!secretTreatFound && (
+                      <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="w-1.5 h-1.5 rounded-full bg-cyan-400 ml-1"
+                        title="Secret node detected"
+                      />
+                    )}
                   </motion.div>
                 )}
               </div>
@@ -127,9 +137,9 @@ export const WaitlistV2: React.FC = () => {
           </div>
           
           <div className="hidden md:flex gap-4">
-            <QuantWidget label="LTV:CAC" value="9.8:1" icon={TrendingUp} color="emerald" />
-            <QuantWidget label="Year 1 Target" value="$501K" icon={DollarSign} color="cyan" />
-            <QuantWidget label="Waitlist" value="2,855" icon={Users} color="violet" />
+            <QuantWidget label="Neural Throughput" value="98.4 Gbps" icon={Activity} color="cyan" />
+            <QuantWidget label="Agent Sync" value="17/17 Active" icon={Cpu} color="emerald" />
+            <QuantWidget label="Queue Depth" value="2,855 Nodes" icon={Database} color="violet" />
           </div>
         </div>
 
@@ -149,35 +159,35 @@ export const WaitlistV2: React.FC = () => {
                 <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl overflow-hidden flex flex-col">
                   <div className="flex items-center gap-2 mb-6">
                     <Activity className="w-5 h-5 text-cyan-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Intelligence Feed</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Telemetry Feed</h3>
                   </div>
                   
                   <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar text-[11px]">
                     {persona === 'BUSINESS' ? (
                       <>
                         <div>
-                          <p className="text-[10px] text-white/40 uppercase mb-2">Market Sovereignty</p>
-                          <p className="leading-relaxed">Analyzing Enterprise AI TAM... $420B detected. Potential ROI for Agentic Orchestration: 12.4x.</p>
+                          <p className="text-[10px] text-white/40 uppercase mb-2">Fleet Synchronization</p>
+                          <p className="leading-relaxed">Analyzing Agentic Orchestration... Swarm efficiency optimized at 94.2%. Projecting 30-day GTM velocity across 4 verticals.</p>
                         </div>
                         <div className="pt-4 border-t border-white/5">
-                          <p className="text-[10px] text-white/40 uppercase mb-2">Swarm Projection</p>
+                          <p className="text-[10px] text-white/40 uppercase mb-2">Network Sovereignty</p>
                           <div className="h-20 w-full bg-white/5 rounded-lg border border-dashed border-white/10 flex items-center justify-center">
-                            <span className="text-[10px] text-white/20 animate-pulse uppercase tracking-widest">Monitoring 17 Agents</span>
+                            <span className="text-[10px] text-white/20 animate-pulse uppercase tracking-widest text-center">Monitoring 17 Specialized Agents</span>
                           </div>
                         </div>
                       </>
                     ) : (
                       <>
                         <div>
-                          <p className="text-[10px] text-white/40 uppercase mb-2">Individual Arbitrage</p>
-                          <p className="leading-relaxed">Vibe Coding Velocity: 94 pts. Neural throughput optimal. Token consumption trending below benchmark.</p>
+                          <p className="text-[10px] text-white/40 uppercase mb-2">Founder Alignment</p>
+                          <p className="leading-relaxed">Neural handshake latency: 42ms. Vibe Coding capacity: UNLIMITED. Token recycling protocols: ACTIVE.</p>
                         </div>
                         <div className="pt-4 border-t border-white/5">
-                          <p className="text-[10px] text-white/40 uppercase mb-2">Skill Progression</p>
+                          <p className="text-[10px] text-white/40 uppercase mb-2">Sovereign Evolution</p>
                           <div className="space-y-3">
-                            <div className="flex justify-between text-[9px] uppercase"><span className="text-cyan-400">Sovereign Core</span><span>Level 1</span></div>
+                            <div className="flex justify-between text-[9px] uppercase"><span className="text-cyan-400">Builder Core</span><span>Level {isUnlocked ? '1' : '0'}</span></div>
                             <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                              <motion.div initial={{ width: 0 }} animate={{ width: '45%' }} className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
+                              <motion.div initial={{ width: 0 }} animate={{ width: isUnlocked ? '45%' : '5%' }} className="h-full bg-cyan-500 shadow-[0_0_100px_rgba(6,182,212,0.5)]" />
                             </div>
                           </div>
                         </div>
@@ -205,9 +215,8 @@ export const WaitlistV2: React.FC = () => {
         <div className="flex items-center justify-between text-[10px] font-mono text-white/30 uppercase tracking-[0.5em] px-2">
           <div>© 2026 APEX OS // THE FUTURE BELONGS TO BUILDERS</div>
           <div className="flex gap-8">
-            <span>Encryption: AES-256</span>
-            <span>Uptime: 99.99%</span>
-            <span>Latency: 42ms</span>
+            <span className="flex items-center gap-1"><Wifi className="w-3 h-3 text-emerald-400" /> Uplink: Secure</span>
+            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-cyan-400" /> Protocol: AES-256</span>
           </div>
         </div>
 
