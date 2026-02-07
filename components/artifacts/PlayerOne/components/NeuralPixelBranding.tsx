@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, Zap, Brain, Activity } from 'lucide-react';
 import { 
-  APEX_LOGO_ASCII, 
-  PLAYER_ONE_ASCII, 
+  APEX_LOGO_ASCII,
+  APEX_LOGO_ASCII_MOBILE,
+  PLAYER_ONE_ASCII,
+  PLAYER_ONE_ASCII_MOBILE,
   SYSTEM_MESSAGES,
   UI_LABELS 
 } from '@/lib/terminal/constants';
@@ -15,127 +16,158 @@ interface NeuralPixelBrandingProps {
   className?: string;
 }
 
+// CSS-based chromatic aberration - much more performant than framer-motion for rapid animations
+const chromaticStyle = `
+  @keyframes chromatic-cyan {
+    0%, 100% { transform: translate(-2px, -1px); opacity: 0.7; }
+    25% { transform: translate(2px, 1px); opacity: 0.5; }
+    50% { transform: translate(-1px, 0px); opacity: 0.8; }
+    75% { transform: translate(1px, -1px); opacity: 0.6; }
+  }
+  @keyframes chromatic-pink {
+    0%, 100% { transform: translate(2px, 1px); opacity: 0.7; }
+    25% { transform: translate(-2px, -1px); opacity: 0.5; }
+    50% { transform: translate(1px, 0px); opacity: 0.8; }
+    75% { transform: translate(-1px, 1px); opacity: 0.6; }
+  }
+  @keyframes chromatic-main {
+    0%, 100% { transform: translate(0px, 0px); opacity: 1; }
+    50% { transform: translate(0.5px, -0.5px); opacity: 0.95; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  @keyframes fade-slide-in {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .chromatic-cyan {
+    animation: chromatic-cyan 0.15s linear infinite;
+  }
+  .chromatic-pink {
+    animation: chromatic-pink 0.12s linear infinite;
+  }
+  .chromatic-main {
+    animation: chromatic-main 0.1s linear infinite;
+  }
+  .pulse-dot {
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  .fade-slide-in {
+    animation: fade-slide-in 0.3s ease-out forwards;
+  }
+`;
+
 export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({ 
   isAuthorized, 
   className = '' 
 }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`font-mono text-xs leading-tight ${className}`}
-    >
-      {/* APEX Logo with aggressive chromatic aberration "buzz" effect */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="relative mb-2 overflow-visible"
-      >
-        {/* Cyan layer (offset left) - AGGRESSIVE JITTER */}
-        <motion.pre
-          className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none"
-          style={{ willChange: 'transform, opacity' }}
-          animate={{
-            x: [-3, 3, -2, 2, -3, 1, -1, 0, -3],
-            y: [-1, 1, 0, -1, 1, 0, -1, 0, -1],
-            opacity: [0.7, 0.9, 0.5, 0.8, 0.6, 0.9, 0.5, 0.7, 0.7],
-          }}
-          transition={{
-            duration: 0.08,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        >
-          {APEX_LOGO_ASCII}
-        </motion.pre>
-        
-        {/* Pink/Magenta layer (offset right) - AGGRESSIVE JITTER */}
-        <motion.pre
-          className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none"
-          style={{ willChange: 'transform, opacity' }}
-          animate={{
-            x: [3, -3, 2, -2, 3, -1, 1, 0, 3],
-            y: [1, -1, 0, 1, -1, 0, 1, 0, 1],
-            opacity: [0.7, 0.5, 0.9, 0.6, 0.8, 0.5, 0.9, 0.7, 0.7],
-          }}
-          transition={{
-            duration: 0.06,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        >
-          {APEX_LOGO_ASCII}
-        </motion.pre>
-        
-        {/* White layer (main) with micro-jitter */}
-        <motion.pre
-          className="text-white/95 relative z-10"
-          style={{ willChange: 'transform, opacity' }}
-          animate={{
-            x: [0, 1, -1, 0, 0, 1, 0, -1, 0],
-            y: [0, -1, 1, 0, 0, -1, 0, 1, 0],
-            opacity: [1, 0.95, 1, 0.9, 1, 0.95, 1, 0.9, 1],
-          }}
-          transition={{
-            duration: 0.05,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        >
-          {APEX_LOGO_ASCII}
-        </motion.pre>
-      </motion.div>
+  const [visible, setVisible] = useState(false);
+  const [stage, setStage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-        className="flex items-center gap-4 mb-4 text-[10px] text-zinc-500"
+  useEffect(() => {
+    // Detect mobile
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    // Inject chromatic CSS once
+    if (!document.getElementById('chromatic-style')) {
+      const style = document.createElement('style');
+      style.id = 'chromatic-style';
+      style.textContent = chromaticStyle;
+      document.head.appendChild(style);
+    }
+    
+    // Staged reveal for smooth appearance
+    const t1 = setTimeout(() => setVisible(true), 100);
+    const t2 = setTimeout(() => setStage(1), 300);
+    const t3 = setTimeout(() => setStage(2), 500);
+    const t4 = setTimeout(() => setStage(3), 800);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, []);
+  
+  // Select appropriate ASCII based on screen size
+  const apexLogo = isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII;
+  const playerOneLogo = isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII;
+
+  return (
+    <div
+      className={`font-mono text-xs leading-tight transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'} ${className}`}
+    >
+      {/* APEX Logo with CSS-based chromatic aberration */}
+      <div
+        className="relative mb-2 overflow-visible transition-all duration-400"
+        style={{ 
+          opacity: visible ? 1 : 0, 
+          transform: visible ? 'translateX(0)' : 'translateX(-20px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease'
+        }}
+      >
+        {/* Cyan layer (offset left) */}
+        <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[8px] sm:text-xs">
+          {apexLogo}
+        </pre>
+        
+        {/* Pink/Magenta layer (offset right) */}
+        <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[8px] sm:text-xs">
+          {apexLogo}
+        </pre>
+        
+        {/* White layer (main) */}
+        <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[8px] sm:text-xs">
+          {apexLogo}
+        </pre>
+      </div>
+
+      {/* Status indicators - simplified on mobile */}
+      <div
+        className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 text-[8px] sm:text-[10px] text-zinc-500 transition-opacity duration-300"
+        style={{ opacity: stage >= 1 ? 1 : 0 }}
       >
         <span className="flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-cyan-400" />
-          {SYSTEM_MESSAGES.NEURAL_ACTIVE}
+          <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-cyan-400" />
+          <span className="hidden sm:inline">{SYSTEM_MESSAGES.NEURAL_ACTIVE}</span>
+          <span className="sm:hidden">Neural</span>
         </span>
         <span className="flex items-center gap-1">
-          <Zap className="w-3 h-3 text-emerald-400" />
+          <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
           {SYSTEM_MESSAGES.SOVEREIGN}
         </span>
-        <span className="flex items-center gap-1">
-          <Brain className="w-3 h-3 text-cyan-400" />
-          {UI_LABELS.APEX_AI}
-        </span>
-        <span className="flex items-center gap-1">
-          <Activity className="w-3 h-3 text-emerald-400" />
-          {SYSTEM_MESSAGES.HANDSHAKE_AUTHORIZED}
-        </span>
-      </motion.div>
+        {!isMobile && (
+          <>
+            <span className="flex items-center gap-1">
+              <Brain className="w-3 h-3 text-cyan-400" />
+              {UI_LABELS.APEX_AI}
+            </span>
+            <span className="flex items-center gap-1">
+              <Activity className="w-3 h-3 text-emerald-400" />
+              {SYSTEM_MESSAGES.HANDSHAKE_AUTHORIZED}
+            </span>
+          </>
+        )}
+      </div>
 
       {/* PLAYER 1 Badge Container - Centered with Glassmorphism */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="flex flex-col items-center justify-center mb-4"
+      <div
+        className="flex flex-col items-center justify-center mb-4 transition-all duration-500"
+        style={{ 
+          opacity: stage >= 2 ? 1 : 0,
+          transform: stage >= 2 ? 'scale(1)' : 'scale(0.95)'
+        }}
       >
         <div className="backdrop-blur-md bg-black/20 border border-zinc-700/50 rounded-lg px-6 py-4 shadow-xl">
-          <motion.pre
-            className="text-xs leading-tight"
-            animate={{
-              color: isAuthorized 
-                ? ['rgba(34, 211, 238, 0.9)', 'rgba(52, 211, 153, 0.9)']
-                : 'rgba(34, 211, 238, 0.9)',
-              filter: isAuthorized 
-                ? ['contrast(1) invert(0)', 'contrast(1.2) invert(0.1)', 'contrast(1) invert(0)']
-                : ['contrast(1) invert(0)', 'contrast(1.1) invert(0.05)', 'contrast(1) invert(0)'],
-            }}
-            transition={{ 
-              duration: isAuthorized ? 0.6 : 0.3, 
-              ease: 'easeInOut',
-              repeat: isAuthorized ? 0 : Infinity,
-              repeatType: 'reverse'
-            }}
+          <pre
+            className="text-[8px] sm:text-xs leading-tight transition-colors duration-600 whitespace-pre"
             style={{
               color: isAuthorized ? 'rgba(52, 211, 153, 0.9)' : 'rgba(34, 211, 238, 0.9)',
               textShadow: isAuthorized 
@@ -143,24 +175,16 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
                 : '0 0 20px rgba(34, 211, 238, 0.5)',
             }}
           >
-            {PLAYER_ONE_ASCII}
-          </motion.pre>
+            {playerOneLogo}
+          </pre>
           
           {/* SYNCING_SYNAPSES text below badge */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.8 }}
-            className="text-center mt-2"
+          <div
+            className="text-center mt-2 transition-opacity duration-300"
+            style={{ opacity: stage >= 3 ? 1 : 0 }}
           >
-            <motion.span 
-              className="text-[10px] uppercase tracking-widest"
-              animate={{
-                color: isAuthorized 
-                  ? ['rgba(34, 211, 238, 0.7)', 'rgba(52, 211, 153, 0.7)']
-                  : 'rgba(34, 211, 238, 0.7)',
-              }}
-              transition={{ duration: 0.8, ease: 'easeInOut' }}
+            <span 
+              className="text-[10px] uppercase tracking-widest transition-colors duration-800"
               style={{
                 color: isAuthorized ? 'rgba(52, 211, 153, 0.7)' : 'rgba(34, 211, 238, 0.7)'
               }}
@@ -168,42 +192,31 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
               {isAuthorized 
                 ? SYSTEM_MESSAGES.NEURAL_HANDSHAKE_COMPLETE 
                 : SYSTEM_MESSAGES.SYNCING_SYNAPSES}
-            </motion.span>
-          </motion.div>
+            </span>
+          </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isAuthorized ? 1 : 0.3 }}
-        transition={{ duration: 0.3, delay: 0.8 }}
-        className="mt-4 flex items-center gap-3"
+      {/* Bottom status row */}
+      <div
+        className="mt-4 flex items-center gap-3 transition-opacity duration-300"
+        style={{ opacity: stage >= 3 ? (isAuthorized ? 1 : 0.3) : 0 }}
       >
         <div className="flex items-center gap-2">
-          <motion.div
-            animate={isAuthorized ? { 
-              scale: [1, 1.2, 1],
-              opacity: [0.5, 1, 0.5]
-            } : {}}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className={`w-2 h-2 rounded-full ${isAuthorized ? 'bg-emerald-400' : 'bg-zinc-600'}`}
+          <div
+            className={`w-2 h-2 rounded-full ${isAuthorized ? 'bg-emerald-400 pulse-dot' : 'bg-zinc-600'}`}
           />
           <span className={`text-[10px] ${isAuthorized ? 'text-emerald-400' : 'text-zinc-500'}`}>
             {isAuthorized ? SYSTEM_MESSAGES.NEURAL_HANDSHAKE_COMPLETE : SYSTEM_MESSAGES.SYNCING_SYNAPSES}
           </span>
         </div>
 
-        {isAuthorized && (
-          <motion.span
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: 1 }}
-            className="text-[10px] text-cyan-400/60"
-          >
+        {isAuthorized && stage >= 3 && (
+          <span className="text-[10px] text-cyan-400/60 fade-slide-in">
             Type &apos;help&apos; for available commands
-          </motion.span>
+          </span>
         )}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };

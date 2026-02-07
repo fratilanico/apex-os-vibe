@@ -16,6 +16,15 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
   const pulseRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // GSAP Pulse Animation
   useEffect(() => {
@@ -46,14 +55,20 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
     }
   }, [isHovered]);
 
-  // Voice activation simulation
+  // Voice activation - instant on mobile, animated on desktop
   const handleVoiceActivation = useCallback(() => {
-    setIsListening(true);
-    setTimeout(() => {
-      setIsListening(false);
+    if (isMobile) {
+      // Mobile: instant response
       onClick();
-    }, 1500);
-  }, [onClick]);
+    } else {
+      // Desktop: voice activation animation
+      setIsListening(true);
+      setTimeout(() => {
+        setIsListening(false);
+        onClick();
+      }, 1500);
+    }
+  }, [onClick, isMobile]);
 
   return (
     <>
@@ -69,8 +84,15 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
       <motion.button
         ref={buttonRef}
         onClick={handleVoiceActivation}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onTouchEnd={(e) => {
+          // Mobile: prevent default and handle immediately
+          if (isMobile) {
+            e.preventDefault();
+            handleVoiceActivation();
+          }
+        }}
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
         className={`
           fixed bottom-6 left-6 z-50
           w-14 h-14 rounded-full
@@ -80,8 +102,10 @@ export const JarvisFloatingButton: React.FC<JarvisFloatingButtonProps> = ({
           border-2 border-white/20
           backdrop-blur-xl
           transition-all duration-300
+          touch-manipulation
           ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}
         `}
+        style={{ touchAction: 'manipulation' }}
         whileTap={{ scale: 0.95 }}
         aria-label="Open JARVIS AI Assistant"
       >

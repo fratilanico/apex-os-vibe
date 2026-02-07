@@ -14,6 +14,12 @@ export const APEX_LOGO_ASCII = `
  ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚══════╝ 
 `;
 
+// Mobile-friendly compact version (max 28 chars wide)
+export const APEX_LOGO_ASCII_MOBILE = `
+ ▄▀█ █▀█ █▀▀ ▀▄▀   █▀█ █▀
+ █▀█ █▀▀ ██▄ █ █   █▄█ ▄█
+`;
+
 export const PLAYER_ONE_ASCII = `
  ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      ██╗
  ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗    ███║
@@ -21,6 +27,12 @@ export const PLAYER_ONE_ASCII = `
  ██╔═══╝ ██║     ██╔══██║  ╚██╔╝  ██╔══╝  ██╔══██╗     ██║
  ██║     ███████╗██║  ██║   ██║   ███████╗██║  ██║     ██║
  ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝     ╚═╝
+`;
+
+// Mobile-friendly compact version (max 28 chars wide)
+export const PLAYER_ONE_ASCII_MOBILE = `
+ █▀█ █   ▄▀█ █▄█ █▀▀ █▀█  ▄█
+ █▀▀ █▄▄ █▀█  █  ██▄ █▀▄   █
 `;
 
 export const COMMANDS = [

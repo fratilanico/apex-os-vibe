@@ -6,6 +6,12 @@ import {
 import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
+import { 
+  APEX_LOGO_ASCII,
+  APEX_LOGO_ASCII_MOBILE,
+  PLAYER_ONE_ASCII,
+  PLAYER_ONE_ASCII_MOBILE
+} from '../lib/terminal/constants';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
@@ -20,24 +26,6 @@ interface TerminalLine {
 }
 
 const COLOR_CYCLE = ['#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
-
-const APEX_LOGO_ASCII = `
-  █████╗ ██████╗ ███████╗██╗  ██╗    ██████╗  ███████╗
- ██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝   ██╔═══██╗██╔════╝ 
- ███████║██████╔╝█████╗   ╚███╔╝    ██║   ██║███████╗ 
- ██╔══██║██╔═══╝ ██╔══╝   ██╔██╗    ██║   ██║╚════██║ 
- ██║  ██║██║     ███████╗██╔╝ ██╗   ╚██████╔╝███████║ 
- ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚══════╝ 
-`;
-
-const PLAYER_ONE_ASCII = `
- ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      ██╗
- ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗    ███║
- ██████╔╝██║     ███████║ ╚████╔╝ █████╗  ██████╔╝    ╚██║
- ██╔═══╝ ██║     ██╔══██║  ╚██╔╝  ██╔══╝  ██╔══██╗     ██║
- ██║     ███████╗██║  ██║   ██║   ███████╗██║  ██║     ██║
- ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝     ╚═╝
-`;
 
 const JOKES: Record<string, string> = {
   sudo: "Nice try. You are already root here. This is YOUR terminal. You have full control.",
@@ -77,9 +65,22 @@ export const SpectacularTerminal: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
   const [glitchActive, setGlitchActive] = useState(false);
   const [scanActive, setScanActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  // Select appropriate ASCII based on screen size
+  const apexLogo = isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII;
+  const playerOneLogo = isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII;
 
   const addTerminalLine = useCallback((text: string, type: TerminalLine['type'] = 'output', className?: string) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -99,7 +100,7 @@ export const SpectacularTerminal: React.FC = () => {
     if (step === 'boot' || step === 'idle') {
       // Render APEX logo immediately on first tick
       if (bootLine === 0) {
-        addAsciiArt(APEX_LOGO_ASCII, 'text-cyan-400 whitespace-pre');
+        addAsciiArt(apexLogo, `text-cyan-400 whitespace-pre ${isMobile ? 'text-[8px]' : 'text-xs'}`);
       }
       if (bootLine < BOOT_SEQUENCE.length) {
         const line = BOOT_SEQUENCE[bootLine]!;
@@ -116,7 +117,7 @@ export const SpectacularTerminal: React.FC = () => {
       }
     }
     return () => { if (timer) clearTimeout(timer); };
-  }, [bootLine, step, addTerminalLine, addAsciiArt, setStep]);
+  }, [bootLine, step, addTerminalLine, addAsciiArt, setStep, apexLogo, isMobile]);
 
   // Color Cycle
   useEffect(() => {
@@ -176,7 +177,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('[████████████████████] 100%', 'success');
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
       
-      addAsciiArt(PLAYER_ONE_ASCII, 'text-emerald-400 whitespace-pre');
+      addAsciiArt(playerOneLogo, `text-emerald-400 whitespace-pre ${isMobile ? 'text-[8px]' : 'text-xs'}`);
       addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
       
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
@@ -194,7 +195,7 @@ export const SpectacularTerminal: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [addTerminalLine, setStep, unlock]);
+  }, [addTerminalLine, addAsciiArt, setStep, unlock, playerOneLogo, isMobile]);
 
   const handleChat = async (msg: string) => {
     setIsProcessing(true);
@@ -353,7 +354,7 @@ export const SpectacularTerminal: React.FC = () => {
 
   return (
     <motion.div 
-      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[500px] ${glitchActive ? 'animate-glitch' : ''}`}
+      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[400px] sm:min-h-[500px] ${glitchActive ? 'animate-glitch' : ''}`}
       style={{ borderColor: `${currentColor}40`, boxShadow: `0 0 100px ${currentColor}10` }}
     >
       {/* Biometric Scan Line */}
@@ -388,14 +389,14 @@ export const SpectacularTerminal: React.FC = () => {
       </div>
 
       {/* Output */}
-      <div ref={terminalRef} className="flex-1 overflow-y-auto p-8 font-mono space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+      <div ref={terminalRef} className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         <AnimatePresence>
           {lines.map((line) => (
             <motion.div
               key={line.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`text-sm leading-relaxed ${
+              className={`text-xs sm:text-sm leading-relaxed break-words ${
                 line.className ? line.className : (
                   line.type === 'input' ? 'text-cyan-400' :
                   line.type === 'error' ? 'text-red-400 font-bold' :
