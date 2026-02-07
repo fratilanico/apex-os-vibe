@@ -1,6 +1,6 @@
 /**
  * TerminalChat Component
- * Main chat interface for both Gemini and ClawBot with NLP curriculum support
+ * Main chat interface for both APEX Intel and ClawBot with NLP curriculum support
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -205,7 +205,7 @@ export const TerminalChat: React.FC = () => {
   // Get placeholder text with NLP hints
   const getPlaceholderText = () => {
     if (mode === 'gemini') {
-      return 'Ask about curriculum: "What is the shift mindset?" or "Tell me about module 2"...';
+      return 'APEX OS Intelligence is ready. Ask me anything!';
     } else if (clawbot.status.connected) {
       return 'Ask ClawBot to help you build or ask about curriculum...';
     } else {
@@ -258,7 +258,7 @@ export const TerminalChat: React.FC = () => {
                       ? 'You' 
                       : msg.role === 'nlp'
                         ? '📚 Curriculum'
-                        : (mode === 'gemini' ? 'Gemini' : 'ClawBot')
+                        : (mode === 'gemini' ? 'APEX OS' : 'ClawBot')
                     }
                   </span>
                   {msg.metadata?.model && (
@@ -286,7 +286,7 @@ export const TerminalChat: React.FC = () => {
         {isProcessing && (
           <div className="flex justify-start">
             <div className="bg-purple-500/10 text-purple-100 border border-purple-500/20 rounded-lg px-4 py-2.5 font-mono text-sm">
-              <span className="animate-pulse">●●●</span> {mode === 'gemini' ? 'Gemini' : 'ClawBot'} is thinking...
+              <span className="animate-pulse">●●●</span> {mode === 'gemini' ? 'APEX OS' : 'ClawBot'} is thinking...
             </div>
           </div>
         )}

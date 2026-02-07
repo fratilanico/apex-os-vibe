@@ -26,7 +26,7 @@ const BOOT_SEQUENCE = [
   { text: 'Initializing APEX_OS Kernel v6.4.1...', delay: 100, type: 'system' as const },
   { text: 'Loading Neural Interface Protocol...', delay: 400, type: 'system' as const },
   { text: 'Connecting to 17-Agent Swarm...', delay: 700, type: 'matrix' as const },
-  { text: 'Activating JARVIS Core...', delay: 1000, type: 'jarvis' as const },
+  { text: 'Synchronizing with APEX OS Intel...', delay: 1000, type: 'jarvis' as const },
   { text: '[OK] FULL WIRE ENGAGED', delay: 1300, type: 'success' as const },
   { text: '', delay: 1400, type: 'system' as const },
   { text: 'Welcome, Founder. To begin Module 00 access, identify yourself.', delay: 1500, type: 'jarvis' as const },
@@ -86,7 +86,7 @@ const COMMANDS: Record<string, { description: string, response: string | (() => 
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  Mission: Democratize AI-native software development         ║
-║  Stack: 17-Agent Swarm + Vertex AI + Multi-Model LLMs        ║
+║  Stack: 17-Agent Swarm + APEX OS Intel + Multi-Model LLMs    ║
 ║  Cohort: 1,000 founders • 30-day sprint • Zero equity        ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝`

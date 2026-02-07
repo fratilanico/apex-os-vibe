@@ -39,7 +39,31 @@ const BOX = {
   T_RIGHT: '├',
   T_LEFT: '┤',
   CROSS: '┼',
+  HEAVY_TOP_LEFT: '╔',
+  HEAVY_TOP_RIGHT: '╗',
+  HEAVY_BOTTOM_LEFT: '╚',
+  HEAVY_BOTTOM_RIGHT: '╝',
+  HEAVY_HORIZONTAL: '═',
+  HEAVY_VERTICAL: '║',
+  HEAVY_T_RIGHT: '╠',
+  HEAVY_T_LEFT: '╣',
 } as const;
+
+/**
+ * Box text with heavy borders (Golden Standard)
+ */
+export function boxText(title: string, content: string | string[]): string {
+  const lines = Array.isArray(content) ? content : content.split('\n');
+  const width = Math.max(title.length, ...lines.map(l => l.length), 40);
+  
+  const top = BOX.HEAVY_TOP_LEFT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_TOP_RIGHT;
+  const header = `${BOX.HEAVY_VERTICAL} ${title.padEnd(width)} ${BOX.HEAVY_VERTICAL}`;
+  const sep = BOX.HEAVY_T_RIGHT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_T_LEFT;
+  const body = lines.map(line => `${BOX.HEAVY_VERTICAL} ${line.padEnd(width)} ${BOX.HEAVY_VERTICAL}`).join('\n');
+  const bottom = BOX.HEAVY_BOTTOM_LEFT + BOX.HEAVY_HORIZONTAL.repeat(width + 2) + BOX.HEAVY_BOTTOM_RIGHT;
+  
+  return `${top}\n${header}\n${sep}\n${body}\n${bottom}`;
+}
 
 /**
  * Format a success message with exit code

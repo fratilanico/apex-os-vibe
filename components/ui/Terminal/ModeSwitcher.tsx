@@ -1,6 +1,4 @@
-/**
- * ModeSwitcher Component
- * Toggle between Gemini and ClawBot modes
+ * Toggle between APEX OS and ClawBot modes
  */
 
 import React from 'react';
@@ -18,7 +16,7 @@ export const ModeSwitcher: React.FC = () => {
   
   return (
     <div className="flex gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-white/10 backdrop-blur-sm">
-      {/* Gemini Mode Button */}
+      {/* APEX Mode Button */}
       <button
         onClick={() => handleModeChange('gemini')}
         className={`
@@ -29,10 +27,10 @@ export const ModeSwitcher: React.FC = () => {
             : 'bg-white/5 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70 hover:bg-white/10'
           }
         `}
-        aria-label="Switch to Gemini mode"
+        aria-label="Switch to APEX mode"
       >
         <span className="text-lg">⚡</span>
-        <span className="font-semibold">Gemini</span>
+        <span className="font-semibold">APEX OS</span>
         {mode === 'gemini' && (
           <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
         )}

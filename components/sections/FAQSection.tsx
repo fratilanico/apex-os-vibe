@@ -36,7 +36,7 @@ const faqItems: FAQItem[] = [
   },
   {
     question: "What tools will I master and how?",
-    answer: "The 12-tool stack: Cursor, Claude Code, Gemini 3, OpenAI Codex, Antigravity, CodeMachine, NotebookLM, Google Stitch, GPT-5.2, OpenCode, Imagen 3, and Veo 3.1. Plus infrastructure: Vercel, Supabase, Polar.sh, and PM2 automation. You don't just watch—you build with each tool in real projects.",
+    answer: "The 12-tool stack: Cursor, Claude Code, APEX Intel, OpenAI Codex, Antigravity, CodeMachine, NotebookLM, APEX Stitch, GPT-5.2, OpenCode, Imagen 3, and Veo 3.1. Plus infrastructure: Vercel, Supabase, Polar.sh, and APEX automation. You don't just watch—you build with each tool in real projects.",
     icon: Zap,
     concern: "Tool overload anxiety?"
   },

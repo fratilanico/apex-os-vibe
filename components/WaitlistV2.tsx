@@ -11,7 +11,7 @@ interface TerminalLine {
 const BOOT_SEQUENCE = [
   { text: '> initializing APEX_OS kernel...', delay: 100, type: 'system' as const },
   { text: '> loading Module 00 curriculum...', delay: 300, type: 'system' as const },
-  { text: '> connecting to Vertex AI...', delay: 500, type: 'system' as const },
+  { text: '> connecting to APEX OS Intel...', delay: 500, type: 'system' as const },
   { text: '[OK] system ready', delay: 900, type: 'success' as const },
 ];
 

@@ -72,7 +72,7 @@ export default function WaitingListPage() {
             </div>
             <div className="text-center p-4 border-x border-white/10">
               <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Infrastructure</p>
-              <p className="text-xs font-bold text-emerald-400 uppercase">Vertex AI / GCP</p>
+              <p className="text-xs font-bold text-emerald-400 uppercase">APEX OS Cloud / GCP</p>
             </div>
             <div className="text-center p-4">
               <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">Status</p>

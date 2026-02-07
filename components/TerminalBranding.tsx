@@ -14,29 +14,20 @@ const colorCycle = [
   '#ec4899', // pink
 ];
 
+const ASCII_LOGO = `
+    /\\\\\\\\\\\\\\\_ /\\\\\\\\\\\\\\\\\\_        /\\\\\\\\\\\\\\\_        /\\\\\\\\\_        
+     /\\\//////////__//\\\///////////__       /\\\///////////__      /\\\///////\\\_       
+      /\\\      /\\\/      /\\\      /\\\      /\\\      /\\\_     /\\\______/\\\_      
+       /\\\\\\\\\\\/ /\\\      /\\\      /\\\      /\\\      /\\\\\\\\\\\/ /\\\      
+        /\\\/////////  /\\\      /\\\      /\\\      /\\\      /\\\///////////  /\\\      
+         /\\\    /\\\/ /\\\      /\\\      /\\\      /\\\      /\\\      /\\\      
+          /\\\    /\\\/ /\\\\\\\\\\\\\\\/       /\\\\\\\\\\\\\\\/ /\\\      /\\\      
+           \\///     \\///  \\/////////////         \\/////////////  \\///       \\///      
+`.trim();
+
 export const TerminalBranding: React.FC = () => {
-  const [apexText, setApexText] = useState('');
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
-  const [, setIsTypingComplete] = useState(false);
-
-  // APEX_OS typing animation
-  useEffect(() => {
-    const text = 'APEX_OS';
-    let index = 0;
-    
-    const typeInterval = setInterval(() => {
-      if (index <= text.length) {
-        setApexText(text.slice(0, index));
-        index++;
-      } else {
-        clearInterval(typeInterval);
-        setIsTypingComplete(true);
-      }
-    }, 150);
-
-    return () => clearInterval(typeInterval);
-  }, []);
 
   // Color cycling for both logos
   useEffect(() => {
@@ -60,44 +51,39 @@ export const TerminalBranding: React.FC = () => {
 
   return (
     <>
-      {/* Left Corner - APEX_OS */}
+      {/* Left Corner - ASCII LOGO with Aberration */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-6 left-6 z-50 flex items-center gap-2"
+        className="fixed top-4 left-6 z-50 flex flex-col items-start gap-0"
       >
-        <div className="relative">
-          {/* Glow effect */}
-          <div
-            className="absolute inset-0 blur-lg opacity-50 transition-colors duration-1000"
-            style={{ backgroundColor: currentColor }}
-          />
+        <div className="relative group cursor-pointer">
+          {/* Chromatic Aberration Layers */}
+          <pre 
+            className="absolute top-0 left-[1px] font-mono text-[6px] md:text-[8px] leading-[1.1] select-none opacity-40 mix-blend-screen transition-colors duration-1000"
+            style={{ color: '#ff0080' }}
+          >
+            {ASCII_LOGO}
+          </pre>
+          <pre 
+            className="absolute top-0 left-[-1px] font-mono text-[6px] md:text-[8px] leading-[1.1] select-none opacity-40 mix-blend-screen transition-colors duration-1000"
+            style={{ color: '#00ffff' }}
+          >
+            {ASCII_LOGO}
+          </pre>
           
-          {/* Text */}
-          <span
-            className="relative font-mono text-sm font-bold tracking-[0.3em] transition-colors duration-1000"
+          {/* Main Logo */}
+          <pre 
+            className="relative font-mono text-[6px] md:text-[8px] leading-[1.1] transition-colors duration-1000"
             style={{ 
               color: currentColor,
-              textShadow: `0 0 20px ${currentColor}40, 0 0 40px ${currentColor}20`
+              textShadow: `0 0 10px ${currentColor}80`
             }}
           >
-            {apexText}
-            {showCursor && (
-              <span className="animate-pulse">▮</span>
-            )}
-          </span>
+            {ASCII_LOGO}
+            {showCursor && <span className="animate-pulse">▮</span>}
+          </pre>
         </div>
-
-        {/* Status indicator */}
-        <motion.div
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.5, 1, 0.5]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: currentColor }}
-        />
       </motion.div>
 
       {/* Right Corner - PLAYER 1 */}

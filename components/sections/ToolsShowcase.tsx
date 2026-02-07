@@ -80,10 +80,10 @@ const tools: Tool[] = [
   },
   {
     id: 'google-ai',
-    name: 'Google AI',
+    name: 'APEX Intel',
     power: 'Intelligence Augmentation',
     category: 'Models',
-    description: 'Gemini multimodal models with 1M token context and Vertex AI deployment.',
+    description: 'APEX multimodal models with 1M token context and proprietary cloud deployment.',
     ability: 'Process entire codebases and generate from images/video',
     icon: Sparkles,
     color: '#4285f4',
