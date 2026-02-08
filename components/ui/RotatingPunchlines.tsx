@@ -4,14 +4,26 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PUNCHLINES = [
-  'Lead with AI. Build the Future.',
-  'Digital Sovereignty Starts Here.',
-  '17 Agents. One Vision. Zero Limits.',
-  'From Code to Empire in 30 Days.',
-  'The Operating System for the AI Age.',
-  'Build Like Tony Stark. Ship Like a Founder.',
-  'Neural Synchronization: ACTIVE',
-  'Full Wire Engaged.',
+  'Build at AI Speed. Ship at Light Speed.',
+  'Configuration beats manual prompting',
+  'Parallel agents beat sequential execution',
+  'From idea to deployed feature in 72 hours',
+  'Multi-agent judging auto-selects best output',
+  '70% faster than manual coding. Verified.',
+  '17 AI agents. One unified command center.',
+  'The Operating System for the AI Age',
+  'Neural handshake. Authenticated. Build mode activated.',
+  'Cursor for flow state. Claude for reasoning. Gemini for context.',
+  'Cost optimization through intelligent routing',
+  'Debug cycles reduced by 10x',
+  'CLAUDE.md provides persistent context',
+  'NotebookLM preserves knowledge across features',
+  'From research to deployment. Fully orchestrated.',
+  'Real features. Real code. Real deployments.',
+  'You used every tool in the stack',
+  'MCP servers enable external integrations',
+  'Architecture plan → Code → Tests → Deploy',
+  'The swarm is waiting. Will you orchestrate?',
 ];
 
 /**
