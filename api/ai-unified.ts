@@ -10,10 +10,10 @@ import { modules as curriculumModules } from '../data/curriculumData.js';
 // PRINCIPAL AGENT: VERTEX (GEMINI) WITH FALLBACKS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || '',
-  process.env.VITE_SUPABASE_ANON_KEY || ''
-);
+// Initialize Supabase only if configured
+const supabase = (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY)
+  ? createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+  : null;
 
 const MASTER_ADMIN = 'apex@infoacademy.uk';
 
@@ -51,6 +51,9 @@ interface UnifiedAIRequest {
 async function getUserTier(email?: string): Promise<number> {
   if (!email) return 0;
   if (email.toLowerCase() === MASTER_ADMIN) return 2;
+
+  // If Supabase not configured, default to tier 0
+  if (!supabase) return 0;
 
   try {
     const { data, error } = await supabase
