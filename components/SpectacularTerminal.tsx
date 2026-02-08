@@ -116,8 +116,8 @@ export const SpectacularTerminal: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
   
-  // Select appropriate ASCII based on screen size
-  const playerOneLogo = isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII;
+  // Always use full ASCII - scaling handles mobile
+  const playerOneLogo = PLAYER_ONE_ASCII;
 
   const addTerminalLine = useCallback((text: string, type: TerminalLine['type'] = 'output', className?: string) => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -484,24 +484,24 @@ export const SpectacularTerminal: React.FC = () => {
           <div className="relative mb-8 overflow-visible transform scale-110 origin-left"
           >
             {/* Cyan layer (offset left) */}
-            <pre className="absolute top-0 left-0 text-cyan-400/80 select-none pointer-events-none chromatic-cyan whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+            <pre className="absolute top-0 left-0 text-cyan-400/80 select-none pointer-events-none chromatic-cyan whitespace-pre text-[10px] sm:text-sm md:text-2xl lg:text-3xl leading-none font-bold"
               style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
             >
-              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+              {APEX_LOGO_ASCII}
             </pre>
             
             {/* Pink/Magenta layer (offset right) */}
-            <pre className="absolute top-0 left-0 text-pink-500/80 select-none pointer-events-none chromatic-pink whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+            <pre className="absolute top-0 left-0 text-pink-500/80 select-none pointer-events-none chromatic-pink whitespace-pre text-[10px] sm:text-sm md:text-2xl lg:text-3xl leading-none font-bold"
               style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
             >
-              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+              {APEX_LOGO_ASCII}
             </pre>
             
             {/* White layer (main) */}
-            <pre className="text-white relative z-10 chromatic-main whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+            <pre className="text-white relative z-10 chromatic-main whitespace-pre text-[10px] sm:text-sm md:text-2xl lg:text-3xl leading-none font-bold"
               style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
             >
-              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+              {APEX_LOGO_ASCII}
             </pre>
           </div>
         )}
