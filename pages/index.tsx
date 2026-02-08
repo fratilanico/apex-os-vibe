@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Sections
 import { HeroSection } from '../components/sections/HeroSection';
+import { ProgrammeBadge } from '../components/sections/ProgrammeBadge';
 import { TrustBar } from '../components/sections/TrustBar';
 import { CurriculumGrid } from '../components/sections/CurriculumGrid';
 import { ToolsShowcase } from '../components/sections/ToolsShowcase';
@@ -183,6 +184,9 @@ export const IndexPage: React.FC = () => {
         >
           <HeroSection onStartJourney={() => scrollToSection('terminal')} />
         </section>
+
+        {/* Google AI Startup Programme Badge */}
+        <ProgrammeBadge />
 
         {/* Trust Bar */}
         <section

@@ -42,8 +42,8 @@ export const BrandingBar: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-black/80 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
-        {/* Desktop left: branding + Geek Mode Toggle */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop left: branding + Google AI badge + Geek Mode Toggle */}
+        <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div
               className="w-2 h-2 rounded-full transition-colors duration-500"
@@ -57,6 +57,16 @@ export const BrandingBar: React.FC = () => {
               >
                 _
               </span>
+            </span>
+          </div>
+
+          {/* Google AI Startup Badge Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full 
+                          bg-gradient-to-r from-blue-500/10 to-green-500/10 
+                          border border-blue-500/20 backdrop-blur-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_4px_rgba(96,165,250,0.8)]" />
+            <span className="text-[9px] font-mono font-bold text-blue-400/80 tracking-wider uppercase">
+              Google AI
             </span>
           </div>
 

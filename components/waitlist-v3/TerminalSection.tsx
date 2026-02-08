@@ -6,7 +6,7 @@ import { SpectacularTerminal } from '../SpectacularTerminal';
 
 export const TerminalSection: React.FC = () => {
   return (
-    <div className="py-16">
+    <div className="py-8">
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -25,9 +25,9 @@ export const TerminalSection: React.FC = () => {
             </span>
           </div>
 
-          {/* Body */}
+          {/* Body - dominates viewport */}
           <div className="relative">
-            <div className="h-[400px] md:h-[500px] lg:h-[600px] overflow-y-auto">
+            <div className="min-h-[70vh] overflow-y-auto">
               <SpectacularTerminal />
             </div>
 

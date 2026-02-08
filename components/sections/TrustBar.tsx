@@ -145,7 +145,11 @@ export const TrustBar: React.FC = () => {
           className="text-center mb-12"
         >
           <p className="text-gray-400 font-mono text-sm tracking-widest uppercase">
-            The same tools powering modern AI products
+            <span className="bg-gradient-to-r from-blue-400 via-green-400 to-yellow-400 bg-clip-text text-transparent font-bold">
+              Selected for Google AI Startup Programme
+            </span>
+            {' '}<span className="text-gray-500">|</span>{' '}
+            Powered by:
           </p>
         </motion.div>
 
