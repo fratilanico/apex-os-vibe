@@ -480,22 +480,26 @@ export const SpectacularTerminal: React.FC = () => {
             >
               {line.type === 'ascii' ? (
                 <pre 
-                  className={`font-mono overflow-visible whitespace-pre ${line.className || ''}`}
+                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${line.className || ''}`}
                   style={{ 
                     fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
                     fontVariantLigatures: 'none',
-                    textRendering: 'geometricPrecision'
+                    textRendering: 'geometricPrecision',
+                    margin: 0,
+                    padding: 0
                   }}
                 >
                   {line.text}
                 </pre>
               ) : line.type === 'brand-logo' ? (
                 <pre 
-                  className={`font-mono overflow-visible whitespace-pre ${line.className || ''}`}
+                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${line.className || ''}`}
                   style={{ 
                     fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
                     fontVariantLigatures: 'none',
-                    textRendering: 'geometricPrecision'
+                    textRendering: 'geometricPrecision',
+                    margin: 0,
+                    padding: 0
                   }}
                   dangerouslySetInnerHTML={{ __html: line.text }}
                 />
