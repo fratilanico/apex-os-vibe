@@ -8,9 +8,7 @@ import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { 
   APEX_LOGO_ASCII,
-  APEX_LOGO_ASCII_MOBILE,
   PLAYER_ONE_ASCII,
-  PLAYER_ONE_ASCII_MOBILE
 } from '../lib/terminal/constants';
 import { RotatingCTA } from './ui/Terminal/RotatingCTA';
 
@@ -212,7 +210,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('[████████████████████] 100%', 'success');
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
       
-      addAsciiArt(playerOneLogo, `text-emerald-400 leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]`);
+      addAsciiArt(playerOneLogo, `text-emerald-400 leading-none ${isMobile ? 'text-[5px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]`);
       addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
       
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
