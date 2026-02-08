@@ -4,6 +4,9 @@ import fs from 'fs';
 import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
 import { createClient } from '@supabase/supabase-js';
 import { modules as curriculumModules } from '../data/curriculumData.js';
+import { ACADEMY_SYSTEM_PROMPT } from '../lib/ai/prompts/academy.js';
+import { getOnboardingPrompt } from '../lib/ai/prompts/onboarding.js';
+import { TERMINAL_SYSTEM_PROMPT } from '../lib/ai/prompts/terminal.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UNIFIED AI API - TIERED KNOWLEDGE & TONY STARK MODE
@@ -214,11 +217,6 @@ function extractPathnameFromContext(context?: string): string {
 }
 
 function getSpecializedPrompt(pathname: string, mode: 'GEEK' | 'STANDARD'): string | null {
-  // Import specialized prompts
-  const { ACADEMY_SYSTEM_PROMPT } = require('../lib/ai/prompts/academy');
-  const { getOnboardingPrompt } = require('../lib/ai/prompts/onboarding');
-  const { TERMINAL_SYSTEM_PROMPT } = require('../lib/ai/prompts/terminal');
-  
   // Route based on pathname
   if (pathname.includes('/academy')) {
     return ACADEMY_SYSTEM_PROMPT;
