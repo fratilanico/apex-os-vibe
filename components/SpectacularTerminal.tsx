@@ -132,11 +132,10 @@ export const SpectacularTerminal: React.FC = () => {
   // Add multi-color ASCII art (Gemini-style gradient)
   const addMultiColorAsciiArt = useCallback((lines: Array<{text: string, color: string}>, baseClassName: string) => {
     const id = Math.random().toString(36).substr(2, 9);
-    // Create a special line that contains all colored lines
-    const coloredText = lines.map(l => `<span style="color:${l.color}">${l.text}</span>`).join('\n');
+    // Store the structured line data with colors
     setLines(prev => [...prev, { 
       id, 
-      text: coloredText, 
+      text: JSON.stringify(lines), // Store as JSON to preserve colors
       type: 'brand-logo' as const, 
       className: baseClassName 
     }].slice(-200));
@@ -539,8 +538,20 @@ export const SpectacularTerminal: React.FC = () => {
                     margin: 0,
                     padding: 0
                   }}
-                  dangerouslySetInnerHTML={{ __html: line.text }}
-                />
+                >
+                  {(() => {
+                    try {
+                      const coloredLines = JSON.parse(line.text) as Array<{text: string, color: string}>;
+                      return coloredLines.map((l, i) => (
+                        <div key={i} style={{ color: l.color }}>
+                          {l.text}
+                        </div>
+                      ));
+                    } catch {
+                      return line.text;
+                    }
+                  })()}
+                </pre>
               ) : (
                 <>
                   {line.type === 'input' && <span className="text-white/20 mr-3">λ</span>}
