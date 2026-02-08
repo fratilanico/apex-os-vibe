@@ -97,6 +97,7 @@ export const SpectacularTerminal: React.FC = () => {
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const logoRenderedRef = useRef(false);
   
   // Detect mobile
   useEffect(() => {
@@ -147,7 +148,9 @@ export const SpectacularTerminal: React.FC = () => {
     let timer: NodeJS.Timeout;
     if (step === 'boot' || step === 'idle') {
       // Render APEX logo immediately on first tick (multi-color Gemini style)
-      if (bootLine === 0) {
+      // Use ref to prevent duplicate rendering
+      if (bootLine === 0 && !logoRenderedRef.current) {
+        logoRenderedRef.current = true;
         addMultiColorAsciiArt(
           APEX_LOGO_ASCII_LINES,
           `leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`

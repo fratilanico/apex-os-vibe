@@ -3,10 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles, Zap, Brain, Activity } from 'lucide-react';
 import { 
-  APEX_LOGO_ASCII,
-  APEX_LOGO_ASCII_MOBILE,
+  APEX_LOGO_ASCII_LINES,
   PLAYER_ONE_ASCII,
-  PLAYER_ONE_ASCII_MOBILE,
   SYSTEM_MESSAGES,
   UI_LABELS 
 } from '@/lib/terminal/constants';
@@ -68,7 +66,6 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Detect mobile
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -95,39 +92,33 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
       clearTimeout(t4);
     };
   }, []);
-  
-  // Select appropriate ASCII based on screen size
-  const apexLogo = isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII;
-  const playerOneLogo = isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII;
+
+  const playerOneLogo = PLAYER_ONE_ASCII;
 
   return (
     <div
       className={`font-mono text-xs leading-tight transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'} ${className}`}
     >
-      {/* APEX Logo with CSS-based chromatic aberration */}
-      <div
-        className="relative mb-2 overflow-visible transition-all duration-400"
+      {/* APEX Logo with multi-color Gemini style */}
+      <pre 
+        className="font-mono overflow-visible whitespace-pre leading-[0.85] text-[10px] sm:text-sm mb-2 transition-all duration-400"
         style={{ 
+          fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+          fontVariantLigatures: 'none',
+          textRendering: 'geometricPrecision',
+          margin: 0,
+          padding: 0,
           opacity: visible ? 1 : 0, 
           transform: visible ? 'translateX(0)' : 'translateX(-20px)',
           transition: 'opacity 0.4s ease, transform 0.4s ease'
         }}
       >
-        {/* Cyan layer (offset left) */}
-        <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[10px] sm:text-sm">
-          {apexLogo}
-        </pre>
-        
-        {/* Pink/Magenta layer (offset right) */}
-        <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[10px] sm:text-sm">
-          {apexLogo}
-        </pre>
-        
-        {/* White layer (main) */}
-        <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[10px] sm:text-sm">
-          {apexLogo}
-        </pre>
-      </div>
+        {APEX_LOGO_ASCII_LINES.map((l, i) => (
+          <span key={i} style={{ color: l.color, display: 'block' }}>
+            {l.text}
+          </span>
+        ))}
+      </pre>
 
       {/* Status indicators - simplified on mobile */}
       <div

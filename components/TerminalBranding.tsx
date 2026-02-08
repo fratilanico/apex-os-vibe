@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 // Top corner branding with chromatic aberration ASCII and color cycling
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { ChromaticLogo } from './ui/ChromaticLogo';
+
 const colorCycle = [
   '#06b6d4', // cyan
   '#10b981', // emerald
@@ -14,25 +16,10 @@ const colorCycle = [
   '#ec4899', // pink
 ];
 
-const ASCII_LOGO = [
-  "    ___    ____  _______  __  ",
-  "   /   |  / __ \\/ ____/ |/ /  ",
-  "  / /| | / /_/ / __/  |   /   ",
-  " / ___ |/ ____/ /___ /   |    ",
-  "/_/  |_/_/   /_____//_/|_|    ",
-  "                              ",
-  "   ____  _____                ",
-  "  / __ \\/ ___/                ",
-  " / / / /\\__ \\                 ",
-  "/ /_/ /___/ /                 ",
-  "\\____//____/                  "
-].join('\n');
-
 export const TerminalBranding: React.FC = () => {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
-  const [showCursor, setShowCursor] = useState(true);
 
-  // Color cycling
+  // Color cycling for Player 1 UI
   useEffect(() => {
     const colorInterval = setInterval(() => {
       setCurrentColorIndex((prev) => (prev + 1) % colorCycle.length);
@@ -41,52 +28,17 @@ export const TerminalBranding: React.FC = () => {
     return () => clearInterval(colorInterval);
   }, []);
 
-  // Cursor blink
-  useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor((prev) => !prev);
-    }, 530);
-
-    return () => clearInterval(cursorInterval);
-  }, []);
-
   const currentColor = colorCycle[currentColorIndex];
 
   return (
     <>
-      {/* Left Corner - ASCII LOGO with Aberration */}
+      {/* Left Corner - APEX Logo (Gemini Style) */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-4 left-6 z-50 flex flex-col items-start gap-0 pointer-events-none"
+        className="fixed top-4 left-4 md:left-6 z-50 flex flex-col items-start gap-0 pointer-events-none hidden sm:flex"
       >
-        <div className="relative group">
-          {/* Chromatic Aberration Layers */}
-          <pre 
-            className="absolute top-0 left-[1px] font-mono text-[7px] md:text-[9px] leading-[1.2] select-none opacity-40 mix-blend-screen transition-colors duration-1000 whitespace-pre"
-            style={{ color: '#ff0080' }}
-          >
-            {ASCII_LOGO}
-          </pre>
-          <pre 
-            className="absolute top-0 left-[-1px] font-mono text-[7px] md:text-[9px] leading-[1.2] select-none opacity-40 mix-blend-screen transition-colors duration-1000 whitespace-pre"
-            style={{ color: '#00ffff' }}
-          >
-            {ASCII_LOGO}
-          </pre>
-          
-          {/* Main Logo */}
-          <pre 
-            className="relative font-mono text-[7px] md:text-[9px] leading-[1.2] transition-colors duration-1000 whitespace-pre"
-            style={{ 
-              color: currentColor,
-              textShadow: `0 0 10px ${currentColor}80`
-            }}
-          >
-            {ASCII_LOGO}
-            {showCursor && <span className="animate-pulse">▮</span>}
-          </pre>
-        </div>
+        <ChromaticLogo type="apex" size="sm" className="drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]" />
       </motion.div>
 
       {/* Right Corner - PLAYER 1 */}

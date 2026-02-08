@@ -1,11 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { 
-  APEX_LOGO_ASCII,
-  APEX_LOGO_ASCII_MOBILE,
-  PLAYER_ONE_ASCII,
-  PLAYER_ONE_ASCII_MOBILE
+  APEX_LOGO_ASCII_LINES,
+  PLAYER_ONE_ASCII
 } from '@/lib/terminal/constants';
 
 // CSS-based chromatic aberration - 3 layer multicolor effect
@@ -48,27 +46,15 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
   className = '',
   size = 'lg'
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    // Inject chromatic CSS
+    // Inject chromatic CSS (for PLAYER_ONE chromatic effect)
     if (!document.getElementById('chromatic-logo-style')) {
       const style = document.createElement('style');
       style.id = 'chromatic-logo-style';
       style.textContent = chromaticStyle;
       document.head.appendChild(style);
     }
-    
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const logo = type === 'apex' 
-    ? (isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII)
-    : (isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII);
 
   const sizeClasses = {
     sm: 'text-[8px] sm:text-xs',
@@ -77,6 +63,29 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
     xl: 'text-sm sm:text-lg md:text-xl lg:text-2xl'
   };
 
+  // APEX logo uses multi-color Gemini style
+  if (type === 'apex') {
+    return (
+      <pre 
+        className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${sizeClasses[size]} ${className}`}
+        style={{ 
+          fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+          fontVariantLigatures: 'none',
+          textRendering: 'geometricPrecision',
+          margin: 0,
+          padding: 0
+        }}
+      >
+        {APEX_LOGO_ASCII_LINES.map((l, i) => (
+          <span key={i} style={{ color: l.color, display: 'block' }}>
+            {l.text}
+          </span>
+        ))}
+      </pre>
+    );
+  }
+
+  // PLAYER_ONE uses classic chromatic aberration
   return (
     <div className={`relative overflow-visible font-mono leading-none ${className}`}>
       {/* Cyan layer (offset left) */}
@@ -84,7 +93,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
         className={`absolute top-0 left-0 text-cyan-400/80 select-none pointer-events-none chromatic-cyan whitespace-pre ${sizeClasses[size]}`}
         style={{ fontFamily: 'monospace' }}
       >
-        {logo}
+        {PLAYER_ONE_ASCII}
       </pre>
       
       {/* Pink/Magenta layer (offset right) */}
@@ -92,7 +101,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
         className={`absolute top-0 left-0 text-pink-500/80 select-none pointer-events-none chromatic-pink whitespace-pre ${sizeClasses[size]}`}
         style={{ fontFamily: 'monospace' }}
       >
-        {logo}
+        {PLAYER_ONE_ASCII}
       </pre>
       
       {/* White layer (main) */}
@@ -100,7 +109,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
         className={`text-white relative z-10 chromatic-main whitespace-pre ${sizeClasses[size]}`}
         style={{ fontFamily: 'monospace' }}
       >
-        {logo}
+        {PLAYER_ONE_ASCII}
       </pre>
     </div>
   );

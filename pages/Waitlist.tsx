@@ -113,6 +113,14 @@ const OldVsNewComparison = () => {
 export default function WaitlistPage() {
   const { mode, setMode, persona, isUnlocked } = useOnboardingStore();
   const [timeLeft, setTimeLeft] = useState(() => targetDate.getTime() - Date.now());
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(targetDate.getTime() - Date.now()), 1000);
@@ -134,8 +142,8 @@ export default function WaitlistPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden font-mono selection:bg-cyan-500/30">
-      <TerminalBranding />
-      <TerminalBrandingMobile />
+      {!isMobile && <TerminalBranding />}
+      {isMobile && <TerminalBrandingMobile />}
 
       {/* Dynamic Background Orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none">
