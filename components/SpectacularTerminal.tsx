@@ -44,6 +44,21 @@ const chromaticStyle = `
   .chromatic-main {
     animation: chromatic-main 0.1s linear infinite;
   }
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    10% { transform: translate(-2px, 1px); }
+    20% { transform: translate(2px, -1px); }
+    30% { transform: translate(-1px, -2px); }
+    40% { transform: translate(1px, 2px); }
+    50% { transform: translate(-2px, -1px); }
+    60% { transform: translate(2px, 1px); }
+    70% { transform: translate(-1px, 2px); }
+    80% { transform: translate(1px, -2px); }
+    90% { transform: translate(-2px, 0px); }
+  }
+  .animate-glitch {
+    animation: glitch 0.15s linear infinite;
+  }
 `;
 
 interface TerminalLine {
@@ -221,28 +236,104 @@ export const SpectacularTerminal: React.FC = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Handshake failed');
 
-      // Level Up Sequence
-      setScanActive(true);
-      setGlitchActive(true);
-      setTimeout(() => {
-        setScanActive(false);
-        setGlitchActive(false);
-      }, 2000);
+      // ═══════════════════════════════════════════════════════════
+      // LEVEL UP SEQUENCE — 5 PHASES (per FULL_WIRE_ARCHITECTURE)
+      // Phase 1: GLITCH EFFECT (0.5s)
+      // Phase 2: BIOMETRIC SCAN (2s)
+      // Phase 3: TYPING ANIMATION (1s)
+      // Phase 4: AURA MORPH (0.5s)
+      // Phase 5: WIDGET REVEAL (staggered)
+      // ═══════════════════════════════════════════════════════════
+      const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-      addTerminalLine('SYNCING NEURAL LINK...', 'matrix');
+      // — PHASE 1: GLITCH EFFECT —
+      setGlitchActive(true);
+      addTerminalLine('▓▓▓ PHASE 1: CHROMATIC ABERRATION ▓▓▓', 'matrix');
+      await wait(500);
+      setGlitchActive(false);
+
+      // — PHASE 2: BIOMETRIC SCAN —
+      setScanActive(true);
+      addTerminalLine('SCANNING... BIOMETRIC VALIDATION IN PROGRESS', 'matrix');
+      await wait(800);
+      addTerminalLine('[████████░░░░░░░░░░░░] 40%', 'system');
+      await wait(600);
+      addTerminalLine('[████████████████░░░░] 80%', 'system');
+      await wait(400);
       addTerminalLine('[████████████████████] 100%', 'success');
+      await wait(300);
+      addTerminalLine('✓ BIOMETRIC_MATCH_CONFIRMED', 'success');
+      setScanActive(false);
+      await wait(200);
+
+      // — PHASE 3: TYPING ANIMATION — Character-by-char reveal
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
-      
+      await wait(400);
       addAsciiArt(playerOneLogo, `text-emerald-400 leading-none ${isMobile ? 'text-[4.5px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]`);
-      addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
-      
+      await wait(300);
+
+      // Type out ". . . PLAYER 1 - CONNECTED" character by character
+      const connectMsg = '. . . PLAYER 1 - CONNECTED';
+      for (let i = 1; i <= connectMsg.length; i++) {
+        // Update last line with progressive reveal
+        setLines(prev => {
+          const withoutLast = prev.filter(l => l.id !== '__typing__');
+          return [...withoutLast, { id: '__typing__', text: connectMsg.slice(0, i) + '█', type: 'success' as const }];
+        });
+        await wait(35);
+      }
+      // Final version without cursor
+      setLines(prev => {
+        const withoutTyping = prev.filter(l => l.id !== '__typing__');
+        return [...withoutTyping, { id: '__typed__', text: connectMsg, type: 'success' as const }];
+      });
+      await wait(200);
+
+      // — PHASE 4: AURA MORPH — Persona-specific color shift
+      const personaLabel = data.persona === 'BUSINESS' ? 'BUSINESS_ARCHITECT' : 'PERSONAL_BUILDER';
+      const auraColor = data.persona === 'BUSINESS' ? 'VIOLET (#8b5cf6)' : 'CYAN (#06b6d4)';
+      addTerminalLine(`AURA MORPH: ${personaLabel} → ${auraColor}`, 'matrix');
+      await wait(500);
+
+      // — PHASE 5: WIDGET REVEAL — Staggered persona stats
+      addTerminalLine('', 'system');
+      addTerminalLine('━━━━━━━━━ NEURAL LINK ESTABLISHED ━━━━━━━━━', 'success');
+      await wait(200);
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
+      await wait(200);
       addTerminalLine(`✓ QUEUE RANK: #${result.rank}`, 'success');
+      await wait(200);
+      addTerminalLine(`✓ REFERRAL CODE: ${result.referral_code}`, 'success');
+      await wait(200);
+      addTerminalLine(`✓ STATUS: ${result.status?.toUpperCase() || 'ACTIVE'}`, 'success');
+      await wait(300);
+
+      if (data.persona === 'BUSINESS') {
+        addTerminalLine('', 'system');
+        addTerminalLine('┌─── BUSINESS_ARCHITECT MODULES ───┐', 'matrix');
+        addTerminalLine('│ ⚡ MARKET_TAM         — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 🤖 SWARM_MATRIX       — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 📊 INVESTOR_RADAR     — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 🔒 REVENUE_ENGINE     — TIER 2   │', 'matrix');
+        addTerminalLine('│ 🔒 SCALE_PROTOCOL     — TIER 3   │', 'matrix');
+        addTerminalLine('└──────────────────────────────────┘', 'matrix');
+      } else {
+        addTerminalLine('', 'system');
+        addTerminalLine('┌─── PERSONAL_BUILDER MODULES ─────┐', 'matrix');
+        addTerminalLine('│ ⚡ VIBE_VELOCITY      — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 🧠 SKILL_TREE         — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 🎮 NPC_FEED           — UNLOCKED │', 'matrix');
+        addTerminalLine('│ 🔒 AGENT_FORGE        — TIER 2   │', 'matrix');
+        addTerminalLine('│ 🔒 DEPLOY_PROTOCOL    — TIER 3   │', 'matrix');
+        addTerminalLine('└──────────────────────────────────┘', 'matrix');
+      }
+      await wait(400);
+
       addTerminalLine('', 'system');
       addTerminalLine(`You're in the swarm now, ${data.name || 'Player One'}. Standard protocols are offline.`, 'jarvis');
       addTerminalLine('I\'m all yours. What are we building today?', 'jarvis');
       addTerminalLine('Tip: Ask about Module 00: The Shift or type "help" for intel.', 'system');
-      
+
       unlock();
       setStep('unlocked');
     } catch (e: any) {

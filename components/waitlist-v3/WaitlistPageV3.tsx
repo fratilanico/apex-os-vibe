@@ -10,6 +10,7 @@ import { AmbientGlow } from '../ui/AmbientGlow';
 /*  Page sections (order matches scroll order)                         */
 /* ------------------------------------------------------------------ */
 import { BrandingBar } from './BrandingBar';
+import { HeroSection } from './HeroSection';
 import { CommunitySection } from './CommunitySection';
 import { CountdownSection } from './CountdownSection';
 import { TerminalSection } from './TerminalSection';
@@ -139,12 +140,8 @@ const WaitlistPageV3: React.FC = () => {
 
       {/* ── Main content (z-10, scrollable) ── */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-12">
-        {/* 1. Minimal Hero Subtitle */}
-        <div className="text-center py-8">
-          <p className="text-xl md:text-2xl text-white/60 font-sans">
-            Join 1,000 founders shipping products in 30 days.
-          </p>
-        </div>
+        {/* 1. Full Hero — Gradient headline + stat cards + rotating punchlines */}
+        <HeroSection />
 
         {/* 2. Terminal - THE HERO */}
         <TerminalSection />

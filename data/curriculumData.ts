@@ -360,7 +360,17 @@ Before we dive into setup, understand what makes this pairing the foundation of 
 
 **Cursor** is the AI-native editor that replaced VS Code for thousands of developers. It's not just "VS Code with AI features"—it's built from the ground up to embed your entire codebase into the AI's context window. When you ask Cursor to refactor a function, it sees your project structure, imported dependencies, and coding patterns across 100+ files simultaneously.
 
-Together, they form what the community calls **"the reasoning stack"**—Cursor for flow state tab-completion, Claude for deep architectural work.`,
+Together, they form what the community calls **"the reasoning stack"**—Cursor for flow state tab-completion, Claude for deep architectural work.
+
+**Tasks:**
+1. Create account at claude.ai
+2. Install Claude Code terminal agent
+3. Install Cursor IDE, select Claude as model
+4. Generate API key (console.anthropic.com)
+5. Create \`.env\` file with API key
+
+**Hands-On:** Write simple "hello world" backend
+**Expected Output:** 100+ lines of production-ready TypeScript`,
       },
       {
         id: '01.2',
@@ -375,7 +385,75 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
 - **1 million token context window** — 5x larger than Claude
 - **Native multimodal input** — Screenshots, PDFs, videos, audio
 - **Real-time Search grounding** — Pulls live data during generation
-- **2x faster inference** than competitors`,
+- **2x faster inference** than competitors
+
+**Tasks:**
+1. Create account at gemini.google.com
+2. Visit Google AI Studio (aistudio.google.com)
+3. Create API key (console.cloud.google.com)
+4. Install Google GenAI SDK
+5. Configure environment variables
+
+**Hands-On:** Upload screenshot of design, ask for React component
+**Expected Output:** Functional React component with Tailwind CSS`,
+      },
+      {
+        id: '01.3',
+        title: 'GPT-5.2 & OpenAI Setup',
+        duration: '8 min',
+        tools: ['gpt-5-2', 'openai-codex'],
+        content: `## GPT-5.2 — The Debugging Specialist
+
+GPT-5.2 dominates the debugging domain with 80% accuracy on SWE-Bench debugging tasks and 30% fewer hallucinations than previous generations.
+
+**Tasks:**
+1. Subscribe to ChatGPT Plus ($20/month)
+2. Get API key from platform.openai.com
+3. Install OpenAI SDK
+4. Configure authentication
+
+**Hands-On:** Paste error log, ask for root cause
+**Expected Output:** Root cause analysis + 3 fixes with pros/cons`,
+      },
+      {
+        id: '01.4',
+        title: 'Cursor Debug Mode & NotebookLM',
+        duration: '10 min',
+        tools: ['cursor', 'notebooklm'],
+        content: `## Cursor Debug Mode + NotebookLM Research
+
+Two powerful tools that amplify your debugging and research capabilities.
+
+**Cursor Tasks:**
+1. Enable Debug Mode in Cursor settings
+2. Open sample project
+3. Trigger intentional bug
+4. Watch automatic instrumentation
+
+**NotebookLM Tasks:**
+1. Go to notebooklm.google.com
+2. Create notebook
+3. Upload 3-5 documents
+4. Generate mind map and podcast
+
+**Expected Output:** 10-15 min podcast explaining your architecture`,
+      },
+      {
+        id: '01.5',
+        title: 'Asset Tools: Imagen, Veo, APEX Stitch',
+        duration: '10 min',
+        tools: ['imagen-3', 'veo-3-1', 'apex-stitch'],
+        content: `## The Asset Layer — Visual Production at AI Speed
+
+These tools transform how you create visual assets, moving from hours of design work to minutes of AI generation.
+
+**Tasks:**
+1. Access Google Labs (labs.google)
+2. Try Imagen 3 for hero image
+3. Try Veo 3.1 for short demo video
+4. Try APEX Stitch for UI mockup
+
+**Expected Output:** Production-ready assets in minutes, not hours`,
       },
     ],
     keyTakeaways: [
@@ -386,15 +464,15 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
       'You have working API keys & SDKs',
     ],
   },
-  
+
   {
     id: 'module-02',
     number: '02',
-    title: 'Specifying vs Chatting',
+    title: 'From Chatting to Specifying',
     subtitle: 'Configuration Files Are Your Superpower',
     duration: '50 min hands-on',
     objective: 'Learn why prompts fail at scale. Master CLAUDE.md, .cursorrules, AGENTS.md, and NotebookLM structure for consistent outputs.',
-    icon: 'Terminal',
+    icon: 'FileCode',
     sections: [
       {
         id: '02.1',
@@ -409,6 +487,62 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
 
 **The Solution:** Configuration files that persist your preferences`,
       },
+      {
+        id: '02.2',
+        title: 'CLAUDE.md Deep-Dive',
+        duration: '15 min',
+        tools: ['claude-code'],
+        content: `## CLAUDE.md — Your Agent's Persistent Memory
+
+The CLAUDE.md file is the single most important configuration artifact in your AI workflow. It gives Claude Code persistent context about your project.
+
+**What It Does:**
+- Persists project context across sessions
+- Defines subagent roles and capabilities
+- Specifies tool integrations and preferences
+- Sets quality expectations and coding standards
+
+**Hands-On:** Create your first CLAUDE.md file
+**Expected Result:** Claude never asks "what style do you want?" again`,
+      },
+      {
+        id: '02.3',
+        title: 'Cursor .cursorrules Configuration',
+        duration: '12 min',
+        tools: ['cursor'],
+        content: `## .cursorrules — Cursor's System Prompt
+
+The .cursorrules file defines how Cursor generates code in your project. It enforces consistency at the IDE level.
+
+**What It Does:**
+- Defines coding standards for Cursor IDE
+- Specifies component patterns and naming
+- Enforces folder structure conventions
+- Sets accessibility requirements
+
+**Hands-On:** Create .cursorrules for your stack`,
+      },
+      {
+        id: '02.4',
+        title: 'AGENTS.md & NotebookLM Structure',
+        duration: '13 min',
+        tools: ['claude-code', 'notebooklm'],
+        content: `## AGENTS.md + NotebookLM — The Orchestration Layer
+
+These two tools work together to enable autonomous multi-agent workflows backed by deep research.
+
+**AGENTS.md:**
+- Enables autonomous workflows
+- Defines multi-agent coordination protocols
+- Sets verification gates and quality checks
+
+**NotebookLM:**
+- Structure research for reuse across sessions
+- Create knowledge bases from documentation
+- Generate multiple output formats (podcast, mind map, slides)
+
+**Hands-On:** Set up both configuration systems`,
+      },
     ],
     keyTakeaways: [
       'Configuration beats manual prompting',
@@ -419,7 +553,7 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
       'Plan Mode reduces iteration cycles',
     ],
   },
-  
+
   {
     id: 'module-03',
     number: '03',
@@ -442,6 +576,57 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
 5. Cursor judges outputs
 6. Best implementation selected`,
       },
+      {
+        id: '03.2',
+        title: 'Hands-On: 3-Agent Build',
+        duration: '25 min',
+        tools: ['claude-code', 'gemini', 'gpt-5-2', 'cursor'],
+        content: `## Build with Parallel Agents
+
+**Feature:** Add "export data" functionality to todo app
+
+**Steps:**
+1. Create Agent Brief with clear specifications
+2. Launch 3 Parallel Agents (Claude for backend, APEX Intel for UI, GPT-5.2 for edge cases)
+3. Monitor Progress via agent sync state
+4. Multi-Agent Judging (Cursor evaluates all outputs)
+
+**Expected Result:** Best of all 3 implementations automatically selected`,
+      },
+      {
+        id: '03.3',
+        title: 'Cursor Debug Mode Workflow',
+        duration: '15 min',
+        tools: ['cursor', 'gpt-5-2'],
+        content: `## Debug Mode — From 30 Minutes to 3 Minutes
+
+**Problem:** Export fails for files > 100MB
+
+**Cursor's Debug Mode Process:**
+1. Instrument: Adds logging automatically
+2. Reproduce: "Try to export 200MB data"
+3. Capture: Runtime logs show memory spike
+4. Analyze: "Buffer overflow at line 245"
+5. Hypothesis: "Streaming approach better"
+6. Fix: Generates fix, retests automatically
+
+**Time Saved:** 30 mins → 3 mins`,
+      },
+      {
+        id: '03.4',
+        title: 'Cost Optimization Through Specialization',
+        duration: '10 min',
+        tools: ['claude-code', 'gemini', 'gpt-5-2'],
+        content: `## Intelligent Routing Saves 65%
+
+**Decision Matrix:**
+- Complex backend logic → Claude Sonnet ($3/M tokens)
+- Frontend UI → APEX Intel Flash ($0.075/M tokens)
+- Debugging → GPT-5.2 (specialized)
+
+**Real Savings:** 65% lower costs by routing intelligently
+**Speed Bonus:** 20% faster delivery through parallelization`,
+      },
     ],
     keyTakeaways: [
       'Parallel agents beat sequential execution',
@@ -451,7 +636,7 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
       'MCP servers enable external integrations',
     ],
   },
-  
+
   {
     id: 'module-04',
     number: '04',
@@ -463,6 +648,36 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
     sections: [
       {
         id: '04.1',
+        title: 'Research Phase with NotebookLM',
+        duration: '15 min',
+        tools: ['notebooklm', 'gemini'],
+        content: `## Research Before You Build
+
+**Tasks:**
+1. Upload existing codebase docs to NotebookLM
+2. Upload analytics best practices articles
+3. Generate mind map of requirements
+4. Generate podcast for team alignment
+
+**Output:** Clear understanding of feature scope and technical requirements`,
+      },
+      {
+        id: '04.2',
+        title: 'Planning Phase with Claude Code',
+        duration: '15 min',
+        tools: ['claude-code', 'cursor'],
+        content: `## Architecture-First Planning
+
+**Tasks:**
+1. Use Plan Mode for architecture design
+2. Break into subagent tasks with clear specs
+3. Generate Mermaid diagrams in Cursor
+4. Define API contracts and data schemas
+
+**Output:** Complete technical specification ready for execution`,
+      },
+      {
+        id: '04.3',
         title: 'Build Phase: Parallel Agents',
         duration: '30 min',
         tools: ['claude-code', 'gemini', 'gpt-5-2'],
@@ -473,6 +688,40 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
 
 **Expected Output:** 200+ lines backend, 150+ lines frontend`,
       },
+      {
+        id: '04.4',
+        title: 'Asset Generation',
+        duration: '15 min',
+        tools: ['imagen-3', 'veo-3-1', 'apex-stitch'],
+        content: `## Parallel Asset Creation
+
+**Simultaneous Generation:**
+- Imagen 3: Feature mockups + marketing assets
+- Veo 3.1: 2-min demo video + UI walkthrough
+- APEX Stitch: Refined UI mockups and design iterations
+
+**Output:** Production-ready marketing materials alongside the code`,
+      },
+      {
+        id: '04.5',
+        title: 'Debug & Deploy',
+        duration: '15 min',
+        tools: ['cursor', 'gpt-5-2'],
+        content: `## From Code to Production
+
+**Debug Phase:**
+1. Run application in development
+2. Cursor auto-instruments code for monitoring
+3. Find edge cases through automated testing
+4. Route bugs to appropriate agent for fixes
+
+**Deploy Phase:**
+1. Push to production via CI/CD pipeline
+2. Monitor with structured logging
+3. Iterate based on real usage data
+
+**Time Saved:** Days → Hours`,
+      },
     ],
     keyTakeaways: [
       'You\'ve built a real feature end-to-end',
@@ -482,7 +731,7 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
       'You have a repeatable process',
     ],
   },
-  
+
   {
     id: 'module-05',
     number: '05',
@@ -494,6 +743,43 @@ APEX Intel is the answer to multimodal AI development. While Claude excels at re
     sections: [
       {
         id: '05.1',
+        title: 'Project Selection & Setup',
+        duration: 'Week 1',
+        tools: ['notebooklm', 'claude-code'],
+        content: `## Choose Your Mission
+
+**Choose Your Project:**
+- Option 1: Add feature to existing project
+- Option 2: Build new micro-SaaS
+- Option 3: Solve real business problem
+
+**Setup Phase:**
+1. Create project brief with clear scope
+2. Research with NotebookLM for domain knowledge
+3. Set up all configuration files (CLAUDE.md, .cursorrules, AGENTS.md)
+4. Get mentor approval on scope`,
+      },
+      {
+        id: '05.2',
+        title: 'Build & Iterate',
+        duration: 'Week 2-3',
+        tools: ['claude-code', 'cursor', 'gemini', 'gpt-5-2'],
+        content: `## Full Orchestration Execution
+
+**Execution:**
+1. Use Plan Mode for architecture design
+2. Execute with parallel agents (Claude + APEX Intel + GPT-5.2)
+3. Debug with Cursor Debug Mode
+4. Iterate based on testing results
+
+**Documentation Required:**
+- Architecture decisions and rationale
+- Agent usage log (which agent, which task, why)
+- Cost tracking per feature
+- Iteration notes and lessons learned`,
+      },
+      {
+        id: '05.3',
         title: 'Submission & Certification',
         duration: 'Week 4',
         tools: ['imagen-3', 'veo-3-1'],

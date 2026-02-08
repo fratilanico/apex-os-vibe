@@ -15,7 +15,7 @@ export const TerminalSection: React.FC = () => {
         className="w-full"
       >
         {/* Terminal window frame - breaking out to full width */}
-        <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/90 w-full lg:w-[110%] lg:ml-[-5%] xl:w-[120%] xl:ml-[-10%] transition-all duration-700">
+        <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/90 w-full max-w-full transition-all duration-700">
           {/* Title bar */}
           <div className="h-10 bg-white/5 flex items-center px-4 gap-2 border-b border-white/5">
             <div className="w-3 h-3 rounded-full bg-red-500/80" />
