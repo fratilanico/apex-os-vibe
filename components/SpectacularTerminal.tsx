@@ -156,10 +156,12 @@ export const SpectacularTerminal: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          ...data, 
+          ...data,
+          persona: data.persona || 'PERSONAL', // Ensure persona is included
           notes: data.discovery,
           mode: 'GEEK_V3', 
-          version: '3.0_STARK' 
+          version: '3.0_STARK',
+          consent: true // Implied consent in GEEK mode
         }),
       });
       const result = await res.json();
