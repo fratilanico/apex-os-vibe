@@ -362,9 +362,14 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   return (
     <div
       ref={terminalRef}
-      className={`flex-1 flex flex-col bg-zinc-950 rounded-2xl border border-cyan-500/10 overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
+      className={`flex-1 flex flex-col bg-zinc-950 rounded-2xl border overflow-hidden min-h-0 transition-all duration-300 pointer-events-auto ${className}`}
       onClick={() => inputRef.current?.focus()}
-      style={{ touchAction: 'manipulation' }}
+      style={{ 
+        touchAction: 'manipulation',
+        background: 'linear-gradient(135deg, rgba(10,10,10,0.95) 0%, rgba(20,20,30,0.95) 50%, rgba(10,10,10,0.95) 100%)',
+        border: '1px solid rgba(6,182,212,0.2)',
+        boxShadow: '0 0 60px rgba(139,92,246,0.1), inset 0 0 60px rgba(6,182,212,0.05)'
+      }}
     >
       <TerminalHeader>
         {/* ProviderBadge removed 2026-02-08 - ultra minimal design */}

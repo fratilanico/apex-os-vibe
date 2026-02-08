@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Users, Zap, Calendar, Bot } from 'lucide-react';
 import { GradientText } from '../ui/GradientText';
 import { StatCard } from '../ui/StatCard';
+import { RotatingPunchlines } from '../ui/RotatingPunchlines';
 
 const container = {
   hidden: { opacity: 0 },
@@ -45,15 +46,13 @@ export const HeroSection: React.FC = () => {
         </GradientText>
       </motion.h1>
 
-      {/* Subhead */}
-      <motion.p
-        variants={item}
-        className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-16 font-sans"
-      >
-        Join 1,000 founders shipping products in 30 days.
-        <br className="hidden sm:block" />
-        Zero equity. Maximum velocity.
-      </motion.p>
+      {/* Polychromatic Rotating Punchlines - FULL GEEK MODE */}
+      <motion.div variants={item} className="mb-16">
+        <RotatingPunchlines />
+        <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">
+          Zero equity. Maximum velocity.
+        </p>
+      </motion.div>
 
       {/* Stat Cards */}
       <motion.div
