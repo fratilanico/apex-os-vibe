@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TERMINAL_CTA_PHRASES } from '@/lib/terminal/constants';
+import { TERMINAL_CTA_PHRASES } from '../../../lib/terminal/constants';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ROTATING PUNCHLINE CTA
