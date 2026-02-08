@@ -554,12 +554,6 @@ export const SpectacularTerminal: React.FC = () => {
         )}
       </div>
 
-import { RotatingCTA } from './ui/Terminal/RotatingCTA';
-
-// ... existing imports
-
-export const SpectacularTerminal: React.FC = () => {
-  // ... existing code ...
 
       {/* Input */}
       <div className="border-t border-white/10 bg-white/5 flex flex-col">

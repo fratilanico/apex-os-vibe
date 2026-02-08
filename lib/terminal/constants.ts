@@ -161,6 +161,29 @@ export const TERMINAL_CONFIG = {
   API_TIMEOUT_MS: 30000,
 } as const;
 
+export const TERMINAL_CTA_PHRASES = [
+  "Initialize handshake...",
+  "Type 'join' to begin...",
+  "The swarm is waiting...",
+  "Architect your destiny...",
+  "Execute launch sequence...",
+  "Wake up, Player One...",
+  "Neural link ready...",
+  "Establish connection...",
+  "Command the swarm...",
+  "Build at lightspeed...",
+  "Enter the matrix...",
+  "Deploy your vision...",
+  "Start the engine...",
+  "Go full wire...",
+  "Sync with the core...",
+  "Access granted. Type now.",
+  "Awaiting directives...",
+  "Ready for input...",
+  "Signal the fleet...",
+  "Become the Architect..."
+] as const;
+
 export const COMMAND_ALIASES: Record<string, string> = {
   'showmethemoney': 'showmethemoney',
 } as const;

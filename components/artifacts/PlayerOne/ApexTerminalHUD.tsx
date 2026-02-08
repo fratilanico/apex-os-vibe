@@ -25,6 +25,7 @@ import { NeuralPixelBranding } from './components/NeuralPixelBranding';
 import { queryAI, type AIResponse } from '@/lib/ai/globalAIService';
 import { TERMINAL_SYSTEM_PROMPT } from '@/lib/ai/prompts/terminal';
 import * as CLIFormatter from '@/lib/cliFormatter';
+import { RotatingCTA } from '@/components/ui/Terminal/RotatingCTA';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // APEX TERMINAL HUD v2.0 — AGENTS.md Compliant Implementation
@@ -382,7 +383,8 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
       />
 
       <div className="p-4 flex flex-col md:flex-row items-center gap-3 bg-zinc-950/80 backdrop-blur-xl border-t border-white/5 relative shrink-0">
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full flex flex-col gap-1">
+          {!isProcessing && <RotatingCTA />}
           <TerminalInput
             ref={inputRef}
             input={input}
