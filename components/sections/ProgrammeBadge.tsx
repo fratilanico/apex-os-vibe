@@ -55,7 +55,7 @@ export const ProgrammeBadge: React.FC = () => {
               className="text-sm font-mono font-bold bg-gradient-to-r from-blue-400 via-green-400 to-yellow-400 
                          bg-clip-text text-transparent"
             >
-              Google AI Startup
+              Google AI Startup Programme
             </span>
           </motion.div>
 
