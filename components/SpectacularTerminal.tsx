@@ -7,8 +7,7 @@ import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { 
-  APEX_LOGO_ASCII,
-  APEX_LOGO_ASCII_MOBILE,
+  APEX_LOGO_ASCII_LINES,
   PLAYER_ONE_ASCII,
   PLAYER_ONE_ASCII_MOBILE
 } from '../lib/terminal/constants';
@@ -79,7 +78,6 @@ export const SpectacularTerminal: React.FC = () => {
   }, []);
   
   // Select appropriate ASCII based on screen size
-  const apexLogo = isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII;
   const playerOneLogo = isMobile ? PLAYER_ONE_ASCII_MOBILE : PLAYER_ONE_ASCII;
 
   const addTerminalLine = useCallback((text: string, type: TerminalLine['type'] = 'output', className?: string) => {
@@ -94,13 +92,30 @@ export const SpectacularTerminal: React.FC = () => {
     addHistory(`[ASCII] art_block`);
   }, [addHistory]);
 
+  // Add multi-color ASCII art (Gemini-style gradient)
+  const addMultiColorAsciiArt = useCallback((lines: Array<{text: string, color: string}>, baseClassName: string) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    // Create a special line that contains all colored lines
+    const coloredText = lines.map(l => `<span style="color:${l.color}">${l.text}</span>`).join('\n');
+    setLines(prev => [...prev, { 
+      id, 
+      text: coloredText, 
+      type: 'brand-logo' as const, 
+      className: baseClassName 
+    }].slice(-200));
+    addHistory(`[ASCII] multi_color_art_block`);
+  }, [addHistory]);
+
   // Boot Sequence
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (step === 'boot' || step === 'idle') {
-      // Render APEX logo immediately on first tick
+      // Render APEX logo immediately on first tick (multi-color Gemini style)
       if (bootLine === 0) {
-        addAsciiArt(apexLogo, `text-cyan-400 leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]`);
+        addMultiColorAsciiArt(
+          APEX_LOGO_ASCII_LINES,
+          `leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`
+        );
       }
       if (bootLine < BOOT_SEQUENCE.length) {
         const line = BOOT_SEQUENCE[bootLine]!;
@@ -117,7 +132,7 @@ export const SpectacularTerminal: React.FC = () => {
       }
     }
     return () => { if (timer) clearTimeout(timer); };
-  }, [bootLine, step, addTerminalLine, addAsciiArt, setStep, apexLogo, isMobile]);
+  }, [bootLine, step, addTerminalLine, addAsciiArt, addMultiColorAsciiArt, setStep, isMobile]);
 
   // Color Cycle
   useEffect(() => {
@@ -451,7 +466,7 @@ export const SpectacularTerminal: React.FC = () => {
               key={line.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className={line.type === 'ascii' ? '' : `text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
+              className={line.type === 'ascii' || line.type === 'brand-logo' ? '' : `text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
                 line.className ? line.className : (
                   line.type === 'input' ? 'text-cyan-400' :
                   line.type === 'error' ? 'text-red-400 font-bold' :
@@ -474,6 +489,16 @@ export const SpectacularTerminal: React.FC = () => {
                 >
                   {line.text}
                 </pre>
+              ) : line.type === 'brand-logo' ? (
+                <pre 
+                  className={`font-mono overflow-visible whitespace-pre ${line.className || ''}`}
+                  style={{ 
+                    fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+                    fontVariantLigatures: 'none',
+                    textRendering: 'geometricPrecision'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: line.text }}
+                />
               ) : (
                 <>
                   {line.type === 'input' && <span className="text-white/20 mr-3">λ</span>}

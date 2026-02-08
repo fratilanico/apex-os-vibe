@@ -5,14 +5,19 @@
  * Single source of truth for terminal-related constants.
  */
 
-export const APEX_LOGO_ASCII = `
- █████╗ ██████╗ ███████╗██╗  ██╗    ██████╗  ███████╗
-██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝   ██╔═══██╗██╔════╝ 
-███████║██████╔╝█████╗   ╚███╔╝    ██║   ██║███████╗ 
-██╔══██║██╔═══╝ ██╔══╝   ██╔██╗    ██║   ██║╚════██║ 
-██║  ██║██║     ███████╗██╔╝ ██╗   ╚██████╔╝███████║ 
-╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚══════╝ 
-`;
+// Multi-color Gemini-style gradient logo
+// Each line rendered with different color for gradient effect
+export const APEX_LOGO_ASCII_LINES = [
+  { text: " █████╗ ██████╗ ███████╗██╗  ██╗    ██████╗  ███████╗", color: "#3B82F6" }, // Blue
+  { text: "██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝   ██╔═══██╗██╔════╝ ", color: "#06B6D4" }, // Cyan
+  { text: "███████║██████╔╝█████╗   ╚███╔╝    ██║   ██║███████╗ ", color: "#8B5CF6" }, // Purple
+  { text: "██╔══██║██╔═══╝ ██╔══╝   ██╔██╗    ██║   ██║╚════██║ ", color: "#EC4899" }, // Pink
+  { text: "██║  ██║██║     ███████╗██╔╝ ██╗   ╚██████╔╝███████║ ", color: "#F59E0B" }, // Orange
+  { text: "╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝    ╚═════╝ ╚══════╝ ", color: "#10B981" }, // Emerald
+];
+
+// Plain version for backwards compatibility
+export const APEX_LOGO_ASCII = APEX_LOGO_ASCII_LINES.map(l => l.text).join('\n');
 
 export const PLAYER_ONE_ASCII = `
  ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      ██╗
