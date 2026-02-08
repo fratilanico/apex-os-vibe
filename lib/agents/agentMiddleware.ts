@@ -48,13 +48,15 @@ export function withCompliance<T extends (...args: any[]) => any>(
 /**
  * Validate agent output without modifying
  */
-export function validateAgentOutput(output: string, agentName: string) {
+export function validateAgentOutput(output: string, _agentName: string) {
   return complianceEnforcer.validate(output);
 }
 
 /**
  * Format agent output to Golden Standard
+ * UPDATED 2026-02-08: Pass-through mode - system prompt handles formatting
  */
-export function formatAgentOutput(output: string, agentName: string) {
-  return complianceEnforcer.autoFormat(output, agentName);
+export function formatAgentOutput(output: string, _agentName: string) {
+  // Pass through - let the system prompt handle formatting naturally
+  return output;
 }
