@@ -1,8 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
-// Simple in-memory storage for demo (will reset on deploy)
-const submissions: any[] = [];
+// Initialize Supabase
+const supabase = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''
+);
 
 // Initialize Resend
 const resend = process.env.RESEND_API_KEY 
@@ -37,22 +41,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: payload.name, 
       email: payload.email,
       hasResend: !!resend,
-      resendKey: process.env.RESEND_API_KEY ? 'set' : 'missing'
+      hasSupabase: !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
     });
 
-    // Store submission (in-memory for demo)
-    const entry = {
-      id: `WL${Date.now()}`,
+    // Prepare entry data
+    const referralCode = `APEX${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    
+    const entryData = {
       name: payload.name,
       email: payload.email,
-      phone: payload.phone || '',
-      goal: payload.goal || '',
+      phone: payload.phone || null,
+      goal: payload.goal || null,
       persona: payload.persona || 'PERSONAL_BUILDER',
       ai_score: 75,
-      referral_code: `APEX${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-      created_at: new Date().toISOString()
+      referral_code: referralCode
     };
-    submissions.push(entry);
+
+    // Store in Supabase
+    let entry: any;
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { data, error } = await supabase
+          .from('waitlist_entries')
+          .insert([entryData])
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Supabase error:', error);
+          // Continue anyway - we'll send email even if DB fails
+          entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
+        } else {
+          entry = data;
+          console.log('Stored in Supabase:', entry.id);
+        }
+      } catch (dbError: any) {
+        console.error('Database error:', dbError.message);
+        entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
+      }
+    } else {
+      // Fallback to in-memory
+      console.warn('Supabase not configured, using in-memory storage');
+      entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
+    }
 
     // Send email notification
     if (resend) {
