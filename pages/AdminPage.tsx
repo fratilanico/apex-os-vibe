@@ -29,6 +29,9 @@ import {
   GraduationCap,
   MessageSquare,
   CreditCard,
+  Upload,
+  FileCode,
+  Wand2,
 } from 'lucide-react';
 import {
   COMPONENT_REGISTRY,
@@ -41,7 +44,7 @@ import {
 } from '../data/adminData';
 import { modules } from '../data/curriculumData';
 
-type TabId = 'overview' | 'curriculum' | 'components' | 'easter-eggs' | 'tech-stack' | 'roadmap' | 'actions';
+type TabId = 'overview' | 'content-ops' | 'curriculum' | 'components' | 'easter-eggs' | 'tech-stack' | 'roadmap' | 'actions';
 
 interface Tab {
   id: TabId;
@@ -51,6 +54,7 @@ interface Tab {
 
 const TABS: Tab[] = [
   { id: 'overview', label: 'Overview', icon: Layers },
+  { id: 'content-ops', label: 'Content Ops', icon: Wand2 },
   { id: 'curriculum', label: 'Curriculum', icon: BookOpen },
   { id: 'components', label: 'Components', icon: Code },
   { id: 'easter-eggs', label: 'Easter Eggs', icon: Sparkles },
@@ -316,6 +320,94 @@ export const AdminPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Content Ops Tab */}
+            {activeTab === 'content-ops' && (
+              <div className="space-y-6">
+                <div className="p-6 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="inline-flex w-12 h-12 rounded-xl bg-violet-500/20 items-center justify-center">
+                      <Wand2 className="w-6 h-6 text-violet-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Intelligent Content Generator</h3>
+                      <p className="text-white/50 text-sm">Upload HTML to auto-generate branded templates</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Upload Zone */}
+                    <div className="border-2 border-dashed border-white/10 rounded-2xl p-12 flex flex-col items-center justify-center text-center group hover:border-violet-500/50 transition-all cursor-pointer bg-white/5">
+                      <div className="w-16 h-16 rounded-full bg-violet-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Upload className="w-8 h-8 text-violet-400" />
+                      </div>
+                      <h4 className="text-lg font-bold text-white mb-2">Drop HTML file here</h4>
+                      <p className="text-white/40 text-sm mb-6">or click to browse your files</p>
+                      <button className="px-6 py-2 rounded-lg bg-violet-500 text-white font-bold hover:bg-violet-400 transition-colors">
+                        Select File
+                      </button>
+                    </div>
+
+                    {/* Preview / Results */}
+                    <div className="bg-black/40 rounded-2xl border border-white/5 p-6 flex flex-col">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-bold text-white flex items-center gap-2">
+                          <FileCode className="w-4 h-4 text-cyan-400" />
+                          Generated Template
+                        </h4>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">READY</span>
+                      </div>
+                      
+                      <div className="flex-1 bg-black/60 rounded-lg p-4 font-mono text-xs text-white/40 overflow-hidden relative">
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 pointer-events-none" />
+                        <pre className="whitespace-pre-wrap">
+{`<!-- APEX OS Auto-Generated Template -->
+<section class="content-container">
+  <div class="branding-header">
+    {{LOGO}}
+  </div>
+  <article class="prose">
+    <h1>{{TITLE}}</h1>
+    <div class="metadata">
+      <span>{{AUTHOR}}</span>
+      <span>{{DATE}}</span>
+    </div>
+    <div class="body">
+      {{CONTENT}}
+    </div>
+  </article>
+</section>`}
+                        </pre>
+                      </div>
+
+                      <div className="mt-4 flex gap-3">
+                        <button className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
+                          Preview
+                        </button>
+                        <button className="flex-1 py-2 rounded-lg bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all">
+                          Save Template
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[
+                    { label: 'Kimi Adaptation', status: 'ACTIVE', color: 'cyan' },
+                    { label: 'Perplexity SEO', status: 'ACTIVE', color: 'violet' },
+                    { label: 'Google Stitch MCP', status: 'READY', color: 'emerald' },
+                  ].map((engine) => (
+                    <div key={engine.label} className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                      <span className="text-white/70 text-sm font-medium">{engine.label}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded bg-${engine.color}-500/20 text-${engine.color}-400 font-bold uppercase`}>
+                        {engine.status}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

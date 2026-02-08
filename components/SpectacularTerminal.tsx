@@ -100,7 +100,7 @@ export const SpectacularTerminal: React.FC = () => {
     if (step === 'boot' || step === 'idle') {
       // Render APEX logo immediately on first tick
       if (bootLine === 0) {
-        addAsciiArt(apexLogo, `text-cyan-400 whitespace-pre ${isMobile ? 'text-[10px]' : 'text-sm'}`);
+        addAsciiArt(apexLogo, `text-cyan-400 whitespace-pre font-mono leading-[1.1] ${isMobile ? 'text-[8px]' : 'text-[14px]'} drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]`);
       }
       if (bootLine < BOOT_SEQUENCE.length) {
         const line = BOOT_SEQUENCE[bootLine]!;
@@ -179,7 +179,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('[████████████████████] 100%', 'success');
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
       
-      addAsciiArt(playerOneLogo, `text-emerald-400 whitespace-pre ${isMobile ? 'text-[10px]' : 'text-sm'}`);
+      addAsciiArt(playerOneLogo, `text-emerald-400 whitespace-pre font-mono leading-[1.1] ${isMobile ? 'text-[8px]' : 'text-[14px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]`);
       addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
       
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
@@ -451,7 +451,7 @@ export const SpectacularTerminal: React.FC = () => {
               key={line.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`text-xs sm:text-sm leading-relaxed break-words ${
+              className={`text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
                 line.className ? line.className : (
                   line.type === 'input' ? 'text-cyan-400' :
                   line.type === 'error' ? 'text-red-400 font-bold' :

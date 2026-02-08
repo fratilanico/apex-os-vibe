@@ -395,7 +395,7 @@ export const TerminalContactV2: React.FC = () => {
     setOutput(prev => [...prev, 'TRANSMITTING_DATA...']);
 
     try {
-      const response = await fetch('https://formspree.io/f/xwpkgpvd', {
+      const response = await fetch('/api/contact-notify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -405,7 +405,7 @@ export const TerminalContactV2: React.FC = () => {
           name: completeFormData.name,
           email: completeFormData.email,
           message: completeFormData.message,
-          _subject: `[Vibe Contact] New message from ${completeFormData.name}`,
+          subject: `[Vibe Contact] New message from ${completeFormData.name}`,
         }),
       });
 

@@ -110,6 +110,55 @@ mandatory_protocol:
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### 1.5 API & Network Layer Changes - REQUIRES APPROVAL
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  API & NETWORK LAYER CHANGES - MANDATORY APPROVAL PROTOCOL      ║
+║  Priority: CRITICAL | Applies To: ALL AGENTS                    ║
+╚══════════════════════════════════════════════════════════════════╝
+
+CRITICAL: Any changes to API endpoints, network layer, or type 
+definitions MUST follow this approval protocol:
+
+NEVER directly modify without explicit approval:
+- api/ai-unified.ts
+- api/matrix-director.ts
+- Any /api/* endpoint files
+- Any type definition files (*.d.ts, types/*.ts)
+- Any network configuration or model IDs
+- Any database schema or connection strings
+
+APPROVAL PROTOCOL:
+1. PRESENT proposed changes as multiple choice question
+2. WAIT for explicit user confirmation
+3. Only then proceed with implementation
+4. Follow up with verification
+
+Example format:
+┌─────────────────────────────────────────────────────────────┐
+│  PROPOSED API CHANGE REQUIRES APPROVAL                      │
+├─────────────────────────────────────────────────────────────┤
+│  File: api/ai-unified.ts                                    │
+│  Impact: Updates model IDs in cascade                       │
+│  Risk: HIGH - Could break production AI responses           │
+│                                                              │
+│  [1] APPROVE - Update to latest models                      │
+│  [2] SKIP - Keep current models                             │
+│  [3] REVIEW - Show me detailed diff first                   │
+│  [4] DISCUSS - I have questions                             │
+└─────────────────────────────────────────────────────────────┘
+
+WHY THIS MATTERS:
+- API changes can break production instantly
+- Network layer changes affect all users
+- Type changes require cascading updates
+- Model ID changes impact AI response quality
+- Database changes are irreversible
+
+AGENTS.MD VIOLATION = IMMEDIATE FLAG
+```
+
 ### 1.4 Communication Standard
 
 ```yaml

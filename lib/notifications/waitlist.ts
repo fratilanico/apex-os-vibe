@@ -1,6 +1,9 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+// Initialize Resend only if API key is present
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
 const fromEmail = process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>';
 const internalEmail = process.env.NOTIFY_EMAIL || 'apex@infoacademy.uk';
 const telegramToken = process.env.TELEGRAM_BOT_TOKEN || '';
@@ -102,7 +105,8 @@ export const sendWaitlistNotifications = async (payload: any) => {
   if (!payload) throw new Error('Missing payload');
   const tasks: Promise<any>[] = [];
 
-  if (internalEmail) {
+  // Only send emails if Resend is properly initialized
+  if (resend && internalEmail) {
     tasks.push(
       resend.emails.send({
         from: fromEmail,
@@ -110,11 +114,14 @@ export const sendWaitlistNotifications = async (payload: any) => {
         subject: `APEX Waitlist: ${payload.name} / ${payload.goal || 'No goal'}`,
         html: buildInternalHtml(payload),
         text: `Name: ${payload.name}\nEmail: ${payload.email}\nGoal: ${payload.goal || ''}\nAI Score: ${payload.ai_score ?? ''}`,
+      }).catch((err) => {
+        console.warn('Internal email send failed:', err);
+        return null;
       })
     );
   }
 
-  if (payload.email) {
+  if (resend && payload.email) {
     tasks.push(
       resend.emails.send({
         from: fromEmail,
@@ -122,6 +129,9 @@ export const sendWaitlistNotifications = async (payload: any) => {
         subject: 'APEX OS Waitlist — You are in',
         html: buildUserHtml(payload),
         text: `We received your details. Next: webinar invite (2–3 weeks) and Module 00 preview. Name: ${payload.name}. Goal: ${payload.goal || ''}.`,
+      }).catch((err) => {
+        console.warn('User email send failed:', err);
+        return null;
       })
     );
   }

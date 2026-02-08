@@ -14,16 +14,16 @@ const colorCycle = [
   '#ec4899', // pink
 ];
 
-const ASCII_LOGO = `
-    /\\\\\\\\\\\\\\\_ /\\\\\\\\\\\\\\\\\\_        /\\\\\\\\\\\\\\\_        /\\\\\\\\\_        
-     /\\\//////////__//\\\///////////__       /\\\///////////__      /\\\///////\\\_       
-      /\\\      /\\\/      /\\\      /\\\      /\\\      /\\\_     /\\\______/\\\_      
-       /\\\\\\\\\\\/ /\\\      /\\\      /\\\      /\\\      /\\\\\\\\\\\/ /\\\      
-        /\\\/////////  /\\\      /\\\      /\\\      /\\\      /\\\///////////  /\\\      
-         /\\\    /\\\/ /\\\      /\\\      /\\\      /\\\      /\\\      /\\\      
-          /\\\    /\\\/ /\\\\\\\\\\\\\\\/       /\\\\\\\\\\\\\\\/ /\\\      /\\\      
-           \\///     \\///  \\/////////////         \\/////////////  \\///       \\///      
-`.trim();
+const ASCII_LOGO = [
+  "    /\\___/\\\\\\_        /\\___        /\\_        ",
+  "   /\//////////_       /\/////////_      /\///////\_       ",
+  "  /\      /\/      /\      /\      /\_     /\______/\_      ",
+  " /\\\\\\\/ /\      /\      /\      /\      /\\\\\\\/ /\      ",
+  " /\////////  /\      /\      /\      /\      /\///////////  /\      ",
+  "/\    /\/ /\      /\      /\      /\      /\      /\      ",
+  "/\    /\/ /\\\\\\\\\/       /\\\\\\\\\/ /\      /\      ",
+  "\///     \///  \///////////         \///////////  \///       \///      "
+].join('\n');
 
 export const TerminalBranding: React.FC = () => {
   const [currentColorIndex, setCurrentColorIndex] = useState(0);
@@ -60,13 +60,13 @@ export const TerminalBranding: React.FC = () => {
         <div className="relative group">
           {/* Chromatic Aberration Layers */}
           <pre 
-            className="absolute top-0 left-[1px] font-mono text-[6px] md:text-[8px] leading-[1.1] select-none opacity-40 mix-blend-screen transition-colors duration-1000"
+            className="absolute top-0 left-[1px] font-mono text-[7px] md:text-[9px] leading-[1.2] select-none opacity-40 mix-blend-screen transition-colors duration-1000 whitespace-pre"
             style={{ color: '#ff0080' }}
           >
             {ASCII_LOGO}
           </pre>
           <pre 
-            className="absolute top-0 left-[-1px] font-mono text-[6px] md:text-[8px] leading-[1.1] select-none opacity-40 mix-blend-screen transition-colors duration-1000"
+            className="absolute top-0 left-[-1px] font-mono text-[7px] md:text-[9px] leading-[1.2] select-none opacity-40 mix-blend-screen transition-colors duration-1000 whitespace-pre"
             style={{ color: '#00ffff' }}
           >
             {ASCII_LOGO}
@@ -74,7 +74,7 @@ export const TerminalBranding: React.FC = () => {
           
           {/* Main Logo */}
           <pre 
-            className="relative font-mono text-[6px] md:text-[8px] leading-[1.1] transition-colors duration-1000"
+            className="relative font-mono text-[7px] md:text-[9px] leading-[1.2] transition-colors duration-1000 whitespace-pre"
             style={{ 
               color: currentColor,
               textShadow: `0 0 10px ${currentColor}80`

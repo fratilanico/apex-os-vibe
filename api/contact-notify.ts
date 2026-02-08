@@ -1,8 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { sendWaitlistNotifications } from '../lib/notifications/waitlist.js';
+import { sendContactNotifications } from '../lib/notifications/contact.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,23 +14,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const payload = req.body?.payload || req.body;
-  if (!payload || !payload.email || !payload.name) {
-    return res.status(400).json({ error: 'Missing payload, name, or email' });
+  const payload = req.body;
+  if (!payload || !payload.email || !payload.name || !payload.message) {
+    return res.status(400).json({ error: 'Missing required fields (name, email, message)' });
   }
 
   try {
-    await sendWaitlistNotifications(payload);
+    await sendContactNotifications(payload);
     return res.status(200).json({ 
       ok: true,
-      message: 'Waitlist entry received. Confirmation email will be sent if configured.'
+      message: 'Message received. We will get back to you shortly.'
     });
   } catch (error: any) {
-    console.error('Waitlist notify error', error);
-    // Still return 200 so the waitlist entry is saved, even if notifications fail
+    console.error('Contact notify error', error);
     return res.status(200).json({ 
       ok: true,
-      warning: 'Entry saved but notification failed',
+      warning: 'Message saved but notification failed',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

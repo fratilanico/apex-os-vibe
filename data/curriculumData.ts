@@ -18,7 +18,7 @@ export const tools: Tool[] = [
     id: 'claude-code',
     name: 'Claude Code',
     category: 'REASONING',
-    description: 'The reasoning engine. Hand off complex refactoring and architectural decisions to the smartest model available. 72.7% SWE-Bench verified.',
+    description: 'The reasoning engine. Powered by Claude Opus 4.6 (Feb 2026) - industry-leading in agentic coding, computer use, and tool use. 72.7% SWE-Bench verified.',
     tier: 'core',
     icon: 'Bot',
   },
@@ -56,6 +56,14 @@ export const tools: Tool[] = [
   },
   
   // ASSET & RESEARCH LAYER (Tier 2) - Specialized tools
+  {
+    id: 'claude-agent-sdk',
+    name: 'Claude Agent SDK',
+    category: 'AGENT',
+    description: 'Build capable AI agents with Claude. Now with Xcode support (Feb 2026). Create agents that reason, code, and orchestrate complex workflows.',
+    tier: 'asset',
+    icon: 'Bot',
+  },
   {
     id: 'notebooklm',
     name: 'NotebookLM',
