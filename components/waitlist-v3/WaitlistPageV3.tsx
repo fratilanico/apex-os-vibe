@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
 /* ------------------------------------------------------------------ */
@@ -10,7 +10,6 @@ import { AmbientGlow } from '../ui/AmbientGlow';
 /*  Page sections (order matches scroll order)                         */
 /* ------------------------------------------------------------------ */
 import { BrandingBar } from './BrandingBar';
-import { HeroSection } from './HeroSection';
 import { CommunitySection } from './CommunitySection';
 import { CountdownSection } from './CountdownSection';
 import { TerminalSection } from './TerminalSection';
@@ -52,9 +51,16 @@ const WaitlistPageV3: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<SubmitResult | null>(null);
 
-  /* ---- store (vault) ---- */
+  /* ---- store (vault + mode + persona) ---- */
   const isVaultOpen = useOnboardingStore((s) => s.isVaultOpen);
   const setVaultOpen = useOnboardingStore((s) => s.setVaultOpen);
+  const setMode = useOnboardingStore((s) => s.setMode);
+  const persona = useOnboardingStore((s) => s.persona);
+
+  /* ---- GEEK MODE activation on mount ---- */
+  useEffect(() => {
+    setMode('GEEK');
+  }, [setMode]);
 
   /* ---- handlers ---- */
   const handleSuccess = useCallback((data: SubmitResult) => {
@@ -77,16 +83,55 @@ const WaitlistPageV3: React.FC = () => {
   }, []);
 
   /* ================================================================ */
+  /*  Persona-driven aura colors                                      */
+  /* ================================================================ */
+  const getAuraColors = () => {
+    if (persona === 'PERSONAL') {
+      return [
+        { color: 'cyan' as const, top: '-10%', left: '10%', size: 700, opacity: 0.15 },
+        { color: 'cyan' as const, top: '40%', right: '-5%', size: 600, opacity: 0.12 },
+        { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 500, opacity: 0.1 },
+        { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.08 },
+      ];
+    }
+    if (persona === 'BUSINESS') {
+      return [
+        { color: 'violet' as const, top: '-10%', left: '10%', size: 700, opacity: 0.15 },
+        { color: 'violet' as const, top: '40%', right: '-5%', size: 600, opacity: 0.12 },
+        { color: 'pink' as const, bottom: '20%', left: '-10%', size: 500, opacity: 0.1 },
+        { color: 'violet' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.08 },
+      ];
+    }
+    // Default: mixed palette
+    return [
+      { color: 'cyan' as const, top: '-10%', left: '10%', size: 600, opacity: 0.12 },
+      { color: 'violet' as const, top: '30%', right: '-5%', size: 500, opacity: 0.1 },
+      { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 400, opacity: 0.08 },
+      { color: 'pink' as const, bottom: '-5%', right: '20%', size: 350, opacity: 0.06 },
+    ];
+  };
+
+  const auraColors = getAuraColors();
+
+  /* ================================================================ */
   /*  Render                                                           */
   /* ================================================================ */
   return (
     <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden">
-      {/* ── Background glow orbs (z-0, no pointer events) ── */}
+      {/* ── Background glow orbs (z-0, no pointer events) - persona-driven ── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <AmbientGlow color="cyan" top="-10%" left="10%" size={600} opacity={0.12} />
-        <AmbientGlow color="violet" top="30%" right="-5%" size={500} opacity={0.1} />
-        <AmbientGlow color="emerald" bottom="20%" left="-10%" size={400} opacity={0.08} />
-        <AmbientGlow color="pink" bottom="-5%" right="20%" size={350} opacity={0.06} />
+        {auraColors.map((glow, idx) => (
+          <AmbientGlow
+            key={idx}
+            color={glow.color}
+            top={glow.top}
+            left={glow.left}
+            right={glow.right}
+            bottom={glow.bottom}
+            size={glow.size}
+            opacity={glow.opacity}
+          />
+        ))}
       </div>
 
       {/* ── Branding bar (fixed top, z-40) ── */}
@@ -94,33 +139,42 @@ const WaitlistPageV3: React.FC = () => {
 
       {/* ── Main content (z-10, scrollable) ── */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-12">
-        {/* 1. Hero */}
-        <HeroSection />
+        {/* 1. Minimal Hero Subtitle */}
+        <div className="text-center py-8">
+          <p className="text-xl md:text-2xl text-white/60 font-sans">
+            Join 1,000 founders shipping products in 30 days.
+          </p>
+        </div>
 
-        {/* 2. Community cards */}
+        {/* 2. Terminal - THE HERO */}
+        <TerminalSection />
+
+        {/* 3. Community cards */}
         <CommunitySection />
 
-        {/* 3. Countdown */}
+        {/* 4. Countdown */}
         <CountdownSection />
-
-        {/* 4. Terminal */}
-        <TerminalSection />
 
         {/* 5. Comparison (NEW vs OLD) */}
         <ComparisonSection />
 
-        {/* 6. Application / Success */}
-        <div id="apply">
-          {submitted && result ? (
-            <SuccessState
-              aiScore={result.ai_score}
-              rank={result.rank}
-              referralCode={result.referral_code}
-              status={result.status}
-            />
-          ) : (
-            <ApplicationForm onSuccess={handleSuccess} />
-          )}
+        {/* 6. Standard Form (secondary) */}
+        <div className="py-16 text-center">
+          <p className="text-sm text-white/40 mb-8 font-mono tracking-wider">
+            Prefer a standard form?
+          </p>
+          <div id="apply">
+            {submitted && result ? (
+              <SuccessState
+                aiScore={result.ai_score}
+                rank={result.rank}
+                referralCode={result.referral_code}
+                status={result.status}
+              />
+            ) : (
+              <ApplicationForm onSuccess={handleSuccess} />
+            )}
+          </div>
         </div>
 
         {/* 7. Footer */}
