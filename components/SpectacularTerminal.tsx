@@ -543,9 +543,11 @@ export const SpectacularTerminal: React.FC = () => {
                     try {
                       const coloredLines = JSON.parse(line.text) as Array<{text: string, color: string}>;
                       return coloredLines.map((l, i) => (
-                        <div key={i} style={{ color: l.color }}>
-                          {l.text}
-                        </div>
+                        <React.Fragment key={i}>
+                          <span style={{ color: l.color, display: 'block' }}>
+                            {l.text}
+                          </span>
+                        </React.Fragment>
                       ));
                     } catch {
                       return line.text;
