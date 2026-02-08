@@ -48,7 +48,7 @@ jobs:
 
       - name: Run security scan
         run: |
-          node scripts/agent-orchestrator.js task security-monitor scan_vulnerabilities '{"path": ".", "scanType": "full"}'
+          node scripts/agent-orchestrator.cjs task security-monitor scan_vulnerabilities '{"path": ".", "scanType": "full"}'
 
       - name: Upload security report
         uses: actions/upload-artifact@v4
@@ -76,7 +76,7 @@ jobs:
 
       - name: Run compliance check
         run: |
-          node scripts/agent-orchestrator.js task compliance-guardian check_compliance '{"standard": "SOC2"}'
+          node scripts/agent-orchestrator.cjs task compliance-guardian check_compliance '{"standard": "SOC2"}'
 
       - name: Upload compliance report
         uses: actions/upload-artifact@v4
@@ -104,7 +104,7 @@ jobs:
 
       - name: Run cost analysis
         run: |
-          node scripts/agent-orchestrator.js task cost-optimizer analyze_costs '{}'
+          node scripts/agent-orchestrator.cjs task cost-optimizer analyze_costs '{}'
 
       - name: Upload cost report
         uses: actions/upload-artifact@v4
@@ -132,7 +132,7 @@ jobs:
 
       - name: Validate infrastructure
         run: |
-          node scripts/agent-orchestrator.js task infrastructure-architect validate_compliance '{"infrastructure": {}, "standards": ["SOC2"]}'
+          node scripts/agent-orchestrator.cjs task infrastructure-architect validate_compliance '{"infrastructure": {}, "standards": ["SOC2"]}'
 
   deployment:
     name: Automated Deployment
@@ -157,7 +157,7 @@ jobs:
 
       - name: Deploy to production
         run: |
-          node scripts/agent-orchestrator.js task deployment-automation deploy_application '{"environment": "production"}'
+          node scripts/agent-orchestrator.cjs task deployment-automation deploy_application '{"environment": "production"}'
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
@@ -180,7 +180,7 @@ jobs:
 
       - name: Run custom task
         run: |
-          node scripts/agent-orchestrator.js task ${{ github.event.inputs.agent }} ${{ github.event.inputs.task }} '{}'
+          node scripts/agent-orchestrator.cjs task ${{ github.event.inputs.agent }} ${{ github.event.inputs.task }} '{}'
 
   agent-status:
     name: Check Agent Status
@@ -201,4 +201,4 @@ jobs:
 
       - name: Check agent status
         run: |
-          node scripts/agent-orchestrator.js status
+          node scripts/agent-orchestrator.cjs status
