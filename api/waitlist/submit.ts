@@ -1,34 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''
-);
-
-// Initialize Resend
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FROM_EMAIL CONFIGURATION — CRITICAL FOR CLIENT DELIVERY
+// WAITLIST SUBMIT — Bulletproof serverless handler
+// All SDK initialization is LAZY (inside handler) to prevent module-level crashes
 // ═══════════════════════════════════════════════════════════════════════════════
-// onboarding@resend.dev is Resend's SANDBOX sender.
-// It can ONLY deliver to the Resend account owner's email.
-// Clients will NEVER receive emails from the sandbox sender.
-//
-// To send to real clients:
-// 1. Verify your domain in Resend dashboard (infoacademy.uk)
-// 2. Set FROM_EMAIL=APEX OS <apex@infoacademy.uk>
-// 3. Set FROM_EMAIL_VERIFIED=true
-// ═══════════════════════════════════════════════════════════════════════════════
-const FROM_EMAIL = process.env.FROM_EMAIL_VERIFIED === 'true'
-  ? (process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>')
-  : 'onboarding@resend.dev';
-const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'fratilanico@gmail.com';
 
 // Simple AI score calculation (mirrors lib/waitlist/calculateAiScore.ts)
 function calculateAiScore(payload: any): number {
@@ -146,8 +121,12 @@ function buildAdminEmail(payload: any, entry: any): string {
     </div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// HANDLER — All SDK init is lazy to prevent module-level crashes
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers
+  // CORS headers — always set, even on error
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -167,14 +146,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
+    // ── FROM_EMAIL CONFIG ──
+    // onboarding@resend.dev = sandbox (only delivers to Resend account owner)
+    // Set FROM_EMAIL_VERIFIED=true after verifying your domain in Resend
     const isVerifiedSender = process.env.FROM_EMAIL_VERIFIED === 'true';
+    const FROM_EMAIL = isVerifiedSender
+      ? (process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>')
+      : 'onboarding@resend.dev';
+    const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'fratilanico@gmail.com';
+
     console.log('Waitlist submission:', {
       name: payload.name,
       email: payload.email,
-      hasResend: !!resend,
       fromEmail: FROM_EMAIL,
       isVerifiedSender,
-      hasSupabase: !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+      hasSupabase: !!(process.env.SUPABASE_URL),
+      hasResend: !!(process.env.RESEND_API_KEY),
     });
 
     // Calculate real AI score
@@ -205,17 +192,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       mode: payload.mode || 'STANDARD',
     };
 
-    // Store in Supabase
+    // ── Store in Supabase (lazy init) ──
     let entry: any = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
     let rank = Math.floor(Math.random() * 50) + 2800;
 
-    if (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+    if (supabaseUrl && supabaseKey) {
       try {
-        // Try the newer 'waitlist' table first, fall back to 'waitlist_entries'
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Try 'waitlist' table first, fall back to 'waitlist_entries'
         let dbResult = await supabase.from('waitlist').insert([entryData]).select().single();
 
         if (dbResult.error?.code === '42P01') {
-          // Table doesn't exist, try legacy table name
           dbResult = await supabase.from('waitlist_entries').insert([entryData]).select().single();
         }
 
@@ -226,7 +218,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           console.log('Stored in Supabase:', entry.id);
 
           // Get real rank
-          const countRes = await supabase.from(entry.id ? 'waitlist' : 'waitlist_entries').select('id', { count: 'exact', head: true });
+          const countRes = await supabase
+            .from('waitlist')
+            .select('id', { count: 'exact', head: true });
           rank = countRes.count ?? rank;
         }
       } catch (dbError: any) {
@@ -238,9 +232,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     entry.rank = entry.rank || rank;
 
-    // Send email notifications
-    if (resend) {
+    // ── Send email notifications (lazy init) ──
+    if (process.env.RESEND_API_KEY) {
       try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
         // Send welcome email to user
         const userEmailResult = await resend.emails.send({
           from: FROM_EMAIL,
@@ -273,54 +270,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.warn('RESEND_API_KEY not set — no emails sent');
     }
 
-    // Listmonk subscriber sync (fire-and-forget fallback for email delivery)
+    // ── Listmonk subscriber sync (fire-and-forget) ──
     if (process.env.LISTMONK_API_URL) {
-      const listmonkAuth = 'Basic ' + Buffer.from(
-        `${process.env.LISTMONK_USERNAME || 'admin'}:${process.env.LISTMONK_PASSWORD || ''}`
-      ).toString('base64');
+      try {
+        const credentials = `${process.env.LISTMONK_USERNAME || 'admin'}:${process.env.LISTMONK_PASSWORD || ''}`;
+        const listmonkAuth = 'Basic ' + Buffer.from(credentials).toString('base64');
 
-      fetch(`${process.env.LISTMONK_API_URL}/subscribers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': listmonkAuth },
-        body: JSON.stringify({
-          email: payload.email,
-          name: payload.name || '',
-          status: 'enabled',
-          lists: [1],
-          attribs: { ai_score, status, referral_code: referralCode, persona: payload.persona },
-        }),
-      }).then(r => r.json())
-        .then(d => console.log('Listmonk subscriber synced:', d))
-        .catch(e => console.warn('Listmonk sync skipped:', e.message));
+        fetch(`${process.env.LISTMONK_API_URL}/subscribers`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': listmonkAuth },
+          body: JSON.stringify({
+            email: payload.email,
+            name: payload.name || '',
+            status: 'enabled',
+            lists: [1],
+            attribs: { ai_score, status, referral_code: referralCode, persona: payload.persona },
+          }),
+        }).then(r => r.json())
+          .then(d => console.log('Listmonk subscriber synced:', d))
+          .catch(e => console.warn('Listmonk sync skipped:', e.message));
+      } catch (e: any) {
+        console.warn('Listmonk sync error:', e.message);
+      }
     }
 
-    // Notion sync (fire-and-forget CRM fallback)
+    // ── Notion sync (fire-and-forget CRM fallback) ──
     if (process.env.NOTION_TOKEN && process.env.NOTION_WAITLIST_DB_ID) {
-      const statusEmoji = status === 'hot' ? '🔥' : status === 'warm' ? '🟡' : '⚪';
-      fetch('https://api.notion.com/v1/pages', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
-          'Notion-Version': '2022-06-28',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          parent: { database_id: process.env.NOTION_WAITLIST_DB_ID },
-          properties: {
-            Name: { title: [{ text: { content: payload.name || 'Unknown' } }] },
-            Email: { email: payload.email },
-            'AI Score': { number: ai_score },
-            Status: { select: { name: `${statusEmoji} ${status.toUpperCase()}` } },
-            'Referral Code': { rich_text: [{ text: { content: referralCode } }] },
-            Persona: { select: { name: payload.persona || 'PERSONAL_BUILDER' } },
+      try {
+        const statusEmoji = status === 'hot' ? '🔥' : status === 'warm' ? '🟡' : '⚪';
+        fetch('https://api.notion.com/v1/pages', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
+            'Notion-Version': '2022-06-28',
+            'Content-Type': 'application/json',
           },
-        }),
-      }).then(r => r.json())
-        .then(d => console.log('Notion page created:', d.id))
-        .catch(e => console.warn('Notion sync skipped:', e.message));
+          body: JSON.stringify({
+            parent: { database_id: process.env.NOTION_WAITLIST_DB_ID },
+            properties: {
+              Name: { title: [{ text: { content: payload.name || 'Unknown' } }] },
+              Email: { email: payload.email },
+              'AI Score': { number: ai_score },
+              Status: { select: { name: `${statusEmoji} ${status.toUpperCase()}` } },
+              'Referral Code': { rich_text: [{ text: { content: referralCode } }] },
+              Persona: { select: { name: payload.persona || 'PERSONAL_BUILDER' } },
+            },
+          }),
+        }).then(r => r.json())
+          .then(d => console.log('Notion page created:', d.id))
+          .catch(e => console.warn('Notion sync skipped:', e.message));
+      } catch (e: any) {
+        console.warn('Notion sync error:', e.message);
+      }
     }
 
-    // Final response
+    // ── Final response — always returns valid JSON ──
     const finalResponse = {
       ok: true,
       ai_score,
@@ -337,7 +341,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('API Error:', error);
     return res.status(500).json({
       error: 'Server error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 }

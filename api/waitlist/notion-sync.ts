@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -19,17 +18,9 @@ import { createClient } from '@supabase/supabase-js';
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-const NOTION_TOKEN = process.env.NOTION_TOKEN || '';
-const NOTION_DB_ID = process.env.NOTION_WAITLIST_DB_ID || '';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || ''
-);
-
 function notionHeaders() {
   return {
-    'Authorization': `Bearer ${NOTION_TOKEN}`,
+    'Authorization': `Bearer ${process.env.NOTION_TOKEN || ''}`,
     'Notion-Version': '2022-06-28',
     'Content-Type': 'application/json',
   };
@@ -42,7 +33,7 @@ async function createNotionPage(entry: any) {
     method: 'POST',
     headers: notionHeaders(),
     body: JSON.stringify({
-      parent: { database_id: NOTION_DB_ID },
+      parent: { database_id: process.env.NOTION_WAITLIST_DB_ID || '' },
       properties: {
         Name: { title: [{ text: { content: entry.name || 'Unknown' } }] },
         Email: { email: entry.email },
@@ -68,12 +59,28 @@ async function createNotionPage(entry: any) {
   return res.json();
 }
 
+async function getSupabase() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  const { createClient } = await import('@supabase/supabase-js');
+  return createClient(url, key);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const supabase = await getSupabase();
+  if (!supabase) {
+    return res.status(400).json({
+      error: 'Supabase not configured',
+      help: 'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your environment variables.',
+    });
+  }
 
   // Export mode: just return all entries as JSON (no Notion needed)
   if (req.method === 'GET' && req.query.export !== undefined) {
@@ -99,6 +106,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Sync mode: push entries to Notion
+  const NOTION_TOKEN = process.env.NOTION_TOKEN;
+  const NOTION_DB_ID = process.env.NOTION_WAITLIST_DB_ID;
   if (!NOTION_TOKEN || !NOTION_DB_ID) {
     return res.status(400).json({
       error: 'Notion not configured',
