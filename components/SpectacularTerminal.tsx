@@ -12,6 +12,7 @@ import {
   PLAYER_ONE_ASCII,
   PLAYER_ONE_ASCII_MOBILE
 } from '../lib/terminal/constants';
+import { RotatingCTA } from './ui/Terminal/RotatingCTA';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
@@ -478,21 +479,28 @@ export const SpectacularTerminal: React.FC = () => {
       {/* Output */}
       <div ref={terminalRef} className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         
-        {/* APEX Logo with 3-layer chromatic aberration */}
+        {/* APEX Logo with 3-layer chromatic aberration - BIG SIZE */}
         {(step === 'boot' || step === 'idle' || lines.length > 0) && (
-          <div className="relative mb-4 overflow-visible">
+          <div className="relative mb-8 overflow-visible transform scale-110 origin-left"
+          >
             {/* Cyan layer (offset left) */}
-            <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[10px] sm:text-sm leading-tight">
+            <pre className="absolute top-0 left-0 text-cyan-400/80 select-none pointer-events-none chromatic-cyan whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+              style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
+            >
               {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
             </pre>
             
             {/* Pink/Magenta layer (offset right) */}
-            <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[10px] sm:text-sm leading-tight">
+            <pre className="absolute top-0 left-0 text-pink-500/80 select-none pointer-events-none chromatic-pink whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+              style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
+            >
               {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
             </pre>
             
             {/* White layer (main) */}
-            <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[10px] sm:text-sm leading-tight">
+            <pre className="text-white relative z-10 chromatic-main whitespace-pre text-sm sm:text-lg md:text-2xl lg:text-3xl leading-none font-bold"
+              style={{ fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' }}
+            >
               {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
             </pre>
           </div>
@@ -546,29 +554,45 @@ export const SpectacularTerminal: React.FC = () => {
         )}
       </div>
 
+import { RotatingCTA } from './ui/Terminal/RotatingCTA';
+
+// ... existing imports
+
+export const SpectacularTerminal: React.FC = () => {
+  // ... existing code ...
+
       {/* Input */}
-      <form onSubmit={(e) => { e.preventDefault(); handleCommand(inputValue); }}
-            className="p-6 border-t border-white/10 bg-white/5 flex items-center gap-4">
-        <span className="text-xl font-bold font-mono" style={{ color: currentColor }}>λ</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          className="flex-1 bg-transparent outline-none text-white text-base font-mono placeholder-white/10"
-          placeholder={isUnlocked ? "Ask JARVIS anything..." : step === 'boot' ? "Initializing..." : "Type response..."}
-          disabled={step === 'boot' || isProcessing}
-          autoFocus
-        />
-        {step === 'validation' && (
-          <div className={`text-[10px] font-mono ${inputValue.length >= 50 ? 'text-emerald-400' : 'text-white/30'}`}>
-            {inputValue.length}/50
+      <div className="border-t border-white/10 bg-white/5 flex flex-col">
+        {/* Rotating Punchline CTA */}
+        {!isProcessing && step !== 'boot' && (
+          <div className="px-6 pt-2 pb-0">
+            <RotatingCTA />
           </div>
         )}
-        <button type="submit" className="p-2 rounded-lg hover:bg-white/5 transition-colors">
-          <ArrowRight className="w-6 h-6 text-white/20" />
-        </button>
-      </form>
+        
+        <form onSubmit={(e) => { e.preventDefault(); handleCommand(inputValue); }}
+              className="px-6 pb-4 pt-2 flex items-center gap-4">
+          <span className="text-xl font-bold font-mono" style={{ color: currentColor }}>λ</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className="flex-1 bg-transparent outline-none text-white text-base font-mono placeholder-white/10"
+            placeholder={isUnlocked ? "Ask JARVIS anything..." : step === 'boot' ? "Initializing..." : "Type response..."}
+            disabled={step === 'boot' || isProcessing}
+            autoFocus
+          />
+          {step === 'validation' && (
+            <div className={`text-[10px] font-mono ${inputValue.length >= 50 ? 'text-emerald-400' : 'text-white/30'}`}>
+              {inputValue.length}/50
+            </div>
+          )}
+          <button type="submit" className="p-2 rounded-lg hover:bg-white/5 transition-colors">
+            <ArrowRight className="w-6 h-6 text-white/20" />
+          </button>
+        </form>
+      </div>
     </motion.div>
   );
 };
