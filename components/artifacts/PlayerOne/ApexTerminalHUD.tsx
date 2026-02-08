@@ -22,7 +22,6 @@ import { TerminalHeader } from './components/TerminalHeader';
 import { TerminalOutput } from './components/TerminalOutput';
 import { TerminalInput } from './components/TerminalInput';
 import { NeuralPixelBranding } from './components/NeuralPixelBranding';
-import { ProviderBadge } from '@/components/ai/ProviderBadge';
 import { queryAI, type AIResponse } from '@/lib/ai/globalAIService';
 import { TERMINAL_SYSTEM_PROMPT } from '@/lib/ai/prompts/terminal';
 import * as CLIFormatter from '@/lib/cliFormatter';
@@ -51,10 +50,6 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
   const [isProcessing, setIsProcessing] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
   const [hasRestoredSession, setHasRestoredSession] = useState(false);
-  const [currentProvider, setCurrentProvider] = useState<'vertex-ai' | 'perplexity' | 'groq' | 'gemini' | 'cohere' | 'offline'>('offline');
-  const [currentModel, setCurrentModel] = useState('');
-  const [currentLatency, setCurrentLatency] = useState(0);
-  const [currentTier, setCurrentTier] = useState(0);
   const [preferredProvider, setPreferredProvider] = useState<'auto' | 'vertex' | 'perplexity'>('auto');
   const [preferredModel, setPreferredModel] = useState<'auto' | 'fast' | 'pro'>('auto');
   
@@ -121,12 +116,6 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         preferredModel,
       });
 
-      // Update provider state for UI
-      setCurrentProvider(aiResponse.provider);
-      setCurrentModel(aiResponse.model);
-      setCurrentLatency(aiResponse.latency);
-      setCurrentTier(aiResponse.tier);
-
       // Sync to Matrix Director
       syncTerminalContext(aiResponse.content);
 
@@ -153,7 +142,6 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
       return responseText || SYSTEM_MESSAGES.NEURAL_HANDSHAKE_COMPLETE;
     } catch (error: any) {
       console.error('AI service error:', error);
-      setCurrentProvider('offline');
       return ERROR_MESSAGES.ALL_AI_OFFLINE(error.message || 'All providers failed');
     } finally {
       setIsProcessing(false);
@@ -252,11 +240,8 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
         systemPrompt: TERMINAL_SYSTEM_PROMPT,
         preferredProvider,
       })
-        .then((aiResponse) => {
-          setCurrentProvider(aiResponse.provider);
-          setCurrentModel(aiResponse.model);
-          setCurrentLatency(aiResponse.latency);
-          setCurrentTier(aiResponse.tier);
+        .then(() => {
+          // Prewarm successful - provider state no longer tracked in UI
         })
         .catch((error) => {
           console.warn('[ApexTerminalHUD] Prewarm failed:', error?.message || error);
@@ -382,14 +367,7 @@ const ApexTerminalHUDInner: React.FC<ApexTerminalHUDProps> = ({ className = '' }
       style={{ touchAction: 'manipulation' }}
     >
       <TerminalHeader>
-        <ProviderBadge
-          provider={currentProvider}
-          model={currentModel}
-          latency={currentLatency}
-          tier={currentTier}
-          isProcessing={isProcessing}
-          className="ml-auto"
-        />
+        {/* ProviderBadge removed 2026-02-08 - ultra minimal design */}
       </TerminalHeader>
 
       <TerminalOutput

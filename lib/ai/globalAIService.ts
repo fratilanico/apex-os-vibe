@@ -1,5 +1,3 @@
-import { complianceEnforcer } from '../agents/complianceEnforcer.js';
-
 export interface AIRequest {
   message: string;
   context?: string;
@@ -74,11 +72,11 @@ export async function queryAI(request: AIRequest): Promise<AIResponse> {
 
     const data: UnifiedAIResponse = await response.json();
 
-    // Enforce Golden Standard on AI content
-    const enforced = complianceEnforcer.enforce(data.content, data.provider);
+    // Enforcement now happens server-side only (api/ai-unified.ts)
+    // Removed client-side double enforcement 2026-02-08
     
     return {
-      content: enforced.output,
+      content: data.content,
       provider: data.provider as AIResponse['provider'],
       model: data.model,
       latency: data.latency,

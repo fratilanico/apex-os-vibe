@@ -431,7 +431,7 @@ export const PlayerOneHUD: React.FC = () => {
             >
               <div className="flex items-center gap-2 pointer-events-none">
                 {!isMobile && !isMaximized && <GripVertical className="w-4 h-4 text-white/20" />}
-                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest font-mono">Apex OS</span>
+                <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest font-mono">Terminal</span>
               </div>
               <div className="flex items-center gap-0.5 pointer-events-auto">
                 <button

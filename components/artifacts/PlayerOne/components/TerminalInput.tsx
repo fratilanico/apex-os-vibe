@@ -113,10 +113,7 @@ export const TerminalInput = forwardRef<HTMLInputElement, TerminalInputProps>(
           />
           <div className="flex items-center gap-2 shrink-0">
             {!isProcessing && (
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full" />
-                <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest hidden sm:block font-black">Sovereign</span>
-              </div>
+              <div className="w-1.5 h-1.5 bg-emerald-500/40 rounded-full" />
             )}
           </div>
         </div>
