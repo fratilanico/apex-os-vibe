@@ -321,6 +321,7 @@ export const SpectacularTerminal: React.FC = () => {
     }
 
     if (step === 'unlocked') {
+      // GREUCEANU PROTOCOL - The Vault
       if (lower === 'greuceanu') {
         addTerminalLine('SECRET PROTOCOL: GREUCEANU ACTIVATED', 'matrix');
         addTerminalLine('Accessing Private Resource Vault...', 'jarvis');
@@ -328,6 +329,51 @@ export const SpectacularTerminal: React.FC = () => {
         setSecretTreatFound(true);
         setVaultOpen(true);
         return;
+      }
+
+      // FINANCIAL QUANT ENGINE - Pitch Deck Mode Only (Restricted)
+      // These commands are for SEED meeting demos and investor presentations
+      const isPitchDeckContext = window.location.pathname.includes('showmethemoney') || 
+                                  window.location.pathname.includes('pitch') ||
+                                  window.location.pathname.includes('investor');
+      
+      if (isPitchDeckContext) {
+        if (lower === 'mrr' || lower === 'financials') {
+          addTerminalLine('[FINANCIALS] MRR Projections (Month 1-12)', 'success');
+          addTerminalLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'system');
+          addTerminalLine('Month 1:  $10,000  [INIT]', 'system');
+          addTerminalLine('Month 3:  $45,000  [GROWTH]', 'system');
+          addTerminalLine('Month 6:  $185,000 [SCALE]', 'system');
+          addTerminalLine('Month 12: $847,000 [DOMINANCE]', 'system');
+          addTerminalLine('', 'system');
+          addTerminalLine('Blended ARPU: $165 | Target CAC: <$20', 'system');
+          addTerminalLine('LTV:CAC Ratio: 9.8:1 ✓', 'success');
+          return;
+        }
+
+        if (lower === 'ltv') {
+          addTerminalLine('[UNIT ECONOMICS] LTV:CAC Analysis', 'success');
+          addTerminalLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'system');
+          addTerminalLine('Customer Lifetime Value:  $196', 'system');
+          addTerminalLine('Customer Acquisition Cost: $20', 'system');
+          addTerminalLine('LTV:CAC Ratio:            9.8:1', 'success');
+          addTerminalLine('', 'system');
+          addTerminalLine('Industry Benchmark: 3:1 (We are 3.3x better)', 'success');
+          return;
+        }
+
+        if (lower === 'valuation') {
+          addTerminalLine('[VALUATION] Berkus Method Rationale', 'success');
+          addTerminalLine('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'system');
+          addTerminalLine('Sound Idea:          $500k', 'system');
+          addTerminalLine('Prototype:           $500k', 'system');
+          addTerminalLine('Quality Management:  $500k', 'system');
+          addTerminalLine('Strategic Relations: $500k', 'system');
+          addTerminalLine('Product Rollout:     $500k', 'system');
+          addTerminalLine('', 'system');
+          addTerminalLine('Reverse-Engineered Valuation: $2.5M - $5M Post-Seed', 'success');
+          return;
+        }
       }
 
       if (lower === 'help') {
@@ -338,6 +384,13 @@ export const SpectacularTerminal: React.FC = () => {
         addTerminalLine('  about  - APEX OS mission', 'system');
         if (!secretTreatFound) {
           addTerminalLine('  ???    - Hidden protocol detected', 'matrix');
+        }
+        if (isPitchDeckContext) {
+          addTerminalLine('', 'system');
+          addTerminalLine('[PITCH DECK MODE]', 'success');
+          addTerminalLine('  mrr        - Revenue projections', 'system');
+          addTerminalLine('  ltv        - Unit economics', 'system');
+          addTerminalLine('  valuation  - Berkus method', 'system');
         }
         return;
       }
