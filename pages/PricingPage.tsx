@@ -10,11 +10,13 @@ import {
   ArrowRight,
   Sparkles,
   Timer,
-  Globe,
 } from 'lucide-react';
 import { PRICING_TIERS, calculatePrice, calculateDiscount, getSavings, type PricingTier } from '../data/pricingData';
 
 type BillingPeriod = 'monthly' | 'yearly';
+
+// Emerging market pricing is the default — no toggle needed
+const IS_EMERGING_MARKET = true;
 
 const badgeColorMap: Record<string, string> = {
   orange: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
@@ -43,15 +45,14 @@ const borderColorMap: Record<string, string> = {
 interface TierCardProps {
   tier: PricingTier;
   billing: BillingPeriod;
-  isRomania: boolean;
   index: number;
 }
 
-const TierCard: React.FC<TierCardProps> = ({ tier, billing, isRomania, index }) => {
+const TierCard: React.FC<TierCardProps> = ({ tier, billing, index }) => {
   const isYearly = billing === 'yearly';
-  const price = calculatePrice(tier, isRomania, isYearly);
-  const discount = calculateDiscount(tier, isRomania, isYearly);
-  const savings = getSavings(tier, isRomania, isYearly);
+  const price = calculatePrice(tier, IS_EMERGING_MARKET, isYearly);
+  const discount = calculateDiscount(tier, IS_EMERGING_MARKET, isYearly);
+  const savings = getSavings(tier, IS_EMERGING_MARKET, isYearly);
   const isHighlighted = tier.highlighted;
   const isOneTime = tier.interval === 'one-time';
 
@@ -129,7 +130,6 @@ const TierCard: React.FC<TierCardProps> = ({ tier, billing, isRomania, index }) 
 
 export const PricingPage: React.FC = () => {
   const [billing, setBilling] = useState<BillingPeriod>('monthly');
-  const [isRomania, setIsRomania] = useState(false);
 
   return (
     <main className="relative z-10 px-3 sm:px-4 lg:px-6 max-w-6xl mx-auto pb-16 overflow-x-hidden">
@@ -228,18 +228,6 @@ export const PricingPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Region toggle */}
-          <button
-            onClick={() => setIsRomania(!isRomania)}
-            className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-              isRomania
-                ? 'bg-violet-500/20 border border-violet-500/30 text-violet-400'
-                : 'bg-white/[0.02] border border-white/10 text-white/40 hover:text-white/60'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" />
-            {isRomania ? 'Emerging Market Pricing Active (50% OFF)' : 'Show Emerging Market Pricing (RO/IN/LATAM)'}
-          </button>
         </motion.div>
       </section>
 
@@ -247,14 +235,14 @@ export const PricingPage: React.FC = () => {
       <section className="mb-12 sm:mb-16 px-2 sm:px-0">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
           {PRICING_TIERS.slice(0, 3).map((tier, idx) => (
-            <TierCard key={tier.id} tier={tier} billing={billing} isRomania={isRomania} index={idx} />
+            <TierCard key={tier.id} tier={tier} billing={billing} index={idx} />
           ))}
         </div>
 
         {/* Bottom row: 2 wider cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto mt-4 sm:mt-6">
           {PRICING_TIERS.slice(3).map((tier, idx) => (
-            <TierCard key={tier.id} tier={tier} billing={billing} isRomania={isRomania} index={idx + 3} />
+            <TierCard key={tier.id} tier={tier} billing={billing} index={idx + 3} />
           ))}
         </div>
       </section>
