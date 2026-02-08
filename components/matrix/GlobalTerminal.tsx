@@ -113,7 +113,7 @@ export const GlobalTerminal: React.FC<GlobalTerminalProps> = ({ onCommand }) => 
                    border transition-all duration-300
                    ${
                      isOpen
-                       ? 'bg-rose-500/20 border-rose-500/50 text-rose-400'
+                       ? 'bg-white/10 border-white/20 text-white/60'
                        : 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400 shadow-lg shadow-cyan-500/20'
                    }`}
       >
@@ -155,11 +155,7 @@ export const GlobalTerminal: React.FC<GlobalTerminalProps> = ({ onCommand }) => 
               {/* Terminal Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/[0.02]">
                 <div className="flex items-center gap-3">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-rose-400/80" />
-                    <div className="w-3 h-3 rounded-full bg-amber-400/80" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
-                  </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]" />
                   <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-cyan-400" />
                     <span className="text-sm font-bold text-white font-mono">matrix@apex-os:~$</span>

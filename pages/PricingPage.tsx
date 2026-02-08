@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Check,
-  X,
   Shield,
   Users,
   Clock,
@@ -11,103 +10,136 @@ import {
   ArrowRight,
   Sparkles,
   Timer,
+  Globe,
 } from 'lucide-react';
+import { PRICING_TIERS, calculatePrice, calculateDiscount, getSavings, type PricingTier } from '../data/pricingData';
 
-type BillingPeriod = 'monthly' | 'lifetime';
+type BillingPeriod = 'monthly' | 'yearly';
 
-interface PlanFeature {
-  text: string;
-  included: boolean;
+const badgeColorMap: Record<string, string> = {
+  orange: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  amber: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  emerald: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  violet: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+  cyan: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+};
+
+const glowColorMap: Record<string, string> = {
+  orange: 'shadow-orange-500/20',
+  amber: 'shadow-amber-500/20',
+  emerald: 'shadow-cyan-500/30',
+  violet: 'shadow-violet-500/20',
+  cyan: 'shadow-cyan-500/20',
+};
+
+const borderColorMap: Record<string, string> = {
+  orange: 'border-orange-500/20 hover:border-orange-500/40',
+  amber: 'border-amber-500/20 hover:border-amber-500/40',
+  emerald: 'border-cyan-500/40 hover:border-cyan-500/60',
+  violet: 'border-violet-500/20 hover:border-violet-500/40',
+  cyan: 'border-cyan-500/20 hover:border-cyan-500/40',
+};
+
+interface TierCardProps {
+  tier: PricingTier;
+  billing: BillingPeriod;
+  isRomania: boolean;
+  index: number;
 }
 
-interface ComparisonRow {
-  feature: string;
-  vibeAcademy: string;
-  techCofounder: string;
-  devAgency: string;
-}
+const TierCard: React.FC<TierCardProps> = ({ tier, billing, isRomania, index }) => {
+  const isYearly = billing === 'yearly';
+  const price = calculatePrice(tier, isRomania, isYearly);
+  const discount = calculateDiscount(tier, isRomania, isYearly);
+  const savings = getSavings(tier, isRomania, isYearly);
+  const isHighlighted = tier.highlighted;
+  const isOneTime = tier.interval === 'one-time';
 
-const planFeatures: PlanFeature[] = [
-  { text: 'Full 6-module curriculum (20+ hours)', included: true },
-  { text: 'Access to all 12 AI tools training', included: true },
-  { text: 'Hands-on projects with real codebases', included: true },
-  { text: 'Multi-agent orchestration mastery', included: true },
-  { text: 'Private Discord community access', included: true },
-  { text: 'Weekly live Q&A sessions', included: true },
-  { text: 'Certificate of completion', included: true },
-  { text: 'Lifetime curriculum updates', included: true },
-  { text: '1-on-1 coaching calls (2x/month)', included: true },
-  { text: 'Code review on your projects', included: true },
-];
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 + index * 0.1 }}
+      className={`relative rounded-2xl border p-5 sm:p-6 transition-all duration-300 ${
+        isHighlighted
+          ? `${borderColorMap[tier.badgeColor]} bg-gradient-to-b from-cyan-500/10 to-violet-500/5 shadow-lg ${glowColorMap[tier.badgeColor]}`
+          : `${borderColorMap[tier.badgeColor]} bg-white/[0.02]`
+      }`}
+    >
+      {isHighlighted && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-xs font-bold text-black tracking-wider">
+          RECOMMENDED
+        </div>
+      )}
 
-const comparisonData: ComparisonRow[] = [
-  {
-    feature: 'Upfront Cost',
-    vibeAcademy: '$200/mo or $997',
-    techCofounder: '$0 (equity)',
-    devAgency: '$15,000+',
-  },
-  {
-    feature: 'Annual Cost',
-    vibeAcademy: '$997-$2,400',
-    techCofounder: '$150K-$300K',
-    devAgency: '$50K-$200K',
-  },
-  {
-    feature: 'Equity Required',
-    vibeAcademy: '0%',
-    techCofounder: '15-50%',
-    devAgency: '0%',
-  },
-  {
-    feature: 'Time to Start',
-    vibeAcademy: 'Immediate',
-    techCofounder: '3-12 months',
-    devAgency: '2-4 weeks',
-  },
-  {
-    feature: 'Knowledge Transfer',
-    vibeAcademy: 'You learn everything',
-    techCofounder: 'Dependent on them',
-    devAgency: 'None',
-  },
-  {
-    feature: 'Ongoing Dependency',
-    vibeAcademy: 'None - you own it',
-    techCofounder: 'High risk if they leave',
-    devAgency: 'Vendor lock-in',
-  },
-  {
-    feature: '24/7 Availability',
-    vibeAcademy: 'AI agents work anytime',
-    techCofounder: 'Limited hours',
-    devAgency: 'Business hours only',
-  },
-  {
-    feature: 'Scalability',
-    vibeAcademy: 'Unlimited parallel agents',
-    techCofounder: '1 person bandwidth',
-    devAgency: 'Hourly billing',
-  },
-];
+      {/* Badge */}
+      <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider border mb-4 ${badgeColorMap[tier.badgeColor]}`}>
+        {tier.badge}
+      </div>
+
+      {/* Name */}
+      <h3 className="text-xl font-bold text-white mb-1">{tier.name}</h3>
+      <p className="text-xs text-white/40 mb-4">{tier.targetAudience}</p>
+
+      {/* Price */}
+      <div className="mb-4">
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl sm:text-4xl font-bold text-white">${price}</span>
+          <span className="text-white/40 text-sm">
+            {isOneTime ? ' one-time' : isYearly ? '/year' : '/mo'}
+          </span>
+        </div>
+        {discount > 0 && (
+          <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <Sparkles className="w-3 h-3 text-emerald-400" />
+            <span className="text-[10px] font-bold text-emerald-400">
+              {discount}% OFF{savings > 0 ? ` — save $${savings}` : ''}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Description */}
+      <p className="text-sm text-white/60 mb-4">{tier.description}</p>
+
+      {/* Features */}
+      <div className="space-y-2 mb-6">
+        {tier.features.map((feature) => (
+          <div key={feature} className="flex items-start gap-2">
+            <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <span className="text-xs text-white/70">{feature}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <Link
+        to="/waitlist"
+        className={`block w-full py-3 rounded-xl font-bold text-center text-sm transition-all ${
+          isHighlighted
+            ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-black hover:shadow-lg hover:shadow-cyan-500/25'
+            : 'bg-white/5 text-white border border-white/10 hover:bg-white/10'
+        }`}
+      >
+        {isOneTime ? 'Apply Now' : 'Join Waitlist'}
+      </Link>
+    </motion.div>
+  );
+};
 
 export const PricingPage: React.FC = () => {
   const [billing, setBilling] = useState<BillingPeriod>('monthly');
-
-  const price = billing === 'monthly' ? '$200' : '$997';
-  const period = billing === 'monthly' ? '/month' : ' one-time';
+  const [isRomania, setIsRomania] = useState(false);
 
   return (
     <main className="relative z-10 px-3 sm:px-4 lg:px-6 max-w-6xl mx-auto pb-16 overflow-x-hidden">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative text-center max-w-4xl mx-auto pt-6 sm:pt-8 pb-8 sm:pb-12">
-        {/* Animated gradient background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse" />
           <div className="absolute top-10 right-1/4 w-64 h-64 bg-violet-500/20 rounded-full blur-[100px] animate-pulse delay-1000" />
         </div>
 
-        {/* Urgency Banner */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -115,7 +147,7 @@ export const PricingPage: React.FC = () => {
         >
           <Timer className="w-4 h-4 text-amber-400 animate-pulse flex-shrink-0" />
           <span className="text-xs sm:text-sm font-semibold text-amber-400">
-            Next cohort starts Feb 1 - Only 8 spots left
+            Founding cohort forming now — Limited spots
           </span>
         </motion.div>
 
@@ -144,7 +176,6 @@ export const PricingPage: React.FC = () => {
           </span>
         </motion.p>
 
-        {/* Trust Signals */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -162,29 +193,15 @@ export const PricingPage: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* Billing Toggle */}
-      <section className="max-w-md mx-auto mb-8 sm:mb-12 px-2 sm:px-0">
+      {/* Billing + Region Toggle */}
+      <section className="max-w-lg mx-auto mb-8 sm:mb-12 px-2 sm:px-0">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
           className="space-y-3"
         >
-          {/* Discount callout for mobile - shown above buttons */}
-          <div className="sm:hidden text-center">
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span className="text-[10px] font-bold text-emerald-400">
-                SAVE 58% ($1,403)
-              </span>
-            </motion.div>
-          </div>
-
-          {/* Toggle buttons */}
+          {/* Billing toggle */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 p-2 rounded-xl bg-white/[0.02] border border-white/10">
             <button
               onClick={() => setBilling('monthly')}
@@ -197,217 +214,52 @@ export const PricingPage: React.FC = () => {
               Monthly
             </button>
             <button
-              onClick={() => setBilling('lifetime')}
+              onClick={() => setBilling('yearly')}
               className={`flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold transition-all relative min-h-[44px] ${
-                billing === 'lifetime'
+                billing === 'yearly'
                   ? 'bg-gradient-to-r from-cyan-500 to-violet-500 text-white shadow-lg'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Lifetime
-              {/* Desktop badge - shown on top right */}
+              Yearly
               <span className="hidden sm:block absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold bg-emerald-500 text-white rounded-full shadow-lg shadow-emerald-500/50">
-                SAVE 58%
+                SAVE 25%
               </span>
             </button>
           </div>
+
+          {/* Region toggle */}
+          <button
+            onClick={() => setIsRomania(!isRomania)}
+            className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+              isRomania
+                ? 'bg-violet-500/20 border border-violet-500/30 text-violet-400'
+                : 'bg-white/[0.02] border border-white/10 text-white/40 hover:text-white/60'
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {isRomania ? 'Emerging Market Pricing Active (50% OFF)' : 'Show Emerging Market Pricing (RO/IN/LATAM)'}
+          </button>
         </motion.div>
       </section>
 
-      {/* Pricing Card */}
-      <section className="max-w-lg mx-auto mb-12 sm:mb-16 px-2 sm:px-0">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="relative rounded-2xl border border-cyan-500/30 bg-gradient-to-b from-cyan-500/10 to-violet-500/10 p-4 sm:p-6 md:p-8 overflow-hidden"
-        >
-          {/* Glow effect */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-[60px]" />
-          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-violet-500/20 rounded-full blur-[60px]" />
-
-          <div className="relative">
-            {/* Plan Header */}
-            <div className="text-center mb-6 sm:mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 mb-3 sm:mb-4">
-                <Sparkles className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-semibold text-cyan-400">
-                  {billing === 'lifetime' ? 'LIFETIME ACCESS' : 'FULL ACCESS'}
-                </span>
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Vibe Coder Academy</h2>
-              
-              {/* Price display with strikethrough for lifetime */}
-              {billing === 'lifetime' ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-xl sm:text-2xl font-semibold text-white/40 line-through">
-                      $2,400
-                    </span>
-                    <span className="px-2 py-0.5 text-xs font-bold bg-emerald-500 text-white rounded-full">
-                      -58%
-                    </span>
-                  </div>
-                  {/* Price container with fixed width and overflow handling */}
-                  <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 min-h-[3.5rem] sm:min-h-[4rem]">
-                    <motion.span
-                      key={price}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="inline-block max-w-[200px] overflow-hidden text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400"
-                      style={{ fontVariantNumeric: 'tabular-nums' }}
-                    >
-                      {price}
-                    </motion.span>
-                    <span className="w-full text-center text-white/60 text-sm sm:text-base sm:w-auto sm:text-left">
-                      {period}
-                    </span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                    <Sparkles className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <p className="text-xs sm:text-sm text-emerald-400 font-bold">
-                      You save $1,403 vs. monthly
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 min-h-[3.5rem] sm:min-h-[4rem]">
-                  {/* Price container with fixed width and overflow handling */}
-                  <motion.span
-                    key={price}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="inline-block max-w-[200px] overflow-hidden text-4xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400"
-                    style={{ fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {price}
-                  </motion.span>
-                  <span className="w-full text-center text-white/60 text-sm sm:text-base sm:w-auto sm:text-left">
-                    {period}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Features List */}
-            <div className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-              {planFeatures.map((feature, idx) => (
-                <motion.div
-                  key={feature.text}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 + idx * 0.05 }}
-                  className="flex items-start gap-2 sm:gap-3"
-                >
-                  {feature.included ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-400/50 flex-shrink-0 mt-0.5" />
-                  )}
-                  <span
-                    className={`text-xs sm:text-sm ${
-                      feature.included ? 'text-white/80' : 'text-white/40 line-through'
-                    }`}
-                  >
-                    {feature.text}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-            >
-              <Link
-                to="/contact"
-                className="block w-full py-3 sm:py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold text-center text-base sm:text-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all min-h-[48px] flex items-center justify-center"
-              >
-                Start Learning Today
-              </Link>
-              <p className="text-center text-[10px] sm:text-xs text-white/40 mt-3">
-                Secure checkout. Cancel anytime for monthly plans.
-              </p>
-            </motion.div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Comparison Table */}
+      {/* Pricing Grid */}
       <section className="mb-12 sm:mb-16 px-2 sm:px-0">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-center mb-6 sm:mb-8"
-        >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
-            Compare Your Options
-          </h2>
-          <p className="text-white/60 text-sm sm:text-base">
-            See how Vibe Academy stacks up against traditional paths
-          </p>
-        </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+          {PRICING_TIERS.slice(0, 3).map((tier, idx) => (
+            <TierCard key={tier.id} tier={tier} billing={billing} isRomania={isRomania} index={idx} />
+          ))}
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="overflow-x-auto -mx-2 sm:-mx-0"
-        >
-          <table className="w-full min-w-[600px] border-collapse">
-            <thead>
-              <tr>
-                <th className="text-left p-3 sm:p-4 text-white/60 font-medium text-xs sm:text-sm border-b border-white/10">
-                  Feature
-                </th>
-                <th className="p-3 sm:p-4 text-xs sm:text-sm border-b border-white/10">
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400 font-bold">
-                      Vibe Academy
-                    </span>
-                    <span className="text-emerald-400 text-[10px] sm:text-xs">Recommended</span>
-                  </div>
-                </th>
-                <th className="p-3 sm:p-4 text-white/60 font-medium text-xs sm:text-sm border-b border-white/10">
-                  Tech Co-Founder
-                </th>
-                <th className="p-3 sm:p-4 text-white/60 font-medium text-xs sm:text-sm border-b border-white/10">
-                  Dev Agency
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparisonData.map((row, idx) => (
-                <motion.tr
-                  key={row.feature}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.9 + idx * 0.05 }}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="p-3 sm:p-4 text-white/80 text-xs sm:text-sm font-medium">{row.feature}</td>
-                  <td className="p-3 sm:p-4 text-center">
-                    <span className="text-xs sm:text-sm font-semibold text-cyan-400">
-                      {row.vibeAcademy}
-                    </span>
-                  </td>
-                  <td className="p-3 sm:p-4 text-center text-white/50 text-xs sm:text-sm">
-                    {row.techCofounder}
-                  </td>
-                  <td className="p-3 sm:p-4 text-center text-white/50 text-xs sm:text-sm">{row.devAgency}</td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
+        {/* Bottom row: 2 wider cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto mt-4 sm:mt-6">
+          {PRICING_TIERS.slice(3).map((tier, idx) => (
+            <TierCard key={tier.id} tier={tier} billing={billing} isRomania={isRomania} index={idx + 3} />
+          ))}
+        </div>
       </section>
 
-      {/* Trust & Guarantee Section */}
+      {/* Trust Section */}
       <section className="mb-12 sm:mb-16 px-2 sm:px-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -431,7 +283,7 @@ export const PricingPage: React.FC = () => {
             {
               icon: Zap,
               title: 'Start Immediately',
-              desc: 'Get instant access to all modules. Begin building within minutes.',
+              desc: 'Get instant access to your tier modules. Begin building within minutes.',
               color: 'violet',
             },
           ].map((item, idx) => (
@@ -456,16 +308,11 @@ export const PricingPage: React.FC = () => {
 
       {/* Final CTA */}
       <section className="text-center py-8 sm:py-12 border-t border-white/5 px-2 sm:px-0">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-        >
-          {/* Urgency reminder */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 mb-4 sm:mb-6">
             <Timer className="w-4 h-4 text-amber-400 flex-shrink-0" />
             <span className="text-xs sm:text-sm font-semibold text-amber-400">
-              Only 8 spots remaining for the February cohort
+              Founding cohort — Limited spots remaining
             </span>
           </div>
 
@@ -478,10 +325,10 @@ export const PricingPage: React.FC = () => {
           </p>
 
           <Link
-            to="/contact"
+            to="/waitlist"
             className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-cyan-500 to-violet-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-cyan-500/25 transition-all text-base sm:text-lg min-h-[48px]"
           >
-            <span>Claim Your Spot Now</span>
+            <span>Join the Waitlist</span>
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
           </Link>
 

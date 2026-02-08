@@ -1,34 +1,39 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 interface TerminalWindowProps {
   children: React.ReactNode;
   title?: string;
   className?: string;
   showScanline?: boolean;
+  onClose?: () => void;
 }
 
-export const TerminalWindow: React.FC<TerminalWindowProps> = React.memo(({ 
-  children, 
+export const TerminalWindow: React.FC<TerminalWindowProps> = React.memo(({
+  children,
   title = "terminal.sh",
   className = "",
-  showScanline = true
+  showScanline = true,
+  onClose
 }) => {
   return (
     <div className={`terminal-window flex flex-col group pointer-events-auto ${className}`}>
       {/* Header */}
       <div className="px-4 py-2.5 bg-white/[0.03] border-b border-white/10 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-3 pointer-events-none">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F56]/60 shadow-[0_0_8px_rgba(255,95,86,0.2)]"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]/60 shadow-[0_0_8px_rgba(255,189,46,0.2)]"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-[#27C93F]/60 shadow-[0_0_8px_rgba(39,201,63,0.2)]"></div>
-          </div>
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]"></div>
           <span className="text-[10px] font-mono text-white/30 tracking-[0.2em] uppercase font-bold">{title}</span>
         </div>
-        <div className="flex gap-1 pointer-events-none">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/5"></div>
-          <div className="w-4 h-1.5 rounded-full bg-white/5"></div>
-        </div>
+        {onClose ? (
+          <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg transition-colors pointer-events-auto">
+            <X className="w-3.5 h-3.5 text-white/40 hover:text-white/70" />
+          </button>
+        ) : (
+          <div className="flex gap-1 pointer-events-none">
+            <div className="w-1.5 h-1.5 rounded-full bg-white/5"></div>
+            <div className="w-4 h-1.5 rounded-full bg-white/5"></div>
+          </div>
+        )}
       </div>
       
       {/* Content Area - FIXED: Better overflow handling and text visibility */}

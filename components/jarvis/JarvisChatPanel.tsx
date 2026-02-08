@@ -92,22 +92,36 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     }
   }, [language, setMode, speak]);
 
-  const toggleListening = () => {
+  const startListening = useCallback(() => {
+    try {
+      if (recognitionRef.current && !isListening) {
+        recognitionRef.current.lang = language;
+        recognitionRef.current.start();
+        setIsListening(true);
+      }
+    } catch (e) {
+      setIsListening(false);
+    }
+  }, [isListening, language]);
+
+  const stopListening = useCallback(() => {
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
-    } else {
-      try {
-        if (recognitionRef.current) {
-          recognitionRef.current.lang = language;
-          recognitionRef.current.start();
-          setIsListening(true);
-        }
-      } catch (e) {
-        setIsListening(false);
-      }
     }
-  };
+  }, [isListening]);
+
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
+
+  // Press-and-hold tracking for desktop
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHoldingRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -276,9 +290,60 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           <div className={`p-4 border-t transition-colors duration-500 ${isGeek ? 'border-cyan-500/30 bg-cyan-500/5' : 'border-white/10 bg-black/20'}`}>
             <div className="flex gap-2">
               <button
-                onMouseDown={toggleListening}
-                onMouseUp={toggleListening}
-                className={`p-2 rounded-xl transition-all ${isListening ? 'bg-red-500 animate-pulse' : 'bg-white/5 text-white/50 hover:bg-white/10'}`}
+                onClick={(e) => {
+                  // Tap-to-toggle: tap once to start, tap again to stop
+                  e.preventDefault();
+                  if (!isHoldingRef.current) {
+                    toggleListening();
+                  }
+                  isHoldingRef.current = false;
+                }}
+                onMouseDown={() => {
+                  // Desktop press-and-hold: start after 300ms hold
+                  holdTimerRef.current = setTimeout(() => {
+                    isHoldingRef.current = true;
+                    startListening();
+                  }, 300);
+                }}
+                onMouseUp={() => {
+                  // Desktop release: stop if was holding
+                  if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+                  if (isHoldingRef.current) {
+                    stopListening();
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+                  if (isHoldingRef.current) {
+                    stopListening();
+                    isHoldingRef.current = false;
+                  }
+                }}
+                onTouchStart={(e) => {
+                  // Mobile press-and-hold: start after 300ms
+                  e.preventDefault();
+                  holdTimerRef.current = setTimeout(() => {
+                    isHoldingRef.current = true;
+                    startListening();
+                  }, 300);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+                  if (isHoldingRef.current) {
+                    // Was holding — stop recording
+                    stopListening();
+                    isHoldingRef.current = false;
+                  } else {
+                    // Quick tap — toggle
+                    toggleListening();
+                  }
+                }}
+                className={`p-2 rounded-xl transition-all touch-manipulation ${
+                  isListening
+                    ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)] animate-pulse'
+                    : 'bg-white/5 text-white/50 hover:bg-white/10'
+                }`}
               >
                 <Mic className="w-5 h-5" />
               </button>
