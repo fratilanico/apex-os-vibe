@@ -153,7 +153,7 @@ export const SpectacularTerminal: React.FC = () => {
         logoRenderedRef.current = true;
         addMultiColorAsciiArt(
           APEX_LOGO_ASCII_LINES,
-          `leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`
+          `leading-none ${isMobile ? 'text-[6px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`
         );
       }
       if (bootLine < BOOT_SEQUENCE.length) {
@@ -233,7 +233,7 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('[████████████████████] 100%', 'success');
       addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
       
-      addAsciiArt(playerOneLogo, `text-emerald-400 leading-none ${isMobile ? 'text-[5px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]`);
+      addAsciiArt(playerOneLogo, `text-emerald-400 leading-none ${isMobile ? 'text-[4.5px]' : 'text-[12px]'} drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]`);
       addTerminalLine('. . . PLAYER 1 - CONNECTED', 'success');
       
       addTerminalLine(`✓ AI READINESS SCORE: ${result.ai_score}/100`, 'success');
@@ -520,7 +520,7 @@ export const SpectacularTerminal: React.FC = () => {
             >
               {line.type === 'ascii' ? (
                 <pre 
-                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${line.className || ''}`}
+                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${isMobile ? 'text-[6px]' : 'text-xs sm:text-sm'} ${line.className || ''}`}
                   style={{ 
                     fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
                     fontVariantLigatures: 'none',
@@ -533,7 +533,7 @@ export const SpectacularTerminal: React.FC = () => {
                 </pre>
               ) : line.type === 'brand-logo' ? (
                 <pre 
-                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${line.className || ''}`}
+                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${isMobile ? 'text-[6px]' : 'text-xs sm:text-sm'} ${line.className || ''}`}
                   style={{ 
                     fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
                     fontVariantLigatures: 'none',

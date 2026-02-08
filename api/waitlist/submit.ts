@@ -58,8 +58,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
 
     // Store in Supabase
-    let entry: any;
-    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    let entry: any = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
+    
+    if (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY)) {
       try {
         const { data, error } = await supabase
           .from('waitlist_entries')
@@ -69,22 +70,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (error) {
           console.error('Supabase error:', error);
-          // Continue anyway - we'll send email even if DB fails
-          entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
-        } else {
+          // Fallback to entry with generated ID
+        } else if (data) {
           entry = data;
           console.log('Stored in Supabase:', entry.id);
         }
       } catch (dbError: any) {
         console.error('Database error:', dbError.message);
-        entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
       }
     } else {
-      // Fallback to in-memory
-      console.warn('Supabase not configured, using in-memory storage');
-      entry = { ...entryData, id: `WL${Date.now()}`, created_at: new Date().toISOString() };
+      console.warn('Supabase not fully configured, using fallback storage');
     }
 
+    // Add rank for frontend (mock rank for now)
+    const rank = Math.floor(Math.random() * 50) + 2800;
+    
     // Send email notification
     if (resend) {
       try {
@@ -121,6 +121,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               <p><strong>Email:</strong> ${payload.email}</p>
               <p><strong>Goal:</strong> ${payload.goal || 'N/A'}</p>
               <p><strong>Referral:</strong> ${entry.referral_code}</p>
+              <p><strong>Rank:</strong> #${rank}</p>
             </div>
           `
         });
@@ -133,11 +134,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log('Resend not configured, skipping emails');
     }
 
-    return res.status(200).json({ 
+    // Final response
+    const finalResponse = { 
       ok: true, 
       ...entry,
+      rank: entry.rank || rank,
       message: 'Welcome to APEX OS!'
-    });
+    };
+    
+    console.log('API Response:', JSON.stringify(finalResponse));
+    return res.status(200).json(finalResponse);
 
   } catch (error: any) {
     console.error('API Error:', error);

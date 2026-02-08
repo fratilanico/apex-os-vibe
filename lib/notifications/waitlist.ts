@@ -4,7 +4,7 @@ import { Resend } from 'resend';
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-const fromEmail = process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>';
+const fromEmail = process.env.FROM_EMAIL_VERIFIED === 'true' ? 'APEX OS <apex@infoacademy.uk>' : 'onboarding@resend.dev';
 const internalEmail = process.env.NOTIFY_EMAIL || 'apex@infoacademy.uk';
 const telegramToken = process.env.TELEGRAM_BOT_TOKEN || '';
 const telegramChatId = process.env.TELEGRAM_CHAT_ID || '';
