@@ -5,8 +5,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>';
-const toEmail = process.env.NOTIFY_EMAIL || 'nico.f@infoacademy.net';
+const fromEmail = 'onboarding@resend.dev';
+const toEmail = 'fratilanico@gmail.com';
 
 async function sendTestEmail() {
   console.log('Sending test email...');
