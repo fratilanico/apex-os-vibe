@@ -7,7 +7,8 @@ import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { 
-  APEX_LOGO_ASCII_LINES,
+  APEX_LOGO_ASCII,
+  APEX_LOGO_ASCII_MOBILE,
   PLAYER_ONE_ASCII,
   PLAYER_ONE_ASCII_MOBILE
 } from '../lib/terminal/constants';
@@ -16,6 +17,35 @@ import {
 // SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
 // Direct Neural Link | Intent Parsing | Handshake Sequence
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// CSS-based chromatic aberration - 3 layer approach (from NeuralPixelBranding)
+const chromaticStyle = `
+  @keyframes chromatic-cyan {
+    0%, 100% { transform: translate(-2px, -1px); opacity: 0.7; }
+    25% { transform: translate(2px, 1px); opacity: 0.5; }
+    50% { transform: translate(-1px, 0px); opacity: 0.8; }
+    75% { transform: translate(1px, -1px); opacity: 0.6; }
+  }
+  @keyframes chromatic-pink {
+    0%, 100% { transform: translate(2px, 1px); opacity: 0.7; }
+    25% { transform: translate(-2px, -1px); opacity: 0.5; }
+    50% { transform: translate(1px, 0px); opacity: 0.8; }
+    75% { transform: translate(-1px, 1px); opacity: 0.6; }
+  }
+  @keyframes chromatic-main {
+    0%, 100% { transform: translate(0px, 0px); opacity: 1; }
+    50% { transform: translate(0.5px, -0.5px); opacity: 0.95; }
+  }
+  .chromatic-cyan {
+    animation: chromatic-cyan 0.15s linear infinite;
+  }
+  .chromatic-pink {
+    animation: chromatic-pink 0.12s linear infinite;
+  }
+  .chromatic-main {
+    animation: chromatic-main 0.1s linear infinite;
+  }
+`;
 
 interface TerminalLine {
   id: string;
@@ -73,6 +103,14 @@ export const SpectacularTerminal: React.FC = () => {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
+    
+    // Inject chromatic CSS for 3-layer logo effect
+    if (!document.getElementById('spectacular-chromatic-style')) {
+      const style = document.createElement('style');
+      style.id = 'spectacular-chromatic-style';
+      style.textContent = chromaticStyle;
+      document.head.appendChild(style);
+    }
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -92,31 +130,10 @@ export const SpectacularTerminal: React.FC = () => {
     addHistory(`[ASCII] art_block`);
   }, [addHistory]);
 
-  // Add multi-color ASCII art (Gemini-style gradient)
-  const addMultiColorAsciiArt = useCallback((lines: Array<{text: string, color: string}>, baseClassName: string) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    // Create a special line that contains all colored lines
-    const coloredText = lines.map(l => `<span style="color:${l.color}">${l.text}</span>`).join('\n');
-    setLines(prev => [...prev, { 
-      id, 
-      text: coloredText, 
-      type: 'brand-logo' as const, 
-      className: baseClassName 
-    }].slice(-200));
-    addHistory(`[ASCII] multi_color_art_block`);
-  }, [addHistory]);
-
   // Boot Sequence
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (step === 'boot' || step === 'idle') {
-      // Render APEX logo immediately on first tick (multi-color Gemini style)
-      if (bootLine === 0) {
-        addMultiColorAsciiArt(
-          APEX_LOGO_ASCII_LINES,
-          `leading-none ${isMobile ? 'text-[7px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`
-        );
-      }
       if (bootLine < BOOT_SEQUENCE.length) {
         const line = BOOT_SEQUENCE[bootLine]!;
         timer = setTimeout(() => {
@@ -132,7 +149,7 @@ export const SpectacularTerminal: React.FC = () => {
       }
     }
     return () => { if (timer) clearTimeout(timer); };
-  }, [bootLine, step, addTerminalLine, addAsciiArt, addMultiColorAsciiArt, setStep, isMobile]);
+  }, [bootLine, step, addTerminalLine, addAsciiArt, setStep, isMobile]);
 
   // Color Cycle
   useEffect(() => {
@@ -460,13 +477,34 @@ export const SpectacularTerminal: React.FC = () => {
 
       {/* Output */}
       <div ref={terminalRef} className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+        
+        {/* APEX Logo with 3-layer chromatic aberration */}
+        {(step === 'boot' || step === 'idle' || lines.length > 0) && (
+          <div className="relative mb-4 overflow-visible">
+            {/* Cyan layer (offset left) */}
+            <pre className="absolute top-0 left-0 text-cyan-400/70 select-none pointer-events-none chromatic-cyan whitespace-pre text-[10px] sm:text-sm leading-tight">
+              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+            </pre>
+            
+            {/* Pink/Magenta layer (offset right) */}
+            <pre className="absolute top-0 left-0 text-pink-500/70 select-none pointer-events-none chromatic-pink whitespace-pre text-[10px] sm:text-sm leading-tight">
+              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+            </pre>
+            
+            {/* White layer (main) */}
+            <pre className="text-white/95 relative z-10 chromatic-main whitespace-pre text-[10px] sm:text-sm leading-tight">
+              {isMobile ? APEX_LOGO_ASCII_MOBILE : APEX_LOGO_ASCII}
+            </pre>
+          </div>
+        )}
+        
         <AnimatePresence>
           {lines.map((line) => (
             <motion.div
               key={line.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className={line.type === 'ascii' || line.type === 'brand-logo' ? '' : `text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
+              className={line.type === 'ascii' ? '' : `text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
                 line.className ? line.className : (
                   line.type === 'input' ? 'text-cyan-400' :
                   line.type === 'error' ? 'text-red-400 font-bold' :
@@ -491,18 +529,6 @@ export const SpectacularTerminal: React.FC = () => {
                 >
                   {line.text}
                 </pre>
-              ) : line.type === 'brand-logo' ? (
-                <pre 
-                  className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${line.className || ''}`}
-                  style={{ 
-                    fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
-                    fontVariantLigatures: 'none',
-                    textRendering: 'geometricPrecision',
-                    margin: 0,
-                    padding: 0
-                  }}
-                  dangerouslySetInnerHTML={{ __html: line.text }}
-                />
               ) : (
                 <>
                   {line.type === 'input' && <span className="text-white/20 mr-3">λ</span>}

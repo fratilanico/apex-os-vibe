@@ -4,7 +4,8 @@ import { submitWaitlistEntry } from '../../lib/waitlist/submitEntry.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!hasSupabaseServerConfig) {
-    return res.status(500).json({ error: 'Supabase config missing' });
+    console.error('Supabase config missing. SUPABASE_URL:', process.env.SUPABASE_URL ? 'set' : 'missing', 'SUPABASE_SERVICE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY ? 'set' : 'missing');
+    return res.status(500).json({ error: 'Supabase config missing', debug: { url: process.env.SUPABASE_URL ? 'set' : 'missing', key: (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY) ? 'set' : 'missing' } });
   }
 
   if (req.method !== 'POST') {
