@@ -14,7 +14,7 @@ const container = {
 
 const item = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  show: { opacity: 1, y: 0 },
 };
 
 export const HeroSection: React.FC = () => {
@@ -29,8 +29,8 @@ export const HeroSection: React.FC = () => {
       <motion.div variants={item} className="flex justify-center mb-8">
         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm text-white/60 font-medium">
-            Applications Open — Cohort 001
+          <span className="text-sm text-cyan-400 font-bold tracking-widest uppercase">
+            Direct Handshake Active — Sovereign Tier
           </span>
         </div>
       </motion.div>
@@ -60,10 +60,10 @@ export const HeroSection: React.FC = () => {
         variants={container}
         className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto"
       >
-        <StatCard icon={Users} number="2,847+" label="Builders Applied" accent="cyan" delay={0} />
-        <StatCard icon={Zap} number="153" label="Spots Left" accent="emerald" delay={0.1} />
+        <StatCard icon={Users} number="2,847+" label="Neural Syncs" accent="cyan" delay={0} />
+        <StatCard icon={Zap} number="153" label="Bandwidth Available" accent="emerald" delay={0.1} />
         <StatCard icon={Calendar} number="30" label="Days to Launch" accent="amber" delay={0.2} />
-        <StatCard icon={Bot} number="17" label="AI Agents" accent="violet" delay={0.3} />
+        <StatCard icon={Bot} number="17" label="Active Swarm" accent="violet" delay={0.3} />
       </motion.div>
     </motion.section>
   );

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useColorCycle } from '../../hooks/useColorCycle';
+import { useOnboardingStore } from '../../stores/useOnboardingStore';
+import { Terminal } from 'lucide-react';
 
 const COLOR_HEX: Record<string, string> = {
   cyan: '#22d3ee', emerald: '#10b981', violet: '#8b5cf6',
@@ -11,6 +13,7 @@ const BRAND_TEXT = 'APEX_OS';
 
 export const BrandingBar: React.FC = () => {
   const accent = useColorCycle();
+  const { mode, setMode } = useOnboardingStore();
   const [displayText, setDisplayText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
 
@@ -39,21 +42,38 @@ export const BrandingBar: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-black/80 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
-        {/* Desktop branding */}
-        <div className="hidden md:flex items-center gap-3">
-          <div
-            className="w-2 h-2 rounded-full transition-colors duration-500"
-            style={{ backgroundColor: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
-          />
-          <span className="font-mono font-bold text-white text-sm tracking-wider">
-            {displayText}
-            <span
-              className="transition-opacity duration-100"
-              style={{ opacity: showCursor ? 1 : 0 }}
-            >
-              _
+        {/* Desktop left: branding + Geek Mode Toggle */}
+        <div className="hidden md:flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-2 h-2 rounded-full transition-colors duration-500"
+              style={{ backgroundColor: accentHex, boxShadow: `0 0 8px ${accentHex}` }}
+            />
+            <span className="font-mono font-bold text-white text-sm tracking-wider">
+              {displayText}
+              <span
+                className="transition-opacity duration-100"
+                style={{ opacity: showCursor ? 1 : 0 }}
+              >
+                _
+              </span>
             </span>
-          </span>
+          </div>
+
+          {/* Geek Mode Toggle */}
+          <button
+            onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all duration-300 ${
+              mode === 'GEEK' 
+                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]' 
+                : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
+            }`}
+          >
+            <Terminal className="w-3 h-3" />
+            <span className="text-[10px] font-mono font-bold tracking-widest uppercase">
+              {mode === 'GEEK' ? 'Geek Mode: ON' : 'Geek Mode: OFF'}
+            </span>
+          </button>
         </div>
 
         {/* Desktop right: health bars + PLAYER 1 */}
@@ -82,7 +102,7 @@ export const BrandingBar: React.FC = () => {
         </div>
 
         {/* Mobile: centered pill */}
-        <div className="flex md:hidden items-center justify-center w-full">
+        <div className="flex md:hidden items-center justify-between w-full">
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5">
             <div
               className="w-1.5 h-1.5 rounded-full"
@@ -92,6 +112,15 @@ export const BrandingBar: React.FC = () => {
               APEX_OS // PLAYER 1
             </span>
           </div>
+          
+          <button
+            onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
+            className={`p-2 rounded-full border transition-all duration-300 ${
+              mode === 'GEEK' ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' : 'bg-white/5 border-white/10 text-white/40'
+            }`}
+          >
+            <Terminal className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>

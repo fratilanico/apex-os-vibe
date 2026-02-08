@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard } from '../ui/GlassCard';
 import { GradientButton } from '../ui/GradientButton';
 import { GradientText } from '../ui/GradientText';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Terminal } from 'lucide-react';
+import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -111,9 +112,9 @@ const TIMELINE_OPTIONS = [
 /* ------------------------------------------------------------------ */
 
 const STEPS = [
-  { label: 'Who are you?', accent: 'cyan' },
-  { label: 'Your Profile', accent: 'violet' },
-  { label: 'Your Mission', accent: 'emerald' },
+  { label: 'Identity Node', accent: 'cyan' },
+  { label: 'Segmentation Protocol', accent: 'violet' },
+  { label: 'Mission Validation', accent: 'emerald' },
 ] as const;
 
 /* ------------------------------------------------------------------ */
@@ -175,6 +176,7 @@ const CharCounter: React.FC<{ length: number; min: number }> = ({
 export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   onSuccess,
 }) => {
+  const { setMode } = useOnboardingStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
@@ -339,7 +341,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
       {/* Goal */}
       <div>
         <textarea
-          placeholder="What's your mission? Minimum 50 characters"
+          placeholder="What is your primary 10-day build goal? Minimum 50 characters"
           value={formData.goal}
           onChange={set('goal')}
           className={TEXTAREA_CLS}
@@ -354,31 +356,31 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
     <div className="space-y-5">
       {/* Profile Type Toggle */}
       <div>
-        <p className="text-sm text-white/50 mb-3">I am a:</p>
+        <p className="text-sm text-white/50 mb-3 text-center">I am a:</p>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, profileType: 'personal' }))}
             className={`p-4 rounded-xl border-2 transition-all ${
               formData.profileType === 'personal'
-                ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400'
+                ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                 : 'border-white/10 bg-white/5 text-white/70 hover:border-white/20'
             }`}
           >
             <div className="font-bold text-sm">Personal Builder</div>
-            <div className="text-xs mt-1 opacity-70">Individual developer</div>
+            <div className="text-[10px] mt-1 opacity-70 uppercase tracking-wider">Individual Mastery</div>
           </button>
           <button
             type="button"
             onClick={() => setFormData(prev => ({ ...prev, profileType: 'business' }))}
             className={`p-4 rounded-xl border-2 transition-all ${
               formData.profileType === 'business'
-                ? 'border-violet-400 bg-violet-400/10 text-violet-400'
+                ? 'border-violet-400 bg-violet-400/10 text-violet-400 shadow-[0_0_15px_rgba(167,139,250,0.2)]'
                 : 'border-white/10 bg-white/5 text-white/70 hover:border-white/20'
             }`}
           >
             <div className="font-bold text-sm">Business Architect</div>
-            <div className="text-xs mt-1 opacity-70">Company/Team leader</div>
+            <div className="text-[10px] mt-1 opacity-70 uppercase tracking-wider">Enterprise Fleet</div>
           </button>
         </div>
         <FieldError msg={errors.profileType} />
@@ -386,7 +388,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
       {/* Conditional fields based on profileType */}
       {formData.profileType === 'business' && (
-        <>
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-5 overflow-hidden">
           <div>
             <input
               type="text"
@@ -425,7 +427,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
             </select>
           </div>
 
-          <div>
+          <div className="grid grid-cols-2 gap-4">
             <select
               value={formData.companySize}
               onChange={set('companySize')}
@@ -441,9 +443,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
             <select
               value={formData.fundingStatus}
               onChange={set('fundingStatus')}
@@ -460,12 +460,12 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               ))}
             </select>
           </div>
-        </>
+        </motion.div>
       )}
 
       {/* Experience (shown for both) */}
       {formData.profileType && (
-        <div>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <select
             value={formData.experience}
             onChange={set('experience')}
@@ -481,7 +481,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               </option>
             ))}
           </select>
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -491,7 +491,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
       {/* Why Join */}
       <div>
         <textarea
-          placeholder="Why do you want to join APEX OS?"
+          placeholder="Why do you want to join the APEX swarm?"
           value={formData.whyJoin}
           onChange={set('whyJoin')}
           className={TEXTAREA_CLS}
@@ -529,16 +529,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
         </select>
       </div>
 
-      {/* Notes */}
-      <div>
-        <textarea
-          placeholder="Anything else we should know?"
-          value={formData.notes}
-          onChange={set('notes')}
-          className={TEXTAREA_CLS}
-        />
-      </div>
-
       {/* Consent */}
       <div>
         <label className="flex items-start gap-3 cursor-pointer select-none">
@@ -549,7 +539,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
             className="mt-1 accent-cyan-500"
           />
           <span className="text-sm text-white/60">
-            I agree to receive communications from APEX OS
+            I agree to the Terms and Data Processing protocol.
           </span>
         </label>
         <FieldError msg={errors.consent} />
@@ -618,22 +608,28 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   /* ================================================================ */
 
   const renderNav = () => (
-    <div className="flex justify-between mt-8">
+    <div className="flex justify-between items-center mt-8">
       {currentStep > 1 ? (
         <button
           type="button"
           onClick={goBack}
-          className="text-white/40 hover:text-white transition-colors text-sm"
+          className="text-white/40 hover:text-white transition-colors text-sm font-mono uppercase tracking-widest"
         >
           &larr; Back
         </button>
       ) : (
-        <div />
+        <button
+          type="button"
+          onClick={() => setMode('GEEK')}
+          className="flex items-center gap-2 text-cyan-400/60 hover:text-cyan-400 transition-colors text-[10px] font-mono uppercase tracking-widest border border-cyan-400/20 px-3 py-1 rounded-lg bg-cyan-400/5"
+        >
+          <Terminal className="w-3 h-3" /> Geek Mode
+        </button>
       )}
 
       {currentStep < 3 ? (
         <GradientButton onClick={goNext} icon={<ArrowRight className="w-4 h-4" />}>
-          Next
+          Continue
         </GradientButton>
       ) : (
         <GradientButton
@@ -642,7 +638,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
           loading={isSubmitting}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Application'}
+          {isSubmitting ? 'Synchronizing...' : 'Secure Access'}
         </GradientButton>
       )}
     </div>
@@ -663,14 +659,14 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
         {/* Title */}
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
           <GradientText from="cyan-400" to="emerald-400">
-            Apply for Early Access
+            Initiate Neural Handshake
           </GradientText>
         </h2>
 
         {/* Subtitle */}
         <p className="text-white/50 text-center mb-12 max-w-xl mx-auto">
-          Complete your profile to get your AI Readiness Score and secure your
-          position.
+          Secure your mission profile to get your AI Readiness Score and secure your
+          position in the swarm.
         </p>
 
         {/* Progress */}
@@ -697,8 +693,8 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
           {/* Submit error */}
           {submitError && (
-            <p className="text-red-400 text-sm text-center mt-4">
-              {submitError}
+            <p className="text-red-400 text-sm text-center mt-4 font-mono">
+              [!] {submitError}
             </p>
           )}
         </GlassCard>
