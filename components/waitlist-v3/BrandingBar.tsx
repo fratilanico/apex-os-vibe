@@ -26,14 +26,14 @@ export const BrandingBar: React.FC = () => {
             <ChromaticLogo type="apex" size="sm" className="scale-[0.6] origin-left -ml-2" />
           </div>
 
-          {/* Google AI Badge (Desktop) */}
+          {/* Google AI Startup Badge (Desktop) */}
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full 
                           bg-gradient-to-r from-blue-500/10 to-green-500/10 
                           border border-blue-500/20 backdrop-blur-sm shadow-[0_0_10px_rgba(59,130,246,0.15)]
                           hover:scale-105 transition-transform duration-300 cursor-default">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_6px_rgba(96,165,250,0.8)]" />
             <span className="text-[10px] font-mono font-bold text-blue-400/90 tracking-wider uppercase">
-              Google AI
+              Google AI Startup
             </span>
           </div>
         </div>
