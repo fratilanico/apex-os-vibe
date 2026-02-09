@@ -1,39 +1,32 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
-/* ------------------------------------------------------------------ */
-/*  Background & UI primitives                                         */
-/* ------------------------------------------------------------------ */
+/* ── Background ── */
 import { AmbientGlow } from '../ui/AmbientGlow';
 
-/* ------------------------------------------------------------------ */
-/*  Page sections (order matches scroll order)                         */
-/* ------------------------------------------------------------------ */
+/* ── Page sections (order matches scroll order) ── */
 import { BrandingBar } from './BrandingBar';
+import { TerminalSection } from './TerminalSection';
 import { CommunitySection } from './CommunitySection';
 import { CountdownSection } from './CountdownSection';
-import { TerminalSection } from './TerminalSection';
 import { ComparisonSection } from './ComparisonSection';
 import { ApplicationForm } from './ApplicationForm';
 import { SuccessState } from './SuccessState';
 import { WaitlistFooter } from './WaitlistFooter';
 
-/* ------------------------------------------------------------------ */
-/*  JARVIS + Vault                                                     */
-/* ------------------------------------------------------------------ */
+/* ── JARVIS + Vault ── */
 import { JarvisFloatingButton } from '../jarvis/JarvisFloatingButton';
 import { JarvisChatPanel } from '../jarvis/JarvisChatPanel';
 import { NotionVaultOverlay } from '../NotionVaultOverlay';
 
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
-const VAULT_URL =
-  'https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder';
+// ═══════════════════════════════════════════════════════════════════════════════
+// WAITLIST V3 — TERMINAL-FIRST (RESTORED)
+// The terminal IS the hero. Same immersive layout that got partner approval.
+// Backend: JARVIS, ApplicationForm, email delivery, Notion vault all intact.
+// ═══════════════════════════════════════════════════════════════════════════════
 
-/* ------------------------------------------------------------------ */
-/*  Result type from ApplicationForm onSuccess                         */
-/* ------------------------------------------------------------------ */
+const VAULT_URL = 'https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder';
+
 interface SubmitResult {
   ai_score: number;
   referral_code: string;
@@ -41,50 +34,28 @@ interface SubmitResult {
   rank: number;
 }
 
-/* ================================================================== */
-/*  WaitlistPageV3                                                     */
-/* ================================================================== */
-
 const WaitlistPageV3: React.FC = () => {
-  /* ---- local state ---- */
   const [jarvisOpen, setJarvisOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<SubmitResult | null>(null);
 
-  /* ---- store (vault + mode + persona) ---- */
   const isVaultOpen = useOnboardingStore((s) => s.isVaultOpen);
   const setVaultOpen = useOnboardingStore((s) => s.setVaultOpen);
   const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
 
-  /* ---- GEEK MODE activation on mount ---- */
-  useEffect(() => {
-    setMode('GEEK');
-  }, [setMode]);
+  // Auto-activate GEEK mode on mount
+  useEffect(() => { setMode('GEEK'); }, [setMode]);
 
-  /* ---- handlers ---- */
   const handleSuccess = useCallback((data: SubmitResult) => {
     setResult(data);
     setSubmitted(true);
-
-    // Scroll to #apply so user sees the SuccessState
     requestAnimationFrame(() => {
-      const el = document.getElementById('apply');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, []);
 
-  const handleJarvisToggle = useCallback(() => {
-    setJarvisOpen((prev) => !prev);
-  }, []);
-
-  const handleJarvisClose = useCallback(() => {
-    setJarvisOpen(false);
-  }, []);
-
-  /* ================================================================ */
-  /*  Persona-driven aura colors                                      */
-  /* ================================================================ */
+  // Persona-driven aura colors
   const getAuraColors = () => {
     if (persona === 'PERSONAL') {
       return [
@@ -102,7 +73,6 @@ const WaitlistPageV3: React.FC = () => {
         { color: 'violet' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.08 },
       ];
     }
-    // Default: mixed palette
     return [
       { color: 'cyan' as const, top: '-10%', left: '10%', size: 600, opacity: 0.12 },
       { color: 'violet' as const, top: '30%', right: '-5%', size: 500, opacity: 0.1 },
@@ -111,16 +81,11 @@ const WaitlistPageV3: React.FC = () => {
     ];
   };
 
-  const auraColors = getAuraColors();
-
-  /* ================================================================ */
-  /*  Render                                                           */
-  /* ================================================================ */
   return (
     <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden">
-      {/* ── Background glow orbs (z-0, no pointer events) - persona-driven ── */}
+      {/* Background glow orbs — persona-driven */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        {auraColors.map((glow, idx) => (
+        {getAuraColors().map((glow, idx) => (
           <AmbientGlow
             key={idx}
             color={glow.color}
@@ -134,10 +99,10 @@ const WaitlistPageV3: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Branding bar (fixed top, z-40) ── */}
+      {/* Branding bar (fixed top) */}
       <BrandingBar />
 
-      {/* ── Main content (z-10, scrollable) ── */}
+      {/* Main content */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-12">
         {/* 1. Minimal Hero Subtitle */}
         <div className="text-center py-8">
@@ -146,7 +111,7 @@ const WaitlistPageV3: React.FC = () => {
           </p>
         </div>
 
-        {/* 2. Terminal - THE HERO */}
+        {/* 2. Terminal — THE HERO (70vh, full-width, CRT scanlines) */}
         <TerminalSection />
 
         {/* 3. Community cards */}
@@ -155,10 +120,10 @@ const WaitlistPageV3: React.FC = () => {
         {/* 4. Countdown */}
         <CountdownSection />
 
-        {/* 5. Comparison (NEW vs OLD) */}
+        {/* 5. Comparison (APEX vs Legacy) */}
         <ComparisonSection />
 
-        {/* 6. Standard Form (secondary) */}
+        {/* 6. Standard form (secondary fallback) */}
         <div className="py-16 text-center">
           <p className="text-sm text-white/40 mb-8 font-mono tracking-wider">
             Prefer a standard form?
@@ -181,24 +146,12 @@ const WaitlistPageV3: React.FC = () => {
         <WaitlistFooter />
       </main>
 
-      {/* ── JARVIS floating button (z-50) ── */}
-      <JarvisFloatingButton
-        onClick={handleJarvisToggle}
-        isOpen={jarvisOpen}
-      />
+      {/* JARVIS */}
+      <JarvisFloatingButton onClick={() => setJarvisOpen(p => !p)} isOpen={jarvisOpen} />
+      <JarvisChatPanel isOpen={jarvisOpen} onClose={() => setJarvisOpen(false)} />
 
-      {/* ── JARVIS chat panel ── */}
-      <JarvisChatPanel
-        isOpen={jarvisOpen}
-        onClose={handleJarvisClose}
-      />
-
-      {/* ── Notion Vault overlay (z-100) ── */}
-      <NotionVaultOverlay
-        isOpen={isVaultOpen}
-        onClose={() => setVaultOpen(false)}
-        vaultUrl={VAULT_URL}
-      />
+      {/* Notion Vault */}
+      <NotionVaultOverlay isOpen={isVaultOpen} onClose={() => setVaultOpen(false)} vaultUrl={VAULT_URL} />
     </div>
   );
 };
