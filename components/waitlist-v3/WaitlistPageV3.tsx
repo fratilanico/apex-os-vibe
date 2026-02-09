@@ -63,40 +63,48 @@ const WaitlistPageV3: React.FC = () => {
     });
   }, []);
 
-  // Persona-driven aura colors
+  // Persona-driven aura colors - RESTORED to rich visible gradients
   const getAuraColors = () => {
     if (persona === 'PERSONAL') {
       return [
-        { color: 'cyan' as const, top: '-10%', left: '10%', size: 700, opacity: 0.15 },
-        { color: 'cyan' as const, top: '40%', right: '-5%', size: 600, opacity: 0.12 },
-        { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 500, opacity: 0.1 },
-        { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.08 },
+        { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
+        { color: 'cyan' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
+        { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
+        { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
       ];
     }
     if (persona === 'BUSINESS') {
       return [
-        { color: 'violet' as const, top: '-10%', left: '10%', size: 700, opacity: 0.15 },
-        { color: 'violet' as const, top: '40%', right: '-5%', size: 600, opacity: 0.12 },
-        { color: 'pink' as const, bottom: '20%', left: '-10%', size: 500, opacity: 0.1 },
-        { color: 'violet' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.08 },
+        { color: 'violet' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
+        { color: 'violet' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
+        { color: 'pink' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
+        { color: 'violet' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
       ];
     }
     return [
-      { color: 'cyan' as const, top: '-10%', left: '10%', size: 600, opacity: 0.12 },
-      { color: 'violet' as const, top: '30%', right: '-5%', size: 500, opacity: 0.1 },
-      { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 400, opacity: 0.08 },
-      { color: 'pink' as const, bottom: '-5%', right: '20%', size: 350, opacity: 0.06 },
+      { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
+      { color: 'violet' as const, top: '30%', right: '-5%', size: 700, opacity: 0.45 },
+      { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
+      { color: 'pink' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
     ];
   };
 
   const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#22d3ee';
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden">
-      <style>{`::selection { background: ${selectionColor}33 !important; color: ${selectionColor} !important; }`}</style>
+    <div className="relative min-h-screen w-full text-white overflow-x-hidden"
+         style={{ 
+           background: 'linear-gradient(135deg, #0a1628 0%, #0d2137 25%, #0a2a3a 50%, #0d2137 75%, #0a1628 100%)'
+         }}>
+      <style>{`
+        ::selection { background: ${selectionColor}33 !important; color: ${selectionColor} !important; }
+        body { background: linear-gradient(135deg, #0a1628 0%, #0d2137 25%, #0a2a3a 50%, #0d2137 75%, #0a1628 100%) !important; }
+      `}</style>
       
-      {/* Background glow orbs */}
+      {/* Background glow orbs - Rich teal/cyan gradient overlays */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        {/* Base ambient layer */}
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-violet-500/5" />
         {getAuraColors().map((glow, idx) => (
           <AmbientGlow
             key={idx}
