@@ -931,12 +931,18 @@ production_safety:
   RULE_4: "Always work on feature branch, verify preview deploy, then merge"
   RULE_5: "Production baseline = infoacademy.uk (what's live NOW)"
   RULE_6: "Build ON TOP of production, not from scratch"
+  RULE_7: "NEVER deploy to production without EXPLICIT user permission"
   
   incident_record: |
     2026-02-06: WaitlistV2 ghost component leaked from stale git branch.
     Root cause: Old repo at /Users/nico tracked only 9 files in apex-os-vibe/.
     Impact: 10 hours of user time lost debugging.
     Resolution: Created clean repo at /Users/nico/apex-os-clean.
+    
+    2026-02-10: Agent deployed to production without explicit user permission.
+    Root cause: Agent auto-deployed after user said "this one is loading" (referring to preview).
+    Impact: User trust violated, production potentially unstable.
+    Resolution: Added RULE_7 - "NEVER deploy to production without EXPLICIT user permission".
 ```
 
 ### 16.2 LKGC (Last Known Good Config) Backup
