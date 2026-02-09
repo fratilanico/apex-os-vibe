@@ -4,12 +4,13 @@ import { useOnboardingStore } from '../../stores/useOnboardingStore';
 /* ── Background ── */
 import { AmbientGlow } from '../ui/AmbientGlow';
 
-/* ── Page sections (order matches scroll order) ── */
+/* ── Page sections (SECTION 5 ALIGNMENT) ── */
 import { BrandingBar } from './BrandingBar';
-import { TerminalSection } from './TerminalSection';
+import { HeroSection } from './HeroSection';
 import { CommunitySection } from './CommunitySection';
 import { CountdownSection } from './CountdownSection';
 import { ComparisonSection } from './ComparisonSection';
+import { TerminalSection } from './TerminalSection';
 import { ApplicationForm } from './ApplicationForm';
 import { SuccessState } from './SuccessState';
 import { WaitlistFooter } from './WaitlistFooter';
@@ -19,12 +20,7 @@ import { JarvisFloatingButton } from '../jarvis/JarvisFloatingButton';
 import { JarvisChatPanel } from '../jarvis/JarvisChatPanel';
 import { NotionVaultOverlay } from '../NotionVaultOverlay';
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// WAITLIST V3 — TERMINAL-FIRST (RESTORED)
-// The terminal IS the hero. Same immersive layout that got partner approval.
-// Backend: JARVIS, ApplicationForm, email delivery, Notion vault all intact.
-// ═══════════════════════════════════════════════════════════════════════════════
-
+/* ── Constants ── */
 const VAULT_URL = 'https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder';
 
 interface SubmitResult {
@@ -44,8 +40,20 @@ const WaitlistPageV3: React.FC = () => {
   const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
 
-  // Auto-activate GEEK mode on mount
+  // Auto-activate GEEK mode on mount (Operator Default)
   useEffect(() => { setMode('GEEK'); }, [setMode]);
+
+  // Content Lock / Vault Access Check
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('vault_access') === 'true') {
+        setVaultOpen(true);
+        // Clean URL so refresh doesn't re-trigger if logic changes
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [setVaultOpen]);
 
   const handleSuccess = useCallback((data: SubmitResult) => {
     setResult(data);
@@ -82,8 +90,8 @@ const WaitlistPageV3: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden">
-      {/* Background glow orbs — persona-driven */}
+    <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden selection:bg-cyan-500/30">
+      {/* Background glow orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         {getAuraColors().map((glow, idx) => (
           <AmbientGlow
@@ -99,34 +107,41 @@ const WaitlistPageV3: React.FC = () => {
         ))}
       </div>
 
-      {/* Branding bar (fixed top) */}
+      {/* ── HUD ── */}
       <BrandingBar />
 
-      {/* Main content */}
+      {/* ── Main content ── */}
       <main className="relative z-10 max-w-6xl mx-auto px-4 md:px-6 pt-20 pb-12">
-        {/* 1. Minimal Hero Subtitle */}
-        <div className="text-center py-8">
-          <p className="text-xl md:text-2xl text-white/60 font-sans">
-            Join 1,000 founders shipping products in 30 days.
-          </p>
+        {/* 1. Hero (FOMO Engine) */}
+        <HeroSection />
+
+        {/* 5. Terminal — THE REVEAL (Restored to top position per user request) */}
+        <div id="terminal-handshake" className="py-8 scroll-mt-24">
+          <TerminalSection />
         </div>
 
-        {/* 2. Terminal — THE HERO (70vh, full-width, CRT scanlines) */}
-        <TerminalSection />
-
-        {/* 3. Community cards */}
+        {/* 2. Community (Social Proof) */}
         <CommunitySection />
 
-        {/* 4. Countdown */}
+        {/* 3. Countdown (Urgency) */}
         <CountdownSection />
 
-        {/* 5. Comparison (APEX vs Legacy) */}
+        {/* 4. Comparison (Problem/Solution) */}
         <ComparisonSection />
 
-        {/* 6. Standard form (secondary fallback) */}
-        <div className="py-16 text-center">
+        {/* 2. Community (Social Proof) */}
+        <CommunitySection />
+
+        {/* 3. Countdown (Urgency) */}
+        <CountdownSection />
+
+        {/* 4. Comparison (Problem/Solution) */}
+        <ComparisonSection />
+
+        {/* 6. Legacy Form (Fallback) */}
+        <div className="py-16 text-center opacity-60 hover:opacity-100 transition-opacity">
           <p className="text-sm text-white/40 mb-8 font-mono tracking-wider">
-            Prefer a standard form?
+            // OR USE LEGACY PROTOCOL
           </p>
           <div id="apply">
             {submitted && result ? (

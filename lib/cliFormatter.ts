@@ -243,9 +243,36 @@ const ICON_MAP: Record<string, string> = {
   star: '⭐',
 };
 
-export function stripCliTags(text: string): string {
-  let output = text;
-  output = output.replace(/\[icon:([a-z-]+)\]/g, (_, name) => ICON_MAP[name] ?? '•');
-  output = output.replace(/\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error)\]/g, '');
-  return output;
+export function formatNodeList(nodes: {id: string, label: string, type: string, status?: string}[]): string {
+  const headers = ['ID', 'LABEL', 'TYPE'];
+  const rows = nodes.map(n => [n.id.substring(0, 8), n.label.substring(0, 15), n.type.substring(0, 8)]);
+  return formatTable(headers, rows);
+}
+
+export function formatAsciiMap(currentLabel: string, nodes: {id: string, label: string}[]): string {
+    let output = `\n      [ ${currentLabel} ]\n`;
+    output += `         |\n`;
+    output += `    +----+----+\n`;
+    nodes.slice(0, 3).forEach(n => {
+        output += `    | ${n.label}\n`;
+    });
+    return output;
+}
+
+export function formatPlayerStats(stats: any): string {
+    const headers = ['STAT', 'VALUE'];
+    const rows = Object.entries(stats).map(([k, v]) => [k, String(v)]);
+    return formatTable(headers, rows);
+}
+
+export function formatSkillsList(skills: {id: string, name: string, level: number}[]): string {
+    const headers = ['SKILL', 'LVL'];
+    const rows = skills.map(s => [s.name, String(s.level)]);
+    return formatTable(headers, rows);
+}
+
+export function formatQuestList(quests: {id: string, title: string, status: string}[]): string {
+    const headers = ['QUEST', 'STATUS'];
+    const rows = quests.map(q => [q.title.substring(0, 20), q.status]);
+    return formatTable(headers, rows);
 }
