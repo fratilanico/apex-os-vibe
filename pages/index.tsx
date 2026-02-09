@@ -216,7 +216,7 @@ export const IndexPage: React.FC = () => {
           <div className="mb-8">
             <CountdownTimer 
               targetDate={new Date('2026-03-01T00:00:00')} 
-              label="Next Cohort Launch"
+              label="Next Webinar Launch"
             />
           </div>
 

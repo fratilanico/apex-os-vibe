@@ -99,10 +99,13 @@ export const HeroSection: React.FC = () => {
       {/* Countdown Section */}
       <motion.div variants={item} className="mb-12">
         <p className="text-sm text-white/40 uppercase tracking-widest mb-4">
-          Next Cohort Launch
+          Next Webinar Launch
         </p>
         <CountdownTimer />
-        <p className="text-white/30 text-sm mt-4 max-w-md mx-auto">
+        <p className="text-cyan-400/80 text-sm mt-4 max-w-md mx-auto font-semibold">
+          First class starts 2nd week of March
+        </p>
+        <p className="text-white/30 text-sm mt-2 max-w-md mx-auto">
           Secure your spot. Limited bandwidth available for personalized onboarding.
         </p>
       </motion.div>

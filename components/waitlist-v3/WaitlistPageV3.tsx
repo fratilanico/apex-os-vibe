@@ -8,7 +8,6 @@ import { AmbientGlow } from '../ui/AmbientGlow';
 import { BrandingBar } from './BrandingBar';
 import { HeroSection } from './HeroSection';
 import { CommunitySection } from './CommunitySection';
-import { CountdownSection } from './CountdownSection';
 import { ComparisonSection } from './ComparisonSection';
 import { TerminalSection } from './TerminalSection';
 import { ApplicationForm } from './ApplicationForm';
@@ -134,18 +133,6 @@ const WaitlistPageV3: React.FC = () => {
 
         {/* 2. Community (Social Proof) */}
         <CommunitySection />
-
-        {/* 3. Countdown (Urgency) */}
-        <CountdownSection />
-
-        {/* 4. Comparison (Problem/Solution) */}
-        <ComparisonSection />
-
-        {/* 2. Community (Social Proof) */}
-        <CommunitySection />
-
-        {/* 3. Countdown (Urgency) */}
-        <CountdownSection />
 
         {/* 4. Comparison (Problem/Solution) */}
         <ComparisonSection />

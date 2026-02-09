@@ -20,7 +20,7 @@ export const BrandingBar: React.FC = () => {
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
         {/* LEFT: LOGO & BADGE */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6">
           {/* Chromatic ASCII Logo (Scaled for Navbar) */}
           <div className="relative group cursor-pointer hover:opacity-80 transition-opacity">
             <ChromaticLogo type="apex" size="sm" className="scale-[0.6] origin-left -ml-2" />
@@ -39,34 +39,34 @@ export const BrandingBar: React.FC = () => {
         </div>
 
         {/* CENTER: GEEK MODE TOGGLE */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <button
             onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300 group ${
+            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded-full border transition-all duration-300 group whitespace-nowrap ${
               mode === 'GEEK' 
                 ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)] md:shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
                 : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
             }`}
           >
-            <Terminal className={`w-3.5 h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
-            <span className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.2em] uppercase">
-              {mode === 'GEEK' ? 'Geek Mode: ON' : 'Geek Mode: OFF'}
+            <Terminal className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
+            <span className="text-[9px] md:text-[10px] sm:text-xs font-mono font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
+              {mode === 'GEEK' ? 'Geek: ON' : 'Geek: OFF'}
             </span>
           </button>
         </div>
 
         {/* RIGHT: SIGNAL & PLAYER 1 */}
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-end gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden md:flex items-end gap-2 lg:gap-3 bg-white/5 px-2 lg:px-3 py-1.5 rounded-lg border border-white/5">
             {/* Signal Bars */}
-            <div className="flex gap-0.5 items-end h-4 pb-[2px]">
+            <div className="flex gap-[2px] lg:gap-0.5 items-end h-4 pb-[2px]">
               {[0.3, 0.5, 0.7, 0.85, 1].map((h, i) => (
                 <motion.div
                   key={i}
                   initial={{ scaleY: 0 }}
                   animate={{ scaleY: 1 }}
                   transition={{ delay: 0.5 + i * 0.1, duration: 0.3 }}
-                  className="w-1 rounded-[1px] origin-bottom transition-colors duration-500"
+                  className="w-[3px] lg:w-1 rounded-[1px] origin-bottom transition-colors duration-500"
                   style={{
                     height: `${h * 100}%`,
                     backgroundColor: accentHex,
@@ -77,7 +77,7 @@ export const BrandingBar: React.FC = () => {
             </div>
             {/* Player ID */}
             <span
-              className="font-mono font-bold text-xs tracking-widest uppercase transition-colors duration-500 leading-none mb-[1px]"
+              className="font-mono font-bold text-[10px] lg:text-xs tracking-widest uppercase transition-colors duration-500 leading-none mb-[1px]"
               style={{ color: accentHex, textShadow: `0 0 10px ${accentHex}40` }}
             >
               PLAYER 1
