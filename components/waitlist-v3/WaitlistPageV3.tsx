@@ -89,8 +89,12 @@ const WaitlistPageV3: React.FC = () => {
     ];
   };
 
+  const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#22d3ee';
+
   return (
-    <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden selection:bg-cyan-500/30">
+    <div className="relative min-h-screen w-full bg-black text-white overflow-x-hidden">
+      <style>{`::selection { background: ${selectionColor}33 !important; color: ${selectionColor} !important; }`}</style>
+      
       {/* Background glow orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         {getAuraColors().map((glow, idx) => (
@@ -158,7 +162,9 @@ const WaitlistPageV3: React.FC = () => {
         </div>
 
         {/* 7. Footer */}
-        <WaitlistFooter />
+        <div className="relative z-0">
+          <WaitlistFooter />
+        </div>
       </main>
 
       {/* JARVIS */}

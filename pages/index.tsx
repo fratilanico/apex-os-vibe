@@ -16,7 +16,7 @@ import { FAQSection } from '../components/sections/FAQSection';
 import { CTASection } from '../components/sections/CTASection';
 
 // Components
-import { WaitlistV2 } from '../components/WaitlistV2';
+import WaitlistPageV3 from '../components/waitlist-v3/WaitlistPageV3';
 import { TerminalHero } from '../components/TerminalHero';
 import { CountdownTimer } from '../components/CountdownTimer';
 import { CustomerJourney } from '../components/CustomerJourney';
@@ -232,7 +232,7 @@ export const IndexPage: React.FC = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <WaitlistV2 />
+                <WaitlistPageV3 />
               </motion.div>
             ) : (
               <motion.div

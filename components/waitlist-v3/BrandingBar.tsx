@@ -16,7 +16,7 @@ export const BrandingBar: React.FC = () => {
   const accentHex = COLOR_HEX[accent] || '#22d3ee';
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
+    <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-md md:backdrop-blur-xl border-b border-white/5 transition-all duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
         {/* LEFT: LOGO & BADGE */}
@@ -29,7 +29,8 @@ export const BrandingBar: React.FC = () => {
           {/* Google AI Badge (Desktop) */}
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full 
                           bg-gradient-to-r from-blue-500/10 to-green-500/10 
-                          border border-blue-500/20 backdrop-blur-sm shadow-[0_0_10px_rgba(59,130,246,0.15)]">
+                          border border-blue-500/20 backdrop-blur-sm shadow-[0_0_10px_rgba(59,130,246,0.15)]
+                          hover:scale-105 transition-transform duration-300 cursor-default">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_6px_rgba(96,165,250,0.8)]" />
             <span className="text-[10px] font-mono font-bold text-blue-400/90 tracking-wider uppercase">
               Google AI
@@ -43,12 +44,12 @@ export const BrandingBar: React.FC = () => {
             onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
             className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300 group ${
               mode === 'GEEK' 
-                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
+                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)] md:shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
                 : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
             }`}
           >
             <Terminal className={`w-3.5 h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
-            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+            <span className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.2em] uppercase">
               {mode === 'GEEK' ? 'Geek Mode: ON' : 'Geek Mode: OFF'}
             </span>
           </button>
@@ -56,9 +57,9 @@ export const BrandingBar: React.FC = () => {
 
         {/* RIGHT: SIGNAL & PLAYER 1 */}
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+          <div className="hidden md:flex items-end gap-3 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
             {/* Signal Bars */}
-            <div className="flex gap-0.5 items-end h-4">
+            <div className="flex gap-0.5 items-end h-4 pb-[2px]">
               {[0.3, 0.5, 0.7, 0.85, 1].map((h, i) => (
                 <motion.div
                   key={i}
@@ -76,7 +77,7 @@ export const BrandingBar: React.FC = () => {
             </div>
             {/* Player ID */}
             <span
-              className="font-mono font-bold text-xs tracking-widest uppercase transition-colors duration-500"
+              className="font-mono font-bold text-xs tracking-widest uppercase transition-colors duration-500 leading-none mb-[1px]"
               style={{ color: accentHex, textShadow: `0 0 10px ${accentHex}40` }}
             >
               PLAYER 1

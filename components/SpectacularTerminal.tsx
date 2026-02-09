@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Loader2, Bot, ArrowRight, Wifi, Shield
+  Loader2, Bot, ArrowRight, Wifi, Shield, Terminal
 } from 'lucide-react';
 import * as CLIFormatter from '../lib/cliFormatter';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
@@ -57,7 +57,7 @@ const chromaticStyle = `
     90% { transform: translate(-2px, 0px); }
   }
   .animate-glitch {
-    animation: glitch 0.15s linear infinite;
+    animation: glitch 0.25s linear infinite;
   }
 `;
 
@@ -109,6 +109,7 @@ export const SpectacularTerminal: React.FC = () => {
   const [glitchActive, setGlitchActive] = useState(false);
   const [scanActive, setScanActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -563,7 +564,7 @@ export const SpectacularTerminal: React.FC = () => {
           initial={{ top: 0 }}
           animate={{ top: '100%' }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="absolute left-0 right-0 h-1 bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,1)] z-50 pointer-events-none"
+          className="absolute left-0 right-0 h-1 bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.8)] z-50 pointer-events-none"
         />
       )}
 
@@ -589,14 +590,17 @@ export const SpectacularTerminal: React.FC = () => {
       </div>
 
       {/* Output */}
-      <div ref={terminalRef} className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+      <div ref={terminalRef} onClick={() => inputRef.current?.focus()} className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-10 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
         
         <AnimatePresence>
           {lines.map((line) => (
             <motion.div
               key={line.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={line.type === 'error' ? { x: 0 } : { opacity: 0, x: -10 }}
+              animate={line.type === 'error' ? { 
+                x: [0, -5, 5, -5, 5, 0],
+                transition: { duration: 0.4 } 
+              } : { opacity: 1, x: 0 }}
               className={line.type === 'ascii' ? '' : `text-xs sm:text-sm leading-relaxed ${line.className?.includes('whitespace-pre') ? '' : 'break-words'} ${
                 line.className ? line.className : (
                   line.type === 'input' ? 'text-cyan-400' :
@@ -653,13 +657,28 @@ export const SpectacularTerminal: React.FC = () => {
                   {line.type === 'input' && <span className="text-white/20 mr-3">λ</span>}
                   {line.type === 'jarvis' && <Bot className="w-4 h-4 inline mr-2 mb-1" />}
                   <InlineRenderer text={line.text} />
+                  {!isProcessing && line.text.includes('PLAYER 1 - CONNECTED') && (
+                     <span className="inline-block w-2.5 h-4 bg-emerald-400 animate-pulse ml-1 align-middle" />
+                  )}
                 </>
               )}
             </motion.div>
           ))}
         </AnimatePresence>
+        
+        {/* Mobile Focus Overlay */}
+        {isMobile && !isFocused && !isProcessing && step !== 'boot' && (
+           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[2px] cursor-pointer"
+                onClick={() => inputRef.current?.focus()}>
+              <div className="bg-black/80 border border-white/20 px-4 py-2 rounded-full flex items-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] animate-pulse">
+                 <Terminal className="w-4 h-4 text-cyan-400" />
+                 <span className="text-xs font-mono text-cyan-400 font-bold tracking-widest uppercase">Tap to Start</span>
+              </div>
+           </div>
+        )}
+
         {isProcessing && (
-          <div className="flex items-center gap-3 text-cyan-400 text-xs tracking-widest animate-pulse">
+          <div className="flex items-center gap-3 text-xs tracking-widest animate-pulse" style={{ color: currentColor }}>
             <Loader2 className="w-4 h-4 animate-spin" /> EXECUTING...
           </div>
         )}
@@ -683,6 +702,8 @@ export const SpectacularTerminal: React.FC = () => {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             className="flex-1 bg-transparent outline-none text-white text-base font-mono placeholder-white/10"
             placeholder={isUnlocked ? "Ask JARVIS anything..." : step === 'boot' ? "Initializing..." : "Type response..."}
             disabled={step === 'boot' || isProcessing}
