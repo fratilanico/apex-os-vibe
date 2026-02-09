@@ -19,22 +19,11 @@ export const BrandingBar: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-md md:backdrop-blur-xl border-b border-white/5 transition-all duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
-        {/* LEFT: LOGO & BADGE */}
-        <div className="flex items-center gap-3 md:gap-6">
+        {/* LEFT: LOGO ONLY - Far left corner */}
+        <div className="flex items-center">
           {/* Chromatic ASCII Logo (Scaled for Navbar) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity">
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.6] origin-left -ml-2" />
-          </div>
-
-          {/* Google AI Startup Badge (Desktop) */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full 
-                          bg-gradient-to-r from-blue-500/10 to-green-500/10 
-                          border border-blue-500/20 backdrop-blur-sm shadow-[0_0_10px_rgba(59,130,246,0.15)]
-                          hover:scale-105 transition-transform duration-300 cursor-default">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_6px_rgba(96,165,250,0.8)]" />
-            <span className="text-[10px] font-mono font-bold text-blue-400/90 tracking-wider uppercase">
-              Google AI Startup
-            </span>
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity -ml-4 md:-ml-6">
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.55] md:scale-[0.6] origin-left" />
           </div>
         </div>
 
@@ -55,8 +44,18 @@ export const BrandingBar: React.FC = () => {
           </button>
         </div>
 
-        {/* RIGHT: SIGNAL & PLAYER 1 */}
-        <div className="flex items-center gap-2 md:gap-4">
+        {/* RIGHT: GOOGLE AI BADGE + SIGNAL & PLAYER 1 */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Google AI Startup Badge (Desktop) */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-full 
+                          bg-gradient-to-r from-blue-500/10 to-green-500/10 
+                          border border-blue-500/20 backdrop-blur-sm shadow-[0_0_10px_rgba(59,130,246,0.15)]
+                          hover:scale-105 transition-transform duration-300 cursor-default">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shadow-[0_0_6px_rgba(96,165,250,0.8)]" />
+            <span className="text-[9px] font-mono font-bold text-blue-400/90 tracking-wider uppercase">
+              Google AI Startup
+            </span>
+          </div>
           <div className="hidden md:flex items-end gap-2 lg:gap-3 bg-white/5 px-2 lg:px-3 py-1.5 rounded-lg border border-white/5">
             {/* Signal Bars */}
             <div className="flex gap-[2px] lg:gap-0.5 items-end h-4 pb-[2px]">

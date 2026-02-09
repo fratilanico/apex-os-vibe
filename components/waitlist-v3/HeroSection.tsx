@@ -68,16 +68,6 @@ export const HeroSection: React.FC = () => {
       animate="show"
       className="py-16 md:py-24 text-center"
     >
-      {/* Badge */}
-      <motion.div variants={item} className="flex justify-center mb-6">
-        <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm text-cyan-400 font-bold tracking-widest uppercase">
-            Google AI Startup Programme
-          </span>
-        </div>
-      </motion.div>
-
       {/* Headline */}
       <motion.h1
         variants={item}
