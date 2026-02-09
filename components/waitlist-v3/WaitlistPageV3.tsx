@@ -8,8 +8,6 @@ import {
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
 /* ── Page sections ── */
-import { HeroSection } from './HeroSection';
-import { ComparisonSection } from './ComparisonSection';
 import { CommunitySection } from './CommunitySection';
 import { ApplicationForm } from './ApplicationForm';
 import { SuccessState } from './SuccessState';
@@ -27,28 +25,28 @@ import { SpectacularTerminal } from '../SpectacularTerminal';
 import { AmbientGlow } from '../ui/AmbientGlow';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WAITLIST V2.5 — IMMERSIVE HUD + FULL BACKEND + JARVIS
-// Two-mode experience: STANDARD (CTA) → GEEK (cockpit HUD)
-// Best of V2.1 interactive journey + V3 backend logic
+// WAITLIST V2.6 — TERMINAL-FIRST IMMERSIVE HUD
+// The terminal IS the hero. Everything else supports it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const VAULT_URL = 'https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder';
 
-/* ── QuantWidget (persona-reactive stat cards from V2.1) ── */
+/* ── Compact QuantWidget ── */
 const QuantWidget: React.FC<{ label: string; value: string; icon: any; color: string }> = ({
   label, value, icon: Icon, color,
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3 backdrop-blur-md"
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3 backdrop-blur-md"
   >
-    <div className={`p-2 rounded-lg bg-${color}-500/20`}>
-      <Icon className={`w-4 h-4 text-${color}-400`} />
+    <div className={`p-1.5 rounded-lg bg-${color}-500/20`}>
+      <Icon className={`w-3.5 h-3.5 text-${color}-400`} />
     </div>
     <div>
-      <p className="text-[9px] font-mono text-white/40 uppercase tracking-widest">{label}</p>
-      <p className="text-base font-bold text-white tracking-tight">{value}</p>
+      <p className="text-[8px] font-mono text-white/40 uppercase tracking-widest">{label}</p>
+      <p className="text-sm font-bold text-white tracking-tight">{value}</p>
     </div>
   </motion.div>
 );
@@ -164,7 +162,7 @@ interface SubmitResult {
 }
 
 /* ════════════════════════════════════════════════════════════════════════ */
-/*  MAIN PAGE — V2.5                                                       */
+/*  MAIN PAGE — V2.6 TERMINAL-FIRST                                       */
 /* ════════════════════════════════════════════════════════════════════════ */
 
 const WaitlistPageV3: React.FC = () => {
@@ -245,72 +243,42 @@ const WaitlistPageV3: React.FC = () => {
       <BrandingBar />
 
       {/* ── MAIN CONTENT ── */}
-      <div className="relative z-10 p-4 md:p-8 lg:p-12 pt-20">
-        <div className="max-w-7xl mx-auto space-y-10">
+      <div className="relative z-10 p-3 md:p-6 lg:p-10 pt-16 md:pt-20">
+        <div className="max-w-6xl mx-auto space-y-8">
 
-          {/* ── HERO + QUANT WIDGETS ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            <div className="lg:col-span-7">
-              <HeroSection />
-            </div>
-            <div className="lg:col-span-5 grid grid-cols-2 gap-3">
-              <AnimatePresence mode="wait">
-                {persona === 'BUSINESS' ? (
-                  <>
-                    <QuantWidget key="tam" label="Market TAM" value="$420B" icon={Globe} color="violet" />
-                    <QuantWidget key="roi" label="Agentic ROI" value="12.4x" icon={TrendingUp} color="violet" />
-                    <QuantWidget key="swarm" label="Active Swarm" value="17 Agents" icon={Cpu} color="violet" />
-                    <QuantWidget key="sec" label="Compliance" value="SOC2 Ready" icon={ShieldCheck} color="violet" />
-                  </>
-                ) : (
-                  <>
-                    <QuantWidget key="vel" label="Vibe Velocity" value="94 pts" icon={Activity} color="cyan" />
-                    <QuantWidget key="ltv" label="LTV:CAC" value="9.8:1" icon={DollarSign} color="cyan" />
-                    <QuantWidget key="users" label="Waitlist" value="2,855" icon={Users} color="cyan" />
-                    <QuantWidget key="skill" label="Skill Tier" value="Sovereign" icon={BarChart3} color="cyan" />
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* ── MAIN HUD: Sidebar + Terminal ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[550px]">
-            {/* Left sidebar */}
-            <div className="lg:col-span-4 space-y-6">
-              <OldVsNewComparison />
-              <CountdownWidget />
-            </div>
-
-            {/* Center — Terminal / Activate Geek Mode */}
-            <div className="lg:col-span-8 flex flex-col">
-              <AnimatePresence mode="wait">
-                {mode === 'GEEK' ? (
-                  <motion.div key="terminal" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="flex-1 flex flex-col">
-                    <SpectacularTerminal />
-                    <button onClick={() => setMode('STANDARD')} className="mt-3 text-[10px] text-white/20 hover:text-white/50 transition-colors self-center font-mono tracking-widest">
-                      [ RETURN_TO_STANDARD_INTERFACE ]
-                    </button>
-                  </motion.div>
-                ) : (
-                  <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center text-center space-y-8 h-full backdrop-blur-xl">
-                    <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-                      <TerminalIcon className="w-8 h-8 text-cyan-400" />
-                    </div>
-                    <div className="space-y-3">
-                      <h2 className="text-2xl md:text-3xl font-bold">FOUNDER ONBOARDING</h2>
-                      <p className="text-white/40 max-w-sm text-sm">Standard web forms are for legacy builders. Founders use the Direct Neural Uplink.</p>
-                    </div>
-                    <button onClick={() => setMode('GEEK')} className="group relative px-10 py-4 bg-cyan-500 text-black font-black rounded-xl overflow-hidden hover:scale-105 transition-transform text-sm tracking-wider">
-                      <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
-                      ACTIVATE GEEK MODE
-                    </button>
-                    <p className="text-[10px] text-white/20 uppercase tracking-widest pt-8">Encryption: AES-256 | Mode: Direct_Uplink_v2.5</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+          {/* ═══════════════════════════════════════════════════════════════
+              HERO: THE TERMINAL — Full-width, front-and-center
+              The terminal IS the product. It IS the hook.
+              ═══════════════════════════════════════════════════════════════ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="min-h-[60vh] md:min-h-[65vh] flex flex-col"
+          >
+            <AnimatePresence mode="wait">
+              {mode === 'GEEK' ? (
+                <motion.div key="terminal" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="flex-1 flex flex-col">
+                  <SpectacularTerminal />
+                </motion.div>
+              ) : (
+                <motion.div key="activate" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-16 flex flex-col items-center justify-center text-center space-y-8 flex-1 backdrop-blur-xl">
+                  <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+                    <TerminalIcon className="w-8 h-8 text-cyan-400" />
+                  </div>
+                  <div className="space-y-3">
+                    <h2 className="text-2xl md:text-4xl font-bold">FOUNDER ONBOARDING</h2>
+                    <p className="text-white/40 max-w-md text-sm leading-relaxed">Standard web forms are for legacy builders. Founders use the Direct Neural Uplink.</p>
+                  </div>
+                  <button onClick={() => setMode('GEEK')} className="group relative px-10 py-4 bg-cyan-500 text-black font-black rounded-xl overflow-hidden hover:scale-105 transition-transform text-sm tracking-wider">
+                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
+                    ACTIVATE GEEK MODE
+                  </button>
+                  <p className="text-[10px] text-white/20 uppercase tracking-widest pt-4">Encryption: AES-256 | Mode: Direct_Uplink_v2.6</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           {/* ── Trophy on unlock ── */}
           {isUnlocked && (
@@ -326,11 +294,42 @@ const WaitlistPageV3: React.FC = () => {
             </motion.div>
           )}
 
-          {/* ── Community ── */}
-          <CommunitySection />
+          {/* ═══════════════════════════════════════════════════════════════
+              BELOW THE FOLD: Intel widgets — they scroll into view
+              ═══════════════════════════════════════════════════════════════ */}
+
+          {/* ── Quant Widgets strip ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <AnimatePresence mode="wait">
+              {persona === 'BUSINESS' ? (
+                <>
+                  <QuantWidget key="tam" label="Market TAM" value="$420B" icon={Globe} color="violet" />
+                  <QuantWidget key="roi" label="Agentic ROI" value="12.4x" icon={TrendingUp} color="violet" />
+                  <QuantWidget key="swarm" label="Active Swarm" value="17 Agents" icon={Cpu} color="violet" />
+                  <QuantWidget key="sec" label="Compliance" value="SOC2 Ready" icon={ShieldCheck} color="violet" />
+                </>
+              ) : (
+                <>
+                  <QuantWidget key="vel" label="Vibe Velocity" value="94 pts" icon={Activity} color="cyan" />
+                  <QuantWidget key="ltv" label="LTV:CAC" value="9.8:1" icon={DollarSign} color="cyan" />
+                  <QuantWidget key="users" label="Waitlist" value="2,855" icon={Users} color="cyan" />
+                  <QuantWidget key="skill" label="Skill Tier" value="Sovereign" icon={BarChart3} color="cyan" />
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* ── Comparison + Countdown side by side ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <OldVsNewComparison />
+            <div className="space-y-6">
+              <CountdownWidget />
+              <CommunitySection />
+            </div>
+          </div>
 
           {/* ── Standard form fallback ── */}
-          <div className="py-12 text-center">
+          <div className="py-8 text-center">
             <p className="text-sm text-white/40 mb-8 font-mono tracking-wider">Prefer a standard form?</p>
             <div id="apply">
               {submitted && result ? (
