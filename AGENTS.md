@@ -1221,26 +1221,45 @@ footer:
 
 **Test Flows:**
 
-**Flow A: Terminal Handshake (3-Step)**
+**Flow A: Terminal Handshake & AI Swarm (4-Step)**
 ```yaml
 steps:
   1: "Page loads → Boot sequence plays"
-  2: "Enter name (2+ chars) → Press Enter"
-  3: "Enter email → Press Enter"
-  4: "Handshake animation plays"
-  5: "Red/Blue pill choice appears"
-  6: "Select pill → Modules unlock"
-  7: "Admin commands work"
+  2: "Enter name/email → Press Enter"
+  3: "Handshake animation plays → Select RED/BLUE pill"
+  4: "Type complex question (e.g. 'How do I optimize TAM?') → Verify AI response"
   
 validation:
   - [ ] Boot sequence completes
-  - [ ] Name validates (rejects short names)
-  - [ ] Email validates (rejects invalid format)
-  - [ ] Handshake shows glitch effects
-  - [ ] Pill choice displays 5 options
-  - [ ] Admin auth works (password: apex-admin-2026)
-  - [ ] Commands respond correctly
+  - [ ] Persona selection updates UI theme
+  - [ ] Unknown commands route to AI Swarm (Gemini/Perplexity)
+  - [ ] Response includes CLI tags ([h1], [code], etc.)
   - [ ] No console errors
+```
+
+**Flow B: JARVIS Profiling & Recommendations**
+```yaml
+steps:
+  1: "Open JARVIS → Type 3 messages"
+  2: "Verify Micro-Question trigger appears"
+  3: "Answer question → Verify profile update in logs"
+  4: "Open 'Neural Roadmap' view → Verify recommendations"
+  
+validation:
+  - [ ] JARVIS session syncs with Supabase
+  - [ ] Micro-questions relevant to missing data
+  - [ ] Recommendations scored by persona
+```
+
+**Flow C: Countdown & Navbar**
+```yaml
+steps:
+  1: "Check countdown timer"
+  2: "Refresh page 3 times"
+  
+validation:
+  - [ ] Countdown remains fixed to Feb 27, 6PM UK
+  - [ ] Logo fits perfectly in navbar (all devices)
 ```
 
 **Flow B: Geek Mode Toggle**

@@ -17,12 +17,12 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-// Calculate initial time left to avoid showing 0 0 0 0 on load
+// Calculation for fixed date: Friday 27th February 2026 at 6:00 PM UK time (GMT)
+const WEBINAR_DATE = new Date('2026-02-27T18:00:00+00:00');
+
 const calculateTimeLeft = () => {
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() + 18);
-  const now = new Date();
-  const diff = targetDate.getTime() - now.getTime();
+  const diff = WEBINAR_DATE.getTime() - new Date().getTime();
+  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
   
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -37,23 +37,11 @@ const CountdownTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   
   useEffect(() => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 18);
-    
     const updateTimer = () => {
-      const now = new Date();
-      const diff = targetDate.getTime() - now.getTime();
-      
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      setTimeLeft({ days, hours, minutes, seconds });
+      setTimeLeft(calculateTimeLeft());
     };
     
     const interval = setInterval(updateTimer, 1000);
-    
     return () => clearInterval(interval);
   }, []);
   

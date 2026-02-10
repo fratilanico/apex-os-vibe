@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, Mic, Terminal, Activity } from 'lucide-react';
+import { X, Send, Bot, Mic, Terminal, Activity, BookOpen, HelpCircle } from 'lucide-react';
 import { queryAI } from '../../lib/ai/globalAIService';
 import { useLocation } from 'react-router-dom';
 import { AgentHierarchyVisualization } from '../../src/jarvis/components/AgentHierarchyVisualization';
 import { InlineRenderer } from '../ui/Terminal/InlineRenderer';
 import { convertMarkdownToCLI } from '../../lib/cliFormatter';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
+import { RecommendationEngine } from '../../lib/intelligence/recommendations/engine';
+import { MicroQuestionSystem } from '../../lib/intelligence/agents/micro-questions';
+import { StudyRecommendation, MicroQuestion } from '../../lib/intelligence/types';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // JARVIS EXECUTIVE ASSISTANT - GEEK MODE EVOLVED
@@ -31,32 +34,49 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   onClose,
   onNavigate
 }) => {
-  const { mode, setMode, email, isUnlocked, startJarvisSession, endJarvisSession, addJarvisMessage } = useOnboardingStore();
+  const { 
+    mode, 
+    setMode, 
+    email, 
+    isUnlocked, 
+    startJarvisSession, 
+    endJarvisSession, 
+    addJarvisMessage,
+    userProfile,
+    setUserProfile
+  } = useOnboardingStore();
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [language] = useState<'en-US' | 'ro-RO'>('en-US');
-  const [view, setView] = useState<'chat' | 'agents'>('chat');
+  const [view, setView] = useState<'chat' | 'agents' | 'recommendations'>('chat');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [recommendations, setRecommendations] = useState<StudyRecommendation[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<MicroQuestion | null>(null);
+
+  // Initialize Intelligence Engines
+  const recEngine = useRef(new RecommendationEngine());
+  const questionSystem = useRef(new MicroQuestionSystem());
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+
   const recognitionRef = useRef<any>(null);
-  const synthRef = useRef<SpeechSynthesis | null>(window.speechSynthesis);
+  const synthRef = useRef<SpeechSynthesis | null>(typeof window !== 'undefined' ? window.speechSynthesis : null);
 
   // JARVIS Voice Feedback (Founder Persona)
   const speak = useCallback((text: string) => {
     if (!synthRef.current) return;
-    synthRef.current.cancel(); // Stop current speech
+    synthRef.current.cancel();
 
-    // Strip CLI tags for cleaner speech
     const cleanText = text.replace(/\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice)\]/g, '');
     
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = language;
-    utterance.rate = 1.1; // Strategic/Urgent pace
-    utterance.pitch = 1.05; // Confident tone
+    utterance.rate = 1.1;
+    utterance.pitch = 1.05;
     
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
@@ -76,7 +96,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
         const transcript = event.results[0][0].transcript;
         const lower = transcript.toLowerCase();
         
-        // Voice Triggers
         if (lower.includes('activate geek mode') || lower.includes('go full wire')) {
           setMode('GEEK');
           speak("Geek Mode engaged, sir. Neural link optimized.");
@@ -119,7 +138,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     }
   }, [isListening, startListening, stopListening]);
 
-  // Press-and-hold tracking for desktop
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isHoldingRef = useRef(false);
 
@@ -127,7 +145,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Analytics: Track session start/end
+  // Analytics Tracking
   useEffect(() => {
     if (isOpen) {
       startJarvisSession();
@@ -140,7 +158,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
         endJarvisSession();
       }
     };
-  }, [isOpen]);
+  }, [isOpen, startJarvisSession, endJarvisSession]);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -150,7 +168,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       addMessage('jarvis', greeting);
       speak(greeting);
     }
-  }, [isOpen]);
+  }, [isOpen, language, speak]);
 
   const addMessage = (type: 'user' | 'jarvis', text: string) => {
     setMessages(prev => [...prev, {
@@ -160,7 +178,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       timestamp: new Date()
     }]);
     
-    // Analytics: Track message
     addJarvisMessage(type, text);
   };
 
@@ -168,6 +185,10 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     setIsProcessing(true);
     
     try {
+      const personaContext = userProfile.persona === 'investor' || userProfile.persona === 'founder' || userProfile.persona === 'enterprise'
+        ? "Persona: RED PILL / BUSINESS. Focus on ROI, metrics, scalability, and business frameworks. Use technical but executive language."
+        : "Persona: BLUE PILL / PERSONAL. Focus on projects, skills, 'aha' moments, and hands-on building. Use encouraging, builder-focused language.";
+
       const aiResponse = await queryAI({
         message: query,
         history: messages.map(m => ({
@@ -175,13 +196,41 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           content: m.text
         })),
         userEmail: email || undefined,
-        context: `The user is on the "${location.pathname}" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}.`
+        context: `
+          User Persona: ${userProfile.persona}
+          Journey: ${personaContext}
+          Expertise: ${userProfile.expertiseLevel}
+          Interests: ${userProfile.interests.join(', ')}
+          Current Page: ${location.pathname}
+          Mode: ${mode}
+          Security Level: ${isUnlocked ? 'TIER 1 (Unlocked)' : 'TIER 0 (Restricted)'}
+          System: You are JARVIS, an elite executive assistant for APEX OS. Be concise, technical, and helpful. 
+          Respond using APEX CLI tags: [h1], [h2], [h3], [b], [code], [muted], [info], [warn], [success], [error], [choice].
+        `
       });
 
       const formattedResponse = convertMarkdownToCLI(aiResponse.content);
       addMessage('jarvis', formattedResponse);
       speak(aiResponse.content);
       
+      // Update Recommendations
+      const newRecs = await recEngine.current.getRecommendations(userProfile, {
+        sessionId: Date.now().toString(),
+        startTime: Date.now(),
+        queryCount: messages.length + 1,
+        topicsDiscussed: [query, ...messages.slice(-5).map(m => m.text)],
+      });
+      setRecommendations(newRecs);
+
+      // Micro-Question Trigger
+      if (messages.length > 0 && messages.length % 3 === 0) {
+        const nextQ = await questionSystem.current.getNextQuestion(userProfile);
+        if (nextQ) {
+          setCurrentQuestion(nextQ);
+        }
+      }
+
+      // Navigation detection
       if (aiResponse.content.toLowerCase().includes('navigat') || aiResponse.content.toLowerCase().includes('show')) {
         if (aiResponse.content.toLowerCase().includes('vibe')) onNavigate?.('vibe');
         if (aiResponse.content.toLowerCase().includes('pricing')) onNavigate?.('pricing');
@@ -192,7 +241,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     } finally {
       setIsProcessing(false);
     }
-  }, [messages, location.pathname, email, mode, isUnlocked, speak, onNavigate]);
+  }, [messages, location.pathname, email, mode, isUnlocked, speak, onNavigate, userProfile, addJarvisMessage]);
 
   const handleSend = (textOverride?: string) => {
     const text = textOverride || inputText;
@@ -202,6 +251,21 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     if (!textOverride) setInputText('');
   };
 
+  const handleAnswer = async (answer: string) => {
+    if (!currentQuestion) return;
+    
+    try {
+      const updates = await questionSystem.current.processAnswer(userProfile, currentQuestion.id, answer);
+      setUserProfile(updates);
+      setCurrentQuestion(null);
+      addMessage('user', answer);
+      addMessage('jarvis', "Information synchronized. Your profile has been updated.");
+      speak("Information synchronized, sir.");
+    } catch (error) {
+      console.error("Error processing answer:", error);
+    }
+  };
+
   const isGeek = mode === 'GEEK';
 
   return (
@@ -209,16 +273,10 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       {isOpen && (
         <motion.div
           initial={{ opacity: 0, y: 100, scale: 0.95 }}
-          animate={{ 
-            opacity: 1, 
-            y: 0, 
-            scale: 1
-          }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 100, scale: 0.95 }}
           className={`fixed bottom-24 left-4 right-4 sm:left-6 sm:right-auto sm:w-96 md:w-[28rem] lg:w-[32rem] h-[60vh] sm:h-[500px] md:h-[600px] max-h-[80vh] bg-slate-900/95 backdrop-blur-2xl rounded-2xl border transition-all duration-500 shadow-2xl z-50 flex flex-col overflow-hidden ${isGeek ? 'border-cyan-500/50' : 'border-white/10'}`}
-          style={{ 
-            maxWidth: isGeek ? '600px' : '500px',
-          }}
+          style={{ maxWidth: isGeek ? '600px' : '500px' }}
         >
           {/* Header */}
           <div className={`flex items-center justify-between p-4 border-b transition-colors duration-500 ${isGeek ? 'border-cyan-500/30 bg-cyan-500/10' : 'border-white/10 bg-white/5'}`}>
@@ -251,8 +309,17 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
               <button 
                 onClick={() => setView(view === 'chat' ? 'agents' : 'chat')}
                 className={`p-2 rounded-lg transition-colors ${view === 'agents' ? 'text-cyan-400 bg-white/5' : 'text-white/50 hover:bg-white/10'}`}
+                title="Agent Swarm"
               >
                 <Activity className="w-4 h-4" />
+              </button>
+
+              <button 
+                onClick={() => setView(view === 'recommendations' ? 'chat' : 'recommendations')}
+                className={`p-2 rounded-lg transition-colors ${view === 'recommendations' ? 'text-cyan-400 bg-white/5' : 'text-white/50 hover:bg-white/10'}`}
+                title="Study Recommendations"
+              >
+                <BookOpen className="w-4 h-4" />
               </button>
 
               <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white/50">
@@ -289,17 +356,90 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
                     </motion.div>
                   ))}
                   <div ref={messagesEndRef} />
+
+                  {currentQuestion && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 rounded-xl bg-violet-900/40 border border-violet-500/50 backdrop-blur-md space-y-3"
+                    >
+                      <div className="flex items-center gap-2 text-violet-300 font-bold text-[10px] uppercase tracking-widest">
+                        <HelpCircle className="w-3 h-3" /> JARVIS Query
+                      </div>
+                      <p className="text-white text-xs font-medium">{currentQuestion.question}</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        {currentQuestion.options.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => handleAnswer(opt)}
+                            className="text-left p-2 rounded-lg bg-white/5 hover:bg-violet-500/20 text-white/80 hover:text-white text-[10px] border border-white/5 transition-all"
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
-              ) : (
+              ) : view === 'agents' ? (
                 <motion.div
                   key="agents"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
                   className="absolute inset-0 bg-slate-950 overflow-hidden"
                 >
                   <div className="h-full scale-[0.5] origin-top transform-gpu">
                     <AgentHierarchyVisualization />
                   </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="recommendations"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="absolute inset-0 p-6 overflow-y-auto custom-scrollbar space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" /> Neural Roadmap
+                    </h4>
+                  </div>
+                  
+                  {recommendations.length > 0 ? (
+                    recommendations.map((rec) => (
+                      <motion.div
+                        key={rec.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/30 transition-all group"
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-[10px] font-mono text-cyan-400/60 uppercase">{rec.type} // {rec.difficulty}</span>
+                          <span className="text-[10px] font-mono text-white/30">{rec.estimatedTime}m</span>
+                        </div>
+                        <h5 className="text-white font-bold text-sm mb-1 group-hover:text-cyan-400 transition-colors">{rec.title}</h5>
+                        <p className="text-white/50 text-[10px] leading-relaxed mb-3">{rec.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] text-emerald-400 font-medium bg-emerald-400/10 px-2 py-0.5 rounded-full">
+                            {rec.matchReason}
+                          </span>
+                          <button 
+                            onClick={() => window.open(rec.url, '_blank')}
+                            className="text-[10px] text-cyan-400 font-bold uppercase tracking-tighter hover:underline"
+                          >
+                            Access Module
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <Bot className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/30 text-[10px] uppercase tracking-widest">Awaiting more data to refine roadmap...</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -310,7 +450,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={(e) => {
-                  // Tap-to-toggle: tap once to start, tap again to stop
                   e.preventDefault();
                   if (!isHoldingRef.current) {
                     toggleListening();
@@ -318,51 +457,18 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
                   isHoldingRef.current = false;
                 }}
                 onMouseDown={() => {
-                  // Desktop press-and-hold: start after 300ms hold
                   holdTimerRef.current = setTimeout(() => {
                     isHoldingRef.current = true;
                     startListening();
                   }, 300);
                 }}
                 onMouseUp={() => {
-                  // Desktop release: stop if was holding
                   if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
                   if (isHoldingRef.current) {
                     stopListening();
                   }
                 }}
-                onMouseLeave={() => {
-                  if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-                  if (isHoldingRef.current) {
-                    stopListening();
-                    isHoldingRef.current = false;
-                  }
-                }}
-                onTouchStart={(e) => {
-                  // Mobile press-and-hold: start after 300ms
-                  e.preventDefault();
-                  holdTimerRef.current = setTimeout(() => {
-                    isHoldingRef.current = true;
-                    startListening();
-                  }, 300);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-                  if (isHoldingRef.current) {
-                    // Was holding — stop recording
-                    stopListening();
-                    isHoldingRef.current = false;
-                  } else {
-                    // Quick tap — toggle
-                    toggleListening();
-                  }
-                }}
-                className={`p-2 rounded-xl transition-all touch-manipulation ${
-                  isListening
-                    ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)] animate-pulse'
-                    : 'bg-white/5 text-white/50 hover:bg-white/10'
-                }`}
+                className={`p-2 rounded-xl transition-all ${isListening ? 'bg-cyan-500 text-black shadow-[0_0_20px_rgba(6,182,212,0.4)] animate-pulse' : 'bg-white/5 text-white/50 hover:bg-white/10'}`}
               >
                 <Mic className="w-5 h-5" />
               </button>

@@ -196,3 +196,92 @@ export interface UserJourneyAnalytics {
   session_duration_ms: number;
   time_on_page_ms: number;
 }
+
+export interface RecommendationAnalytics {
+  id: string;
+  user_id: string;
+  session_id: string;
+  module_id: string;
+  action: 'view' | 'click';
+  timestamp: string;
+  match_score?: number;
+  persona: string;
+  metadata?: Record<string, unknown>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYTICS TRACKING HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+
+async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 0) throw error;
+    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+    return withRetry(fn, retries - 1);
+  }
+}
+
+export async function trackJarvisMessage(data: Omit<JarvisConversationAnalytics, 'id' | 'timestamp'>) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+  
+  return withRetry(async () => {
+    const { error } = await supabase.from('jarvis_conversations').insert({
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+    if (error) throw error;
+  });
+}
+
+export async function trackTerminalCommand(data: Omit<TerminalCommandAnalytics, 'id' | 'timestamp'>) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+
+  return withRetry(async () => {
+    const { error } = await supabase.from('terminal_commands').insert({
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+    if (error) throw error;
+  });
+}
+
+export async function trackRecommendation(data: Omit<RecommendationAnalytics, 'id' | 'timestamp'>) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+
+  return withRetry(async () => {
+    const { error } = await supabase.from('recommendations').insert({
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+    if (error) throw error;
+  });
+}
+
+export async function trackUserInteraction(data: Omit<UserJourneyAnalytics, 'id' | 'timestamp'>) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+
+  return withRetry(async () => {
+    const { error } = await supabase.from('user_interactions').insert({
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+    if (error) throw error;
+  });
+}
+
+export async function trackPillSelection(data: Omit<PillSelectionAnalytics, 'id' | 'selected_at'>) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+
+  return withRetry(async () => {
+    const { error } = await supabase.from('pill_selection_analytics').insert({
+      ...data,
+      selected_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+  });
+}

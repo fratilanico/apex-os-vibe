@@ -18,29 +18,47 @@ export async function getFrontierConstraints(): Promise<string> {
   if (!client) return '';
   
   const { data, error } = await client
-    .from('frontier_intelligence')
+    .from('frontier_intelligence' as any)
     .select('title, category, logic, is_active');
 
   if (error || !data) return '';
 
-  const restricted = data.filter(item => !item.is_active);
-  const active = data.filter(item => item.is_active);
+  const constraints = data as any[];
+  return constraints
+    .filter((c) => c.is_active)
+    .map((c) => `[${c.category.toUpperCase()}] ${c.title}: ${c.logic}`)
+    .join('\n');
+}
 
-  let constraintBlock = '\n\n## FRONTIER_KNOWLEDGE_CONSTRAINTS\n';
+export async function getCategoryConstraints(category: string): Promise<string> {
+  const client = getSupabase();
+  if (!client) return '';
 
-  if (restricted.length > 0) {
-    constraintBlock += '\n[RESTRICTED_TOOLS_AND_LOGIC - DO NOT USE OR MENTION]:\n';
-    restricted.forEach(item => {
-      constraintBlock += `- ${item.title} (${item.category}): User has disabled this sync. If asked about it, explicitly refuse to implement or discuss it as it is outside the authorized frontier.\n`;
-    });
-  }
+  const { data, error } = await client
+    .from('frontier_intelligence' as any)
+    .select('title, category, logic')
+    .eq('category', category);
 
-  if (active.length > 0) {
-    constraintBlock += '\n[AUTHORIZED_FRONTIER_KNOWLEDGE]:\n';
-    active.forEach(item => {
-      constraintBlock += `- ${item.title}: ${item.logic}\n`;
-    });
-  }
+  if (error || !data) return '';
 
-  return constraintBlock;
+  const constraints = data as any[];
+  return constraints
+    .map((c) => `[${c.category.toUpperCase()}] ${c.title}: ${c.logic}`)
+    .join('\n');
+}
+
+export async function getPersonaLogic(persona: string): Promise<string> {
+  const client = getSupabase();
+  if (!client) return '';
+
+  const { data, error } = await client
+    .from('frontier_intelligence' as any)
+    .select('title, logic')
+    .eq('category', 'persona')
+    .ilike('title', `%${persona}%`)
+    .limit(1);
+
+  if (error || !data || (data as any[]).length === 0) return '';
+
+  return (data as any[])[0].logic;
 }

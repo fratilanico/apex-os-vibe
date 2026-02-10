@@ -28,6 +28,7 @@ export class ContextManager {
       expertiseLevel: 'intermediate',
       interests: [],
       learningGoals: [],
+      completedModules: [],
     };
 
     this.userProfiles.set(userId, defaultProfile);
@@ -41,36 +42,42 @@ export class ContextManager {
     return updated;
   }
 
-  async detectPersona(userId: string, queryText: string): Promise<UserPersona> {
+  async detectPersona(_userId: string, queryText: string): Promise<UserPersona> {
     const text = queryText.toLowerCase();
     
     // Developer indicators
     if (text.includes('code') || text.includes('api') || text.includes('deploy') || 
-        text.includes('debug') || text.includes('github')) {
+        text.includes('debug') || text.includes('github') || text.includes('git') ||
+        text.includes('typescript') || text.includes('javascript') || text.includes('npm') ||
+        text.includes('component') || text.includes('hooks')) {
       return 'developer';
     }
 
     // Investor indicators
     if (text.includes('valuation') || text.includes('equity') || text.includes('invest') ||
-        text.includes('series') || text.includes('funding') || text.includes('roi')) {
+        text.includes('series') || text.includes('funding') || text.includes('roi') ||
+        text.includes('cap table') || text.includes('exit') || text.includes('pitch deck')) {
       return 'investor';
     }
 
     // Student indicators
     if (text.includes('learn') || text.includes('course') || text.includes('tutorial') ||
-        text.includes('beginner') || text.includes('study')) {
+        text.includes('beginner') || text.includes('study') || text.includes('fundamentals') ||
+        text.includes('how do i start') || text.includes('basics')) {
       return 'student';
     }
 
     // Enterprise indicators
     if (text.includes('enterprise') || text.includes('scale') || text.includes('compliance') ||
-        text.includes('security') || text.includes('integration')) {
+        text.includes('security') || text.includes('integration') || text.includes('governance') ||
+        text.includes('sla') || text.includes('uptime') || text.includes('on-prem')) {
       return 'enterprise';
     }
 
     // Researcher indicators
     if (text.includes('research') || text.includes('study') || text.includes('paper') ||
-        text.includes('analysis') || text.includes('benchmark')) {
+        text.includes('analysis') || text.includes('benchmark') || text.includes('data') ||
+        text.includes('trends') || text.includes('landscape') || text.includes('whitepaper')) {
       return 'researcher';
     }
 
@@ -80,7 +87,7 @@ export class ContextManager {
 
   async createSession(userId: string): Promise<SessionData> {
     const session: SessionData = {
-      sessionId: `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionId: `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       startTime: Date.now(),
       queryCount: 0,
       topicsDiscussed: [],
@@ -146,6 +153,7 @@ export class ContextManager {
       conversationHistory: history,
       sessionData: session,
       userProfile: profile,
+      systemContext: `System: Persona is ${profile.persona.toUpperCase()}. Expertise: ${profile.expertiseLevel}. Goals: ${profile.learningGoals.join(', ')}.`,
     };
   }
 

@@ -14,31 +14,39 @@ export class QueryParser {
   private codingKeywords = [
     'code', 'programming', 'debug', 'error', 'implementation', 
     'function', 'api', 'javascript', 'python', 'react', 'sql',
-    'typescript', 'database', 'algorithm', 'deploy', 'build'
+    'typescript', 'database', 'algorithm', 'deploy', 'build',
+    'component', 'hooks', 'refactor', 'git', 'github', 'vercel',
+    'nextjs', 'css', 'html', 'backend', 'frontend', 'fullstack',
+    'vibe-coding', 'cursor', 'claude code', 'copilot', 'coding'
   ];
 
   private researchKeywords = [
     'research', 'market', 'competitor', 'trends', 'statistics',
     'latest', 'news', 'report', 'study', 'analysis', 'benchmark',
-    'data', 'survey', 'industry', 'landscape'
+    'data', 'survey', 'industry', 'landscape', 'mrr', 'valuation',
+    'funding', 'startup', 'vc', 'venture capital', 'market size',
+    'perplexity', 'search the web', 'market analysis', 'competitive'
   ];
 
   private learningKeywords = [
     'learn', 'tutorial', 'course', 'module', 'lesson', 'how to',
     'guide', 'explain', 'understand', 'basics', 'fundamentals',
-    'education', 'training', 'study'
+    'education', 'training', 'study', 'syllabus', 'curriculum',
+    'beginner', 'pathway', 'steps to', 'curriculum', 'academy'
   ];
 
   private strategyKeywords = [
     'strategy', 'plan', 'roadmap', 'vision', 'mission', 'goal',
-    'objective', 'tactics', 'approach', 'framework', 'methodology'
+    'objective', 'tactics', 'approach', 'framework', 'methodology',
+    'gtm', 'go-to-market', 'scale', 'growth', 'business model',
+    'pitch deck', 'investor', 'tam', 'cac', 'ltv', 'revenue'
   ];
 
   private urgencyKeywords: Record<QueryUrgency, string[]> = {
-    critical: ['urgent', 'asap', 'emergency', 'critical', 'down', 'broken', 'error'],
-    high: ['important', 'priority', 'needed', 'required', 'soon'],
-    medium: ['help', 'question', 'advice', 'suggestion'],
-    low: ['curious', 'wondering', 'thinking', 'considering']
+    critical: ['urgent', 'asap', 'emergency', 'critical', 'down', 'broken', 'error', 'fatal', 'blocking'],
+    high: ['important', 'priority', 'needed', 'required', 'soon', 'quickly'],
+    medium: ['help', 'question', 'advice', 'suggestion', 'how', 'what'],
+    low: ['curious', 'wondering', 'thinking', 'considering', 'maybe', 'eventually']
   };
 
   async parse(query: IntelligenceQuery): Promise<ParsedIntent> {
@@ -95,9 +103,14 @@ export class QueryParser {
       if (text.includes(keyword)) scores.strategy += 1;
     });
 
-    // Technical queries often have technical terms
-    if (text.includes('how to') || text.includes('setup') || text.includes('configure')) {
-      scores.technical += 0.5;
+    // Technical queries often have technical terms but are not necessarily coding
+    if (text.includes('how to') || text.includes('setup') || text.includes('configure') || text.includes('install')) {
+      scores.technical += 1.5;
+    }
+
+    // Weight strategy more if specific business terms are used
+    if (text.includes('roadmap') || text.includes('business') || text.includes('market')) {
+      scores.strategy += 0.5;
     }
 
     // Find highest score
@@ -116,24 +129,31 @@ export class QueryParser {
     const entities: string[] = [];
     
     // Extract tech stack mentions
-    const techPattern = /\b(react|vue|angular|node|python|javascript|typescript|sql|aws|gcp|azure)\b/gi;
+    const techPattern = /\b(react|vue|angular|node|python|javascript|typescript|sql|aws|gcp|azure|nextjs|tailwind|supabase|vercel|docker|kubernetes)\b/gi;
     const techMatches = text.match(techPattern);
     if (techMatches) {
       entities.push(...techMatches.map(m => m.toLowerCase()));
     }
 
     // Extract company/product mentions
-    const companyPattern = /\b(claude|gpt|gemini|perplexity|notion|figma|vercel)\b/gi;
+    const companyPattern = /\b(claude|gpt|gemini|perplexity|notion|figma|vercel|stripe|github|deepseek|openai|anthropic|google|microsoft|meta)\b/gi;
     const companyMatches = text.match(companyPattern);
     if (companyMatches) {
       entities.push(...companyMatches.map(m => m.toLowerCase()));
     }
 
     // Extract stage mentions
-    const stagePattern = /\b(seed|series a|series b|startup|enterprise)\b/gi;
+    const stagePattern = /\b(seed|series a|series b|startup|enterprise|pre-seed|growth|scale)\b/gi;
     const stageMatches = text.match(stagePattern);
     if (stageMatches) {
       entities.push(...stageMatches.map(m => m.toLowerCase()));
+    }
+
+    // Extract financial terms
+    const financePattern = /\b(mrr|arr|ltv|cac|roi|valuation|equity|funding|round)\b/gi;
+    const financeMatches = text.match(financePattern);
+    if (financeMatches) {
+      entities.push(...financeMatches.map(m => m.toLowerCase()));
     }
 
     return [...new Set(entities)]; // Remove duplicates

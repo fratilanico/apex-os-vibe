@@ -56,7 +56,7 @@ export class ResponseFormatter {
     };
   }
 
-  private formatForFounder(text: string, profile: UserProfile): string {
+  private formatForFounder(text: string, _profile: UserProfile): string {
     // Add business context and ROI framing
     let formatted = text;
 
@@ -80,20 +80,20 @@ export class ResponseFormatter {
     return formatted;
   }
 
-  private formatForDeveloper(text: string, profile: UserProfile): string {
+  private formatForDeveloper(text: string, _profile: UserProfile): string {
     // Ensure code blocks are properly formatted
     let formatted = text;
 
     // Add syntax highlighting hints
     formatted = formatted.replace(
       /```(\w+)?\n/g,
-      (match, lang) => `\`\`\`${lang || 'typescript'}\n`
+      (_match, lang) => `\`\`\`${lang || 'typescript'}\n`
     );
 
     // Add copy button markers for code blocks
     formatted = formatted.replace(
       /```([\s\S]*?)```/g,
-      (match, code) => `[COPY_CODE]\`\`\`${code}\`\`\`[/COPY_CODE]`
+      (_match, code) => `[COPY_CODE]\`\`\`${code}\`\`\`[/COPY_CODE]`
     );
 
     // Add implementation notes section
@@ -107,7 +107,7 @@ export class ResponseFormatter {
     return formatted;
   }
 
-  private formatForInvestor(text: string, profile: UserProfile): string {
+  private formatForInvestor(text: string, _profile: UserProfile): string {
     // Add metrics and financial framing
     let formatted = text;
 
@@ -139,7 +139,7 @@ export class ResponseFormatter {
     if (technicalTerms.length > 0) {
       formatted += '\n\n## 📖 Key Terms\n';
       technicalTerms.forEach(term => {
-        formatted += `- **${term}:** [Hover for definition]\n`;
+        formatted += `- **${term}**\n`;
       });
     }
 
@@ -151,7 +151,7 @@ export class ResponseFormatter {
     return formatted;
   }
 
-  private formatForEnterprise(text: string, profile: UserProfile): string {
+  private formatForEnterprise(text: string, _profile: UserProfile): string {
     // Add compliance and security considerations
     let formatted = text;
 
@@ -171,7 +171,7 @@ export class ResponseFormatter {
     return formatted;
   }
 
-  private formatForResearcher(text: string, profile: UserProfile): string {
+  private formatForResearcher(text: string, _profile: UserProfile): string {
     // Add citations and academic structure
     let formatted = text;
 
@@ -229,8 +229,8 @@ export class ResponseFormatter {
 
   private generateFollowUps(
     response: IntelligenceResponse,
-    persona: UserPersona,
-    history: ConversationMessage[]
+    _persona: UserPersona,
+    _history: ConversationMessage[]
   ): string[] {
     const followUps: string[] = [];
 

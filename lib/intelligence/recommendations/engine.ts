@@ -275,10 +275,14 @@ export class RecommendationEngine {
     content: StudyRecommendation,
     profile: UserProfile
   ): boolean {
-    // Check if user has completed prerequisites
-    // For now, assume all prerequisites are met
-    // In production, check against user's completed content
-    return true;
+    if (!content.prerequisites || content.prerequisites.length === 0) {
+      return true;
+    }
+    
+    // Check if user has completed all prerequisites
+    return content.prerequisites.every(prereqId => 
+      profile.completedModules.includes(prereqId)
+    );
   }
 
   private generateMatchReason(
@@ -312,7 +316,7 @@ export class RecommendationEngine {
       reasons.push('Highly rated by similar users');
     }
 
-    return reasons[0];
+    return reasons[0] || 'Highly rated by similar users';
   }
 
   async trackRecommendationView(

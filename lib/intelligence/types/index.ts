@@ -40,6 +40,7 @@ export interface QueryContext {
   conversationHistory: ConversationMessage[];
   sessionData: SessionData;
   userProfile: UserProfile;
+  systemContext?: string;
 }
 
 export interface ConversationMessage {
@@ -62,6 +63,7 @@ export interface UserProfile {
   expertiseLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   interests: string[];
   learningGoals: string[];
+  completedModules: string[]; // Track completed content
   companyStage?: 'idea' | 'seed' | 'series-a' | 'growth' | 'enterprise';
   techStack?: string[];
 }

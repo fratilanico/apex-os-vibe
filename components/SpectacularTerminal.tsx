@@ -3,12 +3,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Wifi, Shield, Terminal } from 'lucide-react';
-import { useOnboardingStore } from '../stores/useOnboardingStore';
+import { useOnboardingStore, OnboardingStep } from '../stores/useOnboardingStore';
 import { processAdminCommand } from '../lib/admin/terminalAdmin';
 import { PILL_CONFIG } from '../config/pillConfig';
 import { PillChoiceSystem } from './PillChoiceSystem';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
-import { APEX_LOGO_ASCII_LINES } from '../lib/terminal/constants';
+import { queryAI } from '../lib/ai/globalAIService';
 
 interface TerminalLine {
   id: string;
@@ -16,12 +16,8 @@ interface TerminalLine {
   type: 'input' | 'output' | 'error' | 'system' | 'success' | 'jarvis' | 'matrix' | 'ascii' | 'brand-logo';
 }
 
-type TerminalStep = 'boot' | 'name' | 'email' | 'processing' | 'unlocked';
-
 const BOOT_SEQUENCE = [
-  { text: JSON.stringify(APEX_LOGO_ASCII_LINES), delay: 50, type: 'brand-logo' as const },
-  { text: '', delay: 80, type: 'system' as const },
-  { text: 'Initializing APEX_OS Kernel v6.4.2...', delay: 200, type: 'system' as const },
+  { text: 'Initializing APEX_OS Kernel v6.4.2...', delay: 100, type: 'system' as const },
   { text: 'Loading Neural Interface Protocol...', delay: 400, type: 'system' as const },
   { text: 'Connecting to 17-Agent Swarm...', delay: 700, type: 'matrix' as const },
   { text: '[OK] FULL WIRE ENGAGED', delay: 1000, type: 'success' as const },
@@ -30,16 +26,15 @@ const BOOT_SEQUENCE = [
   { text: '', delay: 1300, type: 'system' as const },
 ];
 
-// Rotating prompts based on step
-const stepPrompts: Record<TerminalStep, string[]> = {
+const stepPrompts: Record<string, string[]> = {
   boot: ['Initializing neural interface...', 'Establishing secure connection...'],
-  name: [
+  idle: [
     'What should I call you, operator?',
     'Enter your designation...',
     'Identity node awaits input...',
     'Who joins the swarm?'
   ],
-  email: [
+  email_guard: [
     'Drop your digital coordinates...',
     'Where can the swarm reach you?',
     'Email for neural link...',
@@ -58,20 +53,8 @@ const stepPrompts: Record<TerminalStep, string[]> = {
   ]
 };
 
-interface SpectacularTerminalProps {
-  onCommand?: (command: string) => void;
-  inputValue: string;
-  setInputValue: (value: string) => void;
-  lines: TerminalLine[];
-  step: TerminalStep;
-  isProcessing: boolean;
-  showPillChoice: boolean;
-  getPlaceholder: () => string;
-  terminalRef: React.RefObject<HTMLDivElement>;
-}
-
 export const useTerminal = () => {
-  const { step, setStep, setPersona, setEmail, unlock, addHistory } = useOnboardingStore();
+  const { step, setStep, setPersona, setEmail, unlock, addHistory, trackTerminalCommand, persona, isUnlocked, email } = useOnboardingStore();
   const [bootLine, setBootLine] = useState(0);
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -85,54 +68,14 @@ export const useTerminal = () => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Cycle through prompts
-  useEffect(() => {
-    const currentStep = step as TerminalStep;
-    if (currentStep === 'boot' || currentStep === 'processing') return;
-    
-    const prompts = stepPrompts[currentStep] || ['Type response...'];
-    const interval = setInterval(() => {
-      setPromptIndex((prev) => (prev + 1) % prompts.length);
-    }, 4000);
-    
-    return () => clearInterval(interval);
-  }, [step]);
-
-  const getPlaceholder = useCallback(() => {
-    const currentStep = step as TerminalStep;
-    if (currentStep === 'boot') return 'Initializing...';
-    if (currentStep === 'processing') return 'Processing...';
-    const prompts = stepPrompts[currentStep] || ['Type response...'];
-    return prompts[promptIndex % prompts.length];
-  }, [step, promptIndex]);
-
   const addLine = useCallback((text: string, type: TerminalLine['type'] = 'output') => {
     const id = Math.random().toString(36).substr(2, 9);
     setLines(prev => [...prev, { id, text, type }]);
     addHistory(`[${type.toUpperCase()}] ${text}`);
   }, [addHistory]);
 
-  useEffect(() => {
-    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-  }, [lines, showPillChoice]);
-
-  // Boot sequence
-  useEffect(() => {
-    if (bootLine < BOOT_SEQUENCE.length) {
-      const timer = setTimeout(() => {
-        const line = BOOT_SEQUENCE[bootLine];
-        addLine(line.text, line.type);
-        setBootLine(prev => prev + 1);
-      }, BOOT_SEQUENCE[bootLine].delay - (bootLine > 0 ? BOOT_SEQUENCE[bootLine - 1].delay : 0));
-      return () => clearTimeout(timer);
-    } else if (step === 'boot') {
-      setStep('name' as any);
-      addLine('# 01 Identity Node: Enter your designation:', 'system');
-    }
-  }, [bootLine, step, addLine, setStep]);
-
   const performHandshake = async (name: string) => {
-    setStep('processing' as any);
+    setStep('processing');
     setScanActive(true);
     setIsProcessing(true);
     
@@ -151,7 +94,7 @@ export const useTerminal = () => {
     await new Promise(r => setTimeout(r, 800));
     setGlitchActive(false);
     setIsProcessing(false);
-    setStep('unlocked' as any);
+    setStep('unlocked');
     unlock();
     
     addLine('', 'system');
@@ -198,6 +141,48 @@ export const useTerminal = () => {
     addLine('Type "help" for available commands or "vault" to access your Founder Bible.', 'system');
   };
 
+  useEffect(() => {
+    if (step === 'boot' || step === 'processing') return;
+    
+    const prompts = stepPrompts[step] || ['Type response...'];
+    const interval = setInterval(() => {
+      setPromptIndex((prev) => (prev + 1) % prompts.length);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [step]);
+
+  const getPlaceholder = useCallback(() => {
+    if (step === 'boot') return 'Initializing...';
+    if (step === 'processing') return 'Processing...';
+    const prompts = stepPrompts[step] || ['Type response...'];
+    return prompts[promptIndex % prompts.length] || 'Type response...';
+  }, [step, promptIndex]);
+
+  useEffect(() => {
+    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+  }, [lines, showPillChoice]);
+
+  // Boot sequence
+  useEffect(() => {
+    if (bootLine < BOOT_SEQUENCE.length) {
+      const line = BOOT_SEQUENCE[bootLine];
+      if (!line) return;
+      const prevLine = bootLine > 0 ? BOOT_SEQUENCE[bootLine - 1] : null;
+      const delay = line.delay - (prevLine?.delay ?? 0);
+      
+      const timer = setTimeout(() => {
+        addLine(line.text, line.type);
+        setBootLine(prev => prev + 1);
+      }, delay);
+      return () => clearTimeout(timer);
+    } else if (step === 'boot') {
+      setStep('idle');
+      addLine('# 01 Identity Node: Enter your designation:', 'system');
+    }
+    return undefined;
+  }, [bootLine, step, addLine, setStep]);
+
   const handleCommand = async (val: string) => {
     const trimmed = val.trim();
     if (!trimmed) return;
@@ -205,32 +190,36 @@ export const useTerminal = () => {
     addLine(`> ${trimmed}`, 'input');
     setInputValue('');
 
-    if ((step as TerminalStep) === 'name') {
+    if (step === 'idle') {
       if (trimmed.length < 2) {
         addLine('Name too short. Try again:', 'error');
+        trackTerminalCommand(trimmed, 'input', 'Name too short', 'error');
         return;
       }
       setFormData(p => ({ ...p, name: trimmed }));
       addLine(`✓ Identity Logged: ${trimmed}`, 'success');
+      trackTerminalCommand(trimmed, 'input', 'Identity Logged', 'success');
       addLine('', 'system');
       addLine('# 02 Email Guard: Enter your primary email:', 'system');
-      setStep('email' as any);
+      setStep('email_guard');
       return;
     }
 
-    if ((step as TerminalStep) === 'email') {
+    if (step === 'email_guard') {
       if (!/\S+@\S+\.\S+/.test(trimmed)) {
         addLine('Invalid email format. Retry:', 'error');
+        trackTerminalCommand(trimmed, 'input', 'Invalid email format', 'error');
         return;
       }
       setFormData(p => ({ ...p, email: trimmed }));
       setEmail(trimmed);
       addLine('✓ Email Locked.', 'success');
+      trackTerminalCommand(trimmed, 'input', 'Email Locked', 'success');
       await performHandshake(formData.name);
       return;
     }
 
-    if ((step as TerminalStep) === 'unlocked') {
+    if (step === 'unlocked') {
       const lower = trimmed.toLowerCase();
       
       const adminResult = processAdminCommand(lower);
@@ -240,6 +229,7 @@ export const useTerminal = () => {
         } else {
           addLine(adminResult.response, 'system');
         }
+        trackTerminalCommand(trimmed, 'admin', Array.isArray(adminResult.response) ? adminResult.response.join('\n') : adminResult.response);
         return;
       }
       
@@ -248,20 +238,43 @@ export const useTerminal = () => {
         addLine('  status   - Check swarm sync', 'system');
         addLine('  vault    - Access Founder Bible', 'system');
         addLine('  clear    - Clear terminal', 'system');
+        trackTerminalCommand(trimmed, 'system', 'HELP displayed');
         return;
       }
 
       if (lower === 'clear') {
         setLines([]);
+        trackTerminalCommand(trimmed, 'system', 'Terminal cleared');
         return;
       }
 
       if (lower === 'vault') {
         addLine('ACCESSING PRIVATE RESOURCE VAULT...', 'jarvis');
+        trackTerminalCommand(trimmed, 'system', 'VAULT accessed');
         return;
       }
 
-      addLine('Command not recognized. Type "help" for options.', 'error');
+      // NO RECOGNIZED COMMAND -> Query AI Swarm
+      setIsProcessing(true);
+      try {
+        const response = await queryAI({
+          message: trimmed,
+          history: lines.slice(-5).map(l => ({
+            role: l.type === 'input' ? 'user' : 'assistant',
+            content: l.text
+          })),
+          userEmail: email || undefined,
+          context: `Terminal Operator Session. Step: ${step}. Persona: ${persona}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}.`
+        });
+        
+        addLine(response.content, 'jarvis');
+        trackTerminalCommand(trimmed, 'input', response.content, 'success');
+      } catch (error) {
+        addLine('Communication error. Swarm link unstable.', 'error');
+        trackTerminalCommand(trimmed, 'input', 'AI Query failed', 'error');
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -282,16 +295,15 @@ export const useTerminal = () => {
   };
 };
 
-// Content-only component (no input)
 export const TerminalContent: React.FC<{
   lines: TerminalLine[];
-  step: TerminalStep;
+  step: OnboardingStep;
   isProcessing: boolean;
   showPillChoice: boolean;
   glitchActive: boolean;
   scanActive: boolean;
   onPillChoice: (choice: 'red' | 'blue') => void;
-  terminalRef: React.RefObject<HTMLDivElement>;
+  terminalRef: React.RefObject<HTMLDivElement | null>;
 }> = ({ 
   lines, 
   step, 
@@ -382,7 +394,7 @@ export const TerminalContent: React.FC<{
           >
             <PillChoiceSystem 
               activeOption={PILL_CONFIG.activeOption} 
-              onSelect={onPillChoice} 
+              onSelect={(choice) => onPillChoice(choice === 'personal' ? 'blue' : 'red')} 
             />
           </motion.div>
         )}
@@ -397,16 +409,15 @@ export const TerminalContent: React.FC<{
   );
 };
 
-// Input bar component
 export const TerminalInput: React.FC<{
   inputValue: string;
   setInputValue: (value: string) => void;
-  step: TerminalStep;
+  step: OnboardingStep;
   isProcessing: boolean;
   showPillChoice: boolean;
   getPlaceholder: () => string;
   onSubmit: (value: string) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }> = ({
   inputValue,
   setInputValue,
@@ -522,7 +533,6 @@ export const TerminalInput: React.FC<{
   );
 };
 
-// Default export for backward compatibility
 const SpectacularTerminal: React.FC = () => {
   const {
     lines,
@@ -566,5 +576,4 @@ const SpectacularTerminal: React.FC = () => {
   );
 };
 
-export { SpectacularTerminal };
 export default SpectacularTerminal;

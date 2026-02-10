@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Copy, CheckCircle, ExternalLink } from 'lucide-react';
+import { Check, Copy, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 
 interface SuccessStateProps {
@@ -33,6 +33,11 @@ const statusConfig = {
   },
 } as const;
 
+import { useOnboardingStore } from '../../stores/useOnboardingStore';
+
+// Calculation for fixed date: Friday 27th February 2026 at 6:00 PM UK time (GMT)
+const WEBINAR_DATE = new Date('2026-02-27T18:00:00+00:00');
+
 export const SuccessState: React.FC<SuccessStateProps> = ({
   aiScore,
   rank,
@@ -40,8 +45,11 @@ export const SuccessState: React.FC<SuccessStateProps> = ({
   status,
 }) => {
   const [copied, setCopied] = useState(false);
+  const { persona } = useOnboardingStore();
   const config = statusConfig[status];
   const referralUrl = `https://infoacademy.uk/waitlist?ref=${referralCode}`;
+
+  const daysToLaunch = Math.max(0, Math.ceil((WEBINAR_DATE.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
 
   const handleCopy = async () => {
     try {
@@ -57,6 +65,29 @@ export const SuccessState: React.FC<SuccessStateProps> = ({
     "Just secured my spot on APEX OS — the operating system for the AI age. Build at AI speed with 17 AI agents."
   );
   const shareUrl = encodeURIComponent(referralUrl);
+
+  const personaNextSteps = {
+    BUSINESS: {
+      title: "Business Architect Journey",
+      step: "Start with the ROI Analysis Module",
+      cta: "View Strategy",
+      link: "/academy/modules/roi-analysis"
+    },
+    PERSONAL: {
+      title: "Personal Builder Journey",
+      step: "Start with the Vibe Coding Module",
+      cta: "View Playbook",
+      link: "/academy/modules/vibe-coding"
+    },
+    NONE: {
+      title: "Founder Journey",
+      step: "Complete your profile for a custom roadmap",
+      cta: "Explore Swarm",
+      link: "/academy"
+    }
+  };
+
+  const nextStep = personaNextSteps[persona || 'NONE'];
 
   return (
     <section className="py-16 text-center">
@@ -77,7 +108,7 @@ export const SuccessState: React.FC<SuccessStateProps> = ({
         transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="text-3xl md:text-4xl font-bold text-white mb-10"
       >
-        You&apos;re In, Player 1!
+        You&apos;re In, {persona === 'BUSINESS' ? 'Architect' : 'Builder'}!
       </motion.h2>
 
       {/* 3. AI Score section */}
@@ -127,9 +158,23 @@ export const SuccessState: React.FC<SuccessStateProps> = ({
           <p className="text-sm text-white/50">Queue Position</p>
         </GlassCard>
         <GlassCard className="p-6 text-center" hover={false} delay={0.5}>
-          <p className="text-3xl font-black text-emerald-400 mb-1">21</p>
+          <p className="text-3xl font-black text-emerald-400 mb-1">{daysToLaunch}</p>
           <p className="text-sm text-white/50">Days to Launch</p>
         </GlassCard>
+      </motion.div>
+
+      {/* Persona Next Step */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="max-w-lg mx-auto mb-8 p-6 bg-gradient-to-br from-violet-900/20 to-cyan-900/20 rounded-2xl border border-white/10"
+      >
+        <h4 className="text-cyan-400 font-bold text-xs uppercase tracking-widest mb-2">{nextStep.title}</h4>
+        <p className="text-white text-sm mb-4">{nextStep.step}</p>
+        <a href={nextStep.link} className="inline-flex items-center gap-2 text-xs font-bold text-white bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition-all">
+          {nextStep.cta} <ArrowRight className="w-3 h-3" />
+        </a>
       </motion.div>
 
       {/* 5. Referral section */}
