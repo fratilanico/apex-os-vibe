@@ -22,7 +22,7 @@ export const BrandingBar: React.FC = () => {
         <div className="flex items-center gap-3 z-20">
           {/* Chromatic ASCII Logo - Fixed sizing */}
           <div className="relative group cursor-pointer hover:opacity-80 transition-opacity overflow-visible" style={{ width: '140px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.50] origin-left -ml-2 sm:-ml-0" />
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.65] origin-left -ml-2 sm:-ml-0" />
           </div>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
