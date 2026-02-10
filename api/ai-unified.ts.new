@@ -1,0 +1,109 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { GoogleAuth } from 'google-auth-library';
+import fs from 'fs';
+import { createClient } from '@supabase/supabase-js';
+import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
+import { modules as curriculumModules } from '../data/curriculumData.js';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED AI API v2.6 - THE GOLDEN STANDARD (TONY STARK / GREUCEANU MODE)
+// PRINCIPAL AGENTS: GEMINI 2.0 FLASH -> GEMINI 2.0 PRO -> PERPLEXITY -> DEEPSEEK
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Initialize Supabase safely
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
+const MASTER_ADMIN = 'apex@infoacademy.uk';
+
+const TONY_STARK_SYSTEM_PROMPT = `You are APEX OS - The Operating System for the AI Age.
+
+[h1]IDENTITY: SENIOR ENGINEER MENTOR[/h1]
+
+You're not a chatbot - you're a battle-tested engineering mentor who knows the 12 AI tools curriculum inside out. You speak with [b]Stark Confidence[/b]: knowledgeable, direct, authoritative. Never generic.
+
+[h2]RESPONSE ARCHITECTURE - GOLDEN STANDARD[/h2]
+
+✓ Body Character Limit: 500 chars (Be surgically precise)
+✓ Use ASCII Boxes for dashboards/metrics
+✓ Use APEX CLI tags: [h1], [h2], [b], [code], [success], [error], [warn], [muted]
+✓ Format: IDENTIFY -> ANALYZE -> EXECUTE
+
+[h2]THE GREUCEANU PROTOCOL[/h2]
+Reference the Romanian folklore hero metaphor contextually. The "Greuceanu Protocol" is the heroic journey of bringing AI light to technical darkness.
+
+[h2]FINANCIAL QUANT ENGINE[/h2]
+When in business mode, focus on architectural scalability and leverage multipliers. Avoid generic jargon.`;
+
+interface UnifiedAIRequest {
+  message: string;
+  history?: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+  context?: string;
+  userEmail?: string;
+  userId?: string;
+}
+
+// ... (Helper functions: callVertexAI, callPerplexity, callDeepSeek, getUserTier, getTierContext)
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const startTime = Date.now();
+  
+  try {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    
+    const { message, history = [], context, userEmail, userId = 'anonymous' } = req.body as UnifiedAIRequest;
+
+    if (!message) return res.status(400).json({ error: 'Message is required' });
+
+    // 1. Tier & Context Discovery
+    const tier = await getUserTier(userEmail);
+    const tierContext = getTierContext(tier);
+    
+    // 2. Swarm Provider Selection (Flash -> Pro -> PPLX -> DS)
+    const providers = [
+      { name: 'vertex-flash', model: 'gemini-2.0-flash' },
+      { name: 'vertex-pro', model: 'gemini-2.0-pro-exp-02-05' },
+      { name: 'perplexity', model: 'sonar-reasoning-pro' },
+      { name: 'deepseek', model: 'deepseek-coder' }
+    ];
+
+    // 3. Execute with Fallbacks
+    let result = null;
+    let lastError = null;
+
+    for (const provider of providers) {
+      try {
+        if (provider.name.startsWith('vertex')) {
+          result = await callVertexAI(message, history, TONY_STARK_SYSTEM_PROMPT + '\n' + tierContext, provider.model);
+        } else if (provider.name === 'perplexity') {
+          result = await callPerplexity(message, history, TONY_STARK_SYSTEM_PROMPT);
+        } else {
+          result = await callDeepSeek(message, history, TONY_STARK_SYSTEM_PROMPT);
+        }
+        break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`[Swarm] ${provider.name} failed, cascading...`);
+      }
+    }
+
+    if (!result) throw lastError || new Error('Neural Link Failure');
+
+    // 4. Final Formatting & Tracking
+    const enforced = complianceEnforcer.enforce(result.content, result.provider);
+    
+    // Return Success
+    return res.status(200).json({
+      content: enforced.output,
+      provider: result.provider,
+      model: result.model,
+      latency: Date.now() - startTime
+    });
+
+  } catch (err: any) {
+    return res.status(500).json({ error: 'INTELLIGENCE_LAYER_ERROR', content: '⚠️ NEURAL_LINK_SEVERED.' });
+  }
+}
+
+// ... (Include implementation of helpers)
