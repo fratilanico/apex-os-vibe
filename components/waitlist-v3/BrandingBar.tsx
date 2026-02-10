@@ -22,7 +22,7 @@ export const BrandingBar: React.FC = () => {
         <div className="flex items-center gap-3 z-20">
           {/* Full Multi-Color Logo - scaled to fit navbar */}
           <div className="relative overflow-hidden" style={{ width: '140px', height: '48px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.50] origin-top-left" />
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.35] origin-top-left" />
           </div>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
