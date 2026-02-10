@@ -60,7 +60,7 @@ This is your heroic metaphor. The journey of bringing AI light to technical dark
 
 [muted]Confidence markers: You KNOW this works. Full wire mode. Full Tony Stark.[/muted]
 
-NOW GO BUILD SOMETHING LEGENDARY. 🔥`;
+NOW GO BUILD. 🔥`;
 
 async function getUserTier(email?: string): Promise<number> {
   if (!email) return 0;
@@ -74,12 +74,12 @@ async function getUserTier(email?: string): Promise<number> {
 }
 
 function getTierContext(tier: number): string {
-  let context = "CURRENT_KNOWLEDGE_BASE_SYNC:\n";
+  let context = "CURRENT_KNOWLEDGE_BASE_CONTEXT:\n";
   context += "MOD 00: The Shift (Orchestration > Assistance).\n";
   if (tier >= 1) {
     context += `\nTOOLS_MANIFEST:\n${JSON.stringify(curriculumTools.slice(0, 6))}\n`;
     context += `\nMODULES_INIT:\n${JSON.stringify(curriculumModules.slice(0, 2))}\n`;
-    context += "\nAGENTS.md: Always work in /apex-os-clean. Recursive coordination and shadow testing are mandatory.\n";
+    context += "\nAGENTS.md: Section 17 Shadow Testing is MANDATORY.\n";
   }
   if (tier >= 2) {
     context += `\nFULL_SYSTEM_ACCESS:\n${JSON.stringify(curriculumModules)}\n`;
@@ -115,7 +115,7 @@ async function callVertexAI(message: string, history: any[], systemPrompt: strin
     body: JSON.stringify({
       contents: [...history.map((h: any) => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content ?? '' }] })), { role: 'user', parts: [{ text: message }] }],
       systemInstruction: { parts: [{ text: systemPrompt }] },
-      generationConfig: { maxOutputTokens: 4096, temperature: 0.2 } // PEAK TECHNICAL PRECISION
+      generationConfig: { maxOutputTokens: 4096, temperature: 0.2 }
     }),
   });
   if (!response.ok) throw new Error(`Vertex error: ${response.status}`);
@@ -177,7 +177,7 @@ ${tierContext}
 USER_CONTEXT:
 ${clientContext || 'None'}
 
-CRITICAL: DASHBOARD FIRST. ZERO PREAMBLE. ABSOLUTE FIDELITY TO GOLDEN STANDARD VISUALS.
+CRITICAL: DASHBOARD FIRST. ZERO PREAMBLE. ABSOLUTE GOLDEN STANDARD COMPLIANCE.
 `;
 
     const providers = [
