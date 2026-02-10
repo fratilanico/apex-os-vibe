@@ -16,12 +16,10 @@ import { SuccessState } from './SuccessState';
 import { WaitlistFooter } from './WaitlistFooter';
 
 /* ── JARVIS + Vault ── */
-import { JarvisFloatingButton } from '../jarvis/JarvisFloatingButton';
-import { JarvisChatPanel } from '../jarvis/JarvisChatPanel';
 import { NotionVaultOverlay } from '../NotionVaultOverlay';
 
 /* ── Constants ── */
-const VAULT_URL = 'https://www.notion.so/infoacademy/APEX-OS-Founder-Bible-Placeholder';
+const VAULT_URL = 'https://infoacademy-apexos.notion.site/ebd//301e9828402e808c81a9e7b43f69d845';
 
 interface SubmitResult {
   ai_score: number;
@@ -31,13 +29,11 @@ interface SubmitResult {
 }
 
 const WaitlistPageV3: React.FC = () => {
-  const [jarvisOpen, setJarvisOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<SubmitResult | null>(null);
 
   const isVaultOpen = useOnboardingStore((s) => s.isVaultOpen);
   const setVaultOpen = useOnboardingStore((s) => s.setVaultOpen);
-  const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
 
   // Note: Geek mode starts OFF by default - users can toggle it on
@@ -168,10 +164,6 @@ const WaitlistPageV3: React.FC = () => {
           <WaitlistFooter />
         </div>
       </main>
-
-      {/* JARVIS */}
-      <JarvisFloatingButton onClick={() => setJarvisOpen(p => !p)} isOpen={jarvisOpen} />
-      <JarvisChatPanel isOpen={jarvisOpen} onClose={() => setJarvisOpen(false)} />
 
       {/* Notion Vault */}
       <NotionVaultOverlay isOpen={isVaultOpen} onClose={() => setVaultOpen(false)} vaultUrl={VAULT_URL} />

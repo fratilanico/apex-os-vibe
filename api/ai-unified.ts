@@ -11,7 +11,8 @@ import { ResponseFormatter } from '../lib/intelligence/core/response-formatter.j
 import { IntelligenceQuery } from '../lib/intelligence/types/index.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED AI API v2.0 - TIERED KNOWLEDGE & INTELLIGENCE SWARM
+// UNIFIED AI API v2.5 - TIERED KNOWLEDGE & INTELLIGENCE SWARM
+// PRINCIPAL AGENTS: GEMINI 2.0 FLASH -> GEMINI 2.0 PRO -> PERPLEXITY -> DEEPSEEK
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Initialize Core Components
@@ -20,8 +21,11 @@ const contextManager = new ContextManager();
 const responseFormatter = new ResponseFormatter();
 
 // Initialize Supabase only if configured
-const supabase = (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY))
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '')
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+
+const supabase = (supabaseUrl && supabaseKey)
+  ? createClient(supabaseUrl, supabaseKey)
   : null;
 
 /**
@@ -47,7 +51,7 @@ function ensureADC(): void {
 /**
  * Call Google Vertex AI (Gemini 2.0 Flash/Pro)
  */
-async function callVertexAI(message: string, history: any[], systemPrompt: string, model: string = 'gemini-2.0-flash-001') {
+async function callVertexAI(message: string, history: any[], systemPrompt: string, model: string) {
   ensureADC();
   const projectId = process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
   const location = process.env.VERTEX_LOCATION || 'us-central1';
@@ -188,26 +192,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       contextManager.buildQueryContext(userId, message)
     ]);
 
-    // 3. Select Provider Chain
-    // Strategy: Gemini 2.0 Flash -> Gemini 2.0 Pro -> Perplexity -> DeepSeek
+    // 3. Select Provider Chain (Requested Order)
+    // strategy: Gemini 2.0 Flash -> Gemini 2.0 Pro -> Perplexity -> DeepSeek
     let providers = [
-      { name: 'vertex-flash', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-flash-001'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
+      { name: 'vertex-flash', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-flash'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
       { name: 'vertex-pro', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-pro-exp-02-05'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
       { name: 'perplexity', call: callPerplexity, enabled: !!process.env.PERPLEXITY_API_KEY },
       { name: 'deepseek', call: callDeepSeek, enabled: !!process.env.DEEPSEEK_API_KEY }
     ];
 
-    // Build system prompt based on persona
-    const personaPrompt = `You are APEX OS, an elite AI mentor. Persona: ${context.persona.toUpperCase()}.
-Focus on ${context.persona === 'founder' || context.persona === 'investor' ? 'business logic, market positioning, and strategy' : 'coding, building, and technical excellence'}.
-${context.systemContext || ''}`;
+    // Build system prompt based on persona - REFINED for business journey
+    // Focus on "Vibe Coding" and leverage multipliers, avoid generic ROI/LTV/CAC
+    const personaPrompt = context.persona === 'founder' || context.persona === 'investor' || context.persona === 'enterprise'
+      ? `You are APEX OS, an elite strategic advisor. Persona: ${context.persona.toUpperCase()}.
+Focus on architectural scalability, market-making strategies, agentic workflows, and high-velocity shipping. 
+Avoid generic pitch-deck jargon. Talk about "Vibe Coding" as a leverage multiplier for sovereign founders.
+Reference the "Greuceanu Protocol" as the heroic journey of bringing AI light to technical darkness.
+Speak with Stark Confidence: knowledgeable, direct, authoritative. Never generic.`
+      : `You are APEX OS, an elite technical mentor. Persona: ${context.persona.toUpperCase()}.
+Focus on implementation details, technical excellence, code quality, and hands-on builder patterns.
+Encourage "Aha!" moments through direct building and elite tool mastery.
+Speak with Stark Confidence: knowledgeable, direct, authoritative. Never generic.`;
 
-    // Reorder based on intent or preference
+    const finalSystemPrompt = `${personaPrompt}\n${context.systemContext || ''}`;
+
+    // Reorder based on intent: Research -> Perplexity first
     if (intent.type === 'research') {
       providers = [
         { name: 'perplexity', call: callPerplexity, enabled: !!process.env.PERPLEXITY_API_KEY },
+        { name: 'vertex-flash', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-flash'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
         { name: 'vertex-pro', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-pro-exp-02-05'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
-        { name: 'vertex-flash', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-flash-001'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
         { name: 'deepseek', call: callDeepSeek, enabled: !!process.env.DEEPSEEK_API_KEY }
       ];
     } else if (preferredProvider !== 'auto') {
@@ -221,7 +235,7 @@ ${context.systemContext || ''}`;
     for (const provider of providers) {
       if (!provider.enabled) continue;
       try {
-        result = await provider.call(message, context.conversationHistory, personaPrompt);
+        result = await provider.call(message, context.conversationHistory, finalSystemPrompt);
         break; // Success!
       } catch (err) {
         lastError = err as Error;

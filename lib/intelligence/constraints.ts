@@ -4,11 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 let supabase: ReturnType<typeof createClient> | null = null;
 
 function getSupabase() {
-  if (!supabase && typeof process !== 'undefined') {
-    supabase = createClient(
-      process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_ANON_KEY || ''
-    );
+  const url = process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_ANON_KEY || '';
+  if (!supabase && typeof process !== 'undefined' && url && key) {
+    supabase = createClient(url, key);
   }
   return supabase;
 }

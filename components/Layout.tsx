@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { CurriculumModal } from './CurriculumModal';
 import { BackgroundGrid } from './BackgroundGrid';
-import { JarvisIntegration } from './jarvis/JarvisIntegration';
 
 export const Layout: React.FC = () => {
   const [curriculumOpen, setCurriculumOpen] = useState(false);
-  const navigate = useNavigate();
 
   // Auto-open modal if hash is present (for deep linking)
   useEffect(() => {
@@ -48,9 +46,6 @@ export const Layout: React.FC = () => {
         isOpen={curriculumOpen}
         onClose={() => setCurriculumOpen(false)}
       />
-
-      {/* Global JARVIS Assistant */}
-      <JarvisIntegration onNavigate={(path) => navigate(`/${path}`)} />
     </div>
   );
 };

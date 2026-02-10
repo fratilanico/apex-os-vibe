@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, Mic, Terminal, Activity, BookOpen, HelpCircle } from 'lucide-react';
+import { X, Send, Bot, Mic, Terminal, Activity, BookOpen, HelpCircle, Volume2, VolumeX } from 'lucide-react';
 import { queryAI } from '../../lib/ai/globalAIService';
 import { useLocation } from 'react-router-dom';
 import { AgentHierarchyVisualization } from '../../src/jarvis/components/AgentHierarchyVisualization';
@@ -43,7 +43,9 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     endJarvisSession, 
     addJarvisMessage,
     userProfile,
-    setUserProfile
+    setUserProfile,
+    voiceEnabled,
+    setVoiceEnabled
   } = useOnboardingStore();
   
   const [messages, setMessages] = useState<Message[]>([]);
@@ -68,21 +70,50 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
 
   // JARVIS Voice Feedback (Founder Persona)
   const speak = useCallback((text: string) => {
-    if (!synthRef.current) return;
+    if (!synthRef.current || !voiceEnabled || isListening) return;
     synthRef.current.cancel();
 
-    const cleanText = text.replace(/\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice)\]/g, '');
+    // 1. STRIP CODE BLOCKS AND CLI TAGS - They are annoying to hear
+    const cleanText = text
+      .replace(/\[code\][\s\S]*?\[\/code\]/g, '') // Remove [code] tags and content
+      .replace(/```[\s\S]*?```/g, '')             // Remove markdown code blocks
+      .replace(/\[(?:\/)?(?:h1|h2|h3|b|muted|info|warn|success|error|choice)\]/g, '') // Remove other tags
+      .replace(/\s+/g, ' ')                      // Normalize whitespace
+      .trim();
+    
+    if (!cleanText || cleanText.length < 2) return;
     
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = language;
-    utterance.rate = 1.1;
-    utterance.pitch = 1.05;
+    
+    // 2. TUNE VOICE FOR JARVIS FEEL
+    // Try to find a sophisticated British male voice if available
+    const voices = synthRef.current.getVoices();
+    const jarvisVoice = voices.find(v => 
+      (v.name.includes('Google UK English Male') || v.name.includes('Daniel') || v.name.includes('Arthur')) && v.lang.startsWith('en')
+    ) || voices.find(v => v.lang.startsWith('en') && v.name.includes('Male'));
+    
+    if (jarvisVoice) {
+      utterance.voice = jarvisVoice;
+    }
+
+    utterance.rate = 1.05; // Slightly faster for intelligence feel
+    utterance.pitch = 0.9;  // Slightly lower for that sophisticated resonance
     
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
     
     synthRef.current.speak(utterance);
-  }, [language]);
+  }, [language, voiceEnabled, isListening]);
+
+  // Handle incoming messages - cancel speech if new message sent
+  useEffect(() => {
+    if (isProcessing && synthRef.current) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+    }
+  }, [isProcessing]);
 
   // Initialize Speech Recognition
   useEffect(() => {
@@ -222,8 +253,11 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       });
       setRecommendations(newRecs);
 
-      // Micro-Question Trigger
-      if (messages.length > 0 && messages.length % 3 === 0) {
+      // 3. Check for Micro-Question trigger - REDUCED INTENSITY (20% of original)
+      // Trigger much less frequently (e.g. every 10 messages) or with a 20% chance
+      const shouldAsk = messages.length > 0 && messages.length % 10 === 0 && Math.random() < 0.5;
+      
+      if (shouldAsk) {
         const nextQ = await questionSystem.current.getNextQuestion(userProfile);
         if (nextQ) {
           setCurrentQuestion(nextQ);
@@ -298,6 +332,14 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
             </div>
             
             <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                className={`p-2 rounded-lg transition-all ${voiceEnabled ? 'text-cyan-400 bg-white/5' : 'text-white/30 hover:bg-white/10'}`}
+                title={voiceEnabled ? "Mute Voice" : "Unmute Voice"}
+              >
+                {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </button>
+
               <button 
                 onClick={() => setMode(isGeek ? 'STANDARD' : 'GEEK')}
                 className={`p-2 rounded-lg transition-all ${isGeek ? 'bg-cyan-500 text-black' : 'hover:bg-white/10 text-white/50'}`}

@@ -45,6 +45,10 @@ export default async function handler(
     const queryEmbedding = await embed(query);
 
     // 2. Semantic search via Supabase RPC
+    if (!supabase) {
+      throw new Error('Supabase not configured');
+    }
+
     const { data: results, error } = await supabase.rpc('match_knowledge_chunks', {
       query_embedding: queryEmbedding,
       match_threshold: threshold,

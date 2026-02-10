@@ -64,6 +64,7 @@ interface OnboardingState {
   isVaultOpen: boolean;
   geekEffects: GeekModeEffects;
   userProfile: UserProfile;
+  voiceEnabled: boolean;
   // Analytics - Jarvis conversations
   jarvisConversations: ConversationSession[];
   currentSessionId: string | null;
@@ -82,6 +83,7 @@ interface OnboardingState {
   unlock: () => void;
   setSecretTreatFound: (found: boolean) => void;
   setVaultOpen: (open: boolean) => void;
+  setVoiceEnabled: (enabled: boolean) => void;
   // Analytics actions
   startJarvisSession: () => string;
   endJarvisSession: () => void;
@@ -121,6 +123,7 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     learningGoals: [],
     completedModules: [],
   },
+  voiceEnabled: true,
   jarvisConversations: [],
   currentSessionId: null,
 
@@ -232,6 +235,8 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
       time_on_page_ms: 0,
     }).catch(err => console.error('[Analytics] Failed to track vault toggle:', err));
   },
+  
+  setVoiceEnabled: (enabled) => set({ voiceEnabled: enabled }),
   
   // Jarvis analytics
   startJarvisSession: () => {

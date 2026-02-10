@@ -43,6 +43,10 @@ export default async function handler(
     return res.status(400).json({ success: false, error: 'type and source are required' });
   }
 
+  if (!supabase) {
+    return res.status(500).json({ success: false, error: 'Supabase not configured' });
+  }
+
   // Create source record
   const { data: sourceRecord, error: sourceError } = await supabase
     .from('ingestion_sources')

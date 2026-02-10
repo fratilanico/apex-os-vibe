@@ -158,22 +158,28 @@ export class MicroQuestionSystem {
   private answeredQuestions: Map<string, Set<string>> = new Map();
 
   async getNextQuestion(profile: UserProfile): Promise<MicroQuestion | null> {
-    const userId = profile.id;
-    const answered = this.answeredQuestions.get(userId) || new Set();
+    const answered = this.answeredQuestions.get(profile.id) || new Set();
+    
+    // Filter questions that haven't been answered yet
+    const available = this.questionBank.filter((q) => !answered.has(q.id));
 
-    // Filter out already answered questions
-    const available = this.questionBank.filter(
-      (q) => !answered.has(q.id)
-    );
+    if (available.length === 0) return null;
 
-    if (available.length === 0) {
-      return null; // Profiling complete
-    }
+    // Filter out categories that are already well-defined
+    const pending = available.filter((q) => {
+      if (q.category === 'persona' && profile.persona && profile.persona !== 'researcher') return false;
+      if (q.category === 'expertise' && profile.expertiseLevel && profile.expertiseLevel !== 'intermediate') return false;
+      if (q.category === 'interests' && profile.interests.length > 2) return false;
+      if (q.category === 'goals' && profile.learningGoals.length > 1) return false;
+      return true;
+    });
+
+    const finalPool = pending.length > 0 ? pending : available;
 
     // Prioritize by category and weight
-    const prioritized = this.prioritizeQuestions(available, profile);
+    const prioritized = this.prioritizeQuestions(finalPool, profile);
     
-    return prioritized[0];
+    return prioritized[0] || null;
   }
 
   private prioritizeQuestions(
@@ -229,14 +235,14 @@ export class MicroQuestionSystem {
 
     switch (question.category) {
       case 'persona':
-        const persona = this.detectPersonaFromAnswer(questionId, answer);
+        const persona = this.detectPersonaFromAnswer(answer);
         if (persona) {
           updates.persona = persona;
         }
         break;
 
       case 'expertise':
-        const expertise = this.detectExpertiseFromAnswer(questionId, answer);
+        const expertise = this.detectExpertiseFromAnswer(answer);
         if (expertise) {
           updates.expertiseLevel = expertise;
         }
@@ -261,7 +267,6 @@ export class MicroQuestionSystem {
   }
 
   private detectPersonaFromAnswer(
-    questionId: string,
     answer: string
   ): UserPersona | null {
     const lowerAnswer = answer.toLowerCase();
@@ -289,7 +294,6 @@ export class MicroQuestionSystem {
   }
 
   private detectExpertiseFromAnswer(
-    questionId: string,
     answer: string
   ): 'beginner' | 'intermediate' | 'advanced' | 'expert' | null {
     const lowerAnswer = answer.toLowerCase();

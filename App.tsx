@@ -4,9 +4,7 @@ import { Layout } from './components/Layout';
 import { PasswordGate } from './components/PasswordGate';
 import { ScrollToTop } from './components/ScrollToTop';
 import { StickyCTA } from './components/StickyCTA';
-import { EasterEggHints } from './components/EasterEggHints';
-import { PlayerOneHUD } from './components/artifacts/PlayerOne/PlayerOneHUD';
-import { PlayerOneErrorBoundary } from './components/artifacts/PlayerOne/PlayerOneErrorBoundary';
+import { GlobalOverlay } from './components/GlobalOverlay';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useWebVitals } from './hooks/useWebVitals';
 
@@ -29,7 +27,6 @@ const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
 const WaitlistPage = lazy(() => import('./components/waitlist-v3/WaitlistPageV3'));
 const WaitingListPage = lazy(() => import('./pages/WaitingList'));
-// const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -158,16 +155,10 @@ const PublicRoutes: React.FC = () => {
   );
 };
 
-// Hide HUD/CTA on specific routes to keep the page clean
-const HideOnCleanRoutes: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Hide StickyCTA on landing page to keep it clean
+const HideCTAOnLanding: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const isCleanRoute = 
-    location.pathname === '/' || 
-    location.pathname.startsWith('/waitlist') || 
-    location.pathname.startsWith('/waitinglist') ||
-    location.pathname.startsWith('/whitelist');
-    
-  if (isCleanRoute) return null;
+  if (location.pathname === '/') return null;
   return <>{children}</>;
 };
 
@@ -178,11 +169,7 @@ const App = (): React.ReactElement => {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <HideOnCleanRoutes>
-        <PlayerOneErrorBoundary>
-          <PlayerOneHUD />
-        </PlayerOneErrorBoundary>
-      </HideOnCleanRoutes>
+      <GlobalOverlay />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public routes - no password protection */}
@@ -198,12 +185,10 @@ const App = (): React.ReactElement => {
           <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </Suspense>
-      <HideOnCleanRoutes>
+      
+      <HideCTAOnLanding>
         <StickyCTA />
-        <ErrorBoundary fallback={null}>
-          <EasterEggHints />
-        </ErrorBoundary>
-      </HideOnCleanRoutes>
+      </HideCTAOnLanding>
     </BrowserRouter>
   );
 };

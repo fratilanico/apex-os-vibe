@@ -213,13 +213,17 @@ export function generateRecommendations(
   // Primary: Best match
   const primary = availableModules[0] || scoredModules[0];
   
+  if (!primary) {
+    throw new Error('No modules found in database');
+  }
+
   // Secondary: Next best match
   const secondary = availableModules[1] || scoredModules[1] || primary;
   
   // Alternative: Cross-training (different category or persona)
   const alternative = scoredModules.find(m => 
     m.category !== primary.category || m.persona !== primary.persona
-  ) || scoredModules[scoredModules.length - 1];
+  ) || scoredModules[scoredModules.length - 1] || primary;
   
   return {
     primary,
