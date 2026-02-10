@@ -1520,13 +1520,324 @@ curl -s https://infoacademy.uk | head -20  # Check production
 
 ---
 
+## 18. Large Document Analysis Protocol (EPIC)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  SECTION 18: LARGE DOCUMENT ANALYSIS PROTOCOL                               ║
+║  Status: EPIC | MANDATORY for documents >2000 lines                         ║
+║  Added: 2026-02-11 | Origin: Session KIMI APEX OS Analysis                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+### 18.1 Trigger Condition
+
+**MANDATORY DEPLOYMENT:** When any document exceeds **2000 lines**, immediately execute the 3-Agent Analysis Swarm.
+
+```yaml
+trigger:
+  condition: "document_line_count > 2000"
+  auto_execute: true
+  no_exceptions: true
+  
+examples:
+  - Session logs (>5000 lines)
+  - Audit reports (>3000 lines)  
+  - Technical specifications (>2500 lines)
+  - Meeting transcripts (>2000 lines)
+```
+
+### 18.2 The 3-Agent Swarm Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+║  3-AGENT SWARM - PARALLEL ANALYSIS PROTOCOL                                 ║
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────┐                                                    │
+│  │  AGENT 1:           │  ┌─────────────────────┐                          │
+│  │  HIGH-LEVEL         │  │  AGENT 2:           │                          │
+│  │  STRATEGIC ANALYZER │  │  DEEP TECHNICAL     │                          │
+│  │                     │  │  ANALYZER           │                          │
+│  │  • Biggest plays    │  │                     │  ┌─────────────────────┐ │
+│  │  • Strategic moves  │  │  • Files modified   │  │  AGENT 3:           │ │
+│  │  • Key milestones   │  │  • Bug fixes        │  │  VALIDATOR          │ │
+│  │  • Decisions made   │  │  • Features         │  │                     │ │
+│  │  • Timeline         │  │  • Code changes     │  │  • Claims vs reality│ │
+│  │                     │  │  • Dependencies     │  │  • Inconsistencies  │ │
+│  │  PARALLEL           │  │  • Technical debt   │  │  • Unresolved issues│ │
+│  │  EXECUTION          │  │                     │  │  • Risks           │ │
+│  └──────────┬──────────┘  └──────────┬──────────┘  │  • QA gaps          │ │
+│             │                        │             └─────────────────────┘ │
+│             └────────────┬───────────┘                                     │
+│                          ▼                                                 │
+│             ┌─────────────────────────────┐                                │
+│             │  SYNTHESIS PHASE            │                                │
+│             │  • Merge findings           │                                │
+│             │  • Cross-reference          │                                │
+│             │  • Conflict resolution      │                                │
+│             │  • Final report generation  │                                │
+│             └─────────────────────────────┘                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 18.3 Agent Specifications
+
+#### Agent 1: High-Level Strategic Analyzer
+
+**Role:** Strategic intelligence extraction
+**Focus:** Big picture, not implementation details
+
+**Prompt Template:**
+```typescript
+{
+  role: "HIGH-LEVEL STRATEGIC ANALYZER",
+  mission: `Read the entire document and extract the BIGGEST PLAYS, 
+            strategic moves, and high-level insights.`,
+  
+  read_strategy: "Complete document read with multiple offset/limit calls",
+  
+  deliverables: [
+    "Executive Summary (3-5 bullet points of biggest strategic plays)",
+    "Key Milestones Achieved",
+    "Major Decisions Made", 
+    "Strategic Pivot Points",
+    "Resource Allocations",
+    "Timeline of Critical Events"
+  ],
+  
+  format: "GOLDEN_STANDARD with ASCII headers and progress bars",
+  
+  forbidden: [
+    "Implementation details",
+    "Code snippets",
+    "Line-by-line analysis",
+    "Technical specifications"
+  ]
+}
+```
+
+#### Agent 2: Deep Technical Analyzer
+
+**Role:** Exhaustive technical documentation
+**Focus:** Granular implementation details
+
+**Prompt Template:**
+```typescript
+{
+  role: "DEEP TECHNICAL ANALYZER",
+  mission: `Perform SECTION-BY-SECTION granular analysis of all 
+            technical work, code changes, bug fixes, and implementations.`,
+  
+  read_strategy: "Complete document read with section parsing",
+  
+  deliverables: [
+    "Files Modified (complete list with line numbers)",
+    "Bug Fixes Applied (what was broken, how fixed)",
+    "Features Implemented (technical details)",
+    "API Changes (endpoints, models, data flow)",
+    "UI/UX Changes (components, styling, interactions)",
+    "Performance Optimizations",
+    "Configuration Changes",
+    "Database/Storage Changes",
+    "Dependencies Added/Removed"
+  ],
+  
+  workstreams: [
+    "Terminal System Enhancements",
+    "UI/UX Improvements",
+    "Performance & Optimization", 
+    "Bug Fixes & Hotfixes",
+    "Infrastructure & Config",
+    "AI/Backend Integration"
+  ],
+  
+  format: "GOLDEN_STANDARD with detailed tables and code blocks"
+}
+```
+
+#### Agent 3: Validation & Verification Agent
+
+**Role:** Reality checker and risk assessor
+**Focus:** What was claimed vs what was delivered
+
+**Prompt Template:**
+```typescript
+{
+  role: "VALIDATION & VERIFICATION AGENT",
+  mission: `Validate: what was CLAIMED vs what was ACTUALLY done.
+            Identify inconsistencies, gaps, and risks.`,
+  
+  read_strategy: "Complete document + cross-reference with claims",
+  
+  deliverables: [
+    "CLAIMS vs REALITY Matrix",
+    "Inconsistencies Found",
+    "Unresolved Issues (P0, P1, P2)",
+    "Technical Debt Introduced",
+    "Risks & Regressions",
+    "Dependencies & Blockers",
+    "QA Gaps (what wasn't tested)",
+    "Documentation Gaps"
+  ],
+  
+  validation_criteria: [
+    "Is the code production-ready?",
+    "Are there any TODOs left?",
+    "Did all tests pass?",
+    "Are there breaking changes?",
+    "Is Golden Standard maintained?"
+  ],
+  
+  severity_ratings: ["P0", "P1", "P2", "P3"]
+}
+```
+
+### 18.4 Execution Protocol
+
+```yaml
+phase_1_dispatch:
+  action: "Deploy all 3 agents in PARALLEL"
+  tool: "Task tool with subagent_type: general"
+  timeout: "600 seconds per agent"
+  
+phase_2_synthesis:
+  action: "Orchestrator merges findings"
+  steps:
+    - "Collect all 3 agent reports"
+    - "Identify conflicts or contradictions"
+    - "Reconcile differences"
+    - "Assign severity ratings"
+    
+phase_3_deliverables:
+  outputs:
+    - "GAP ANALYSIS: What's missing vs requirements"
+    - "GAP ASSESSMENT: Impact of each gap"
+    - "FULL ROADMAP: Path to completion"
+    - "PROGRESS STATUS DASHBOARD: Visual progress tracking"
+    - "SPRINT PLANNING: What needs to be done next"
+    - "DEPENDENCY MAP: Blockers and prerequisites"
+    - "TO-BE STATE DEFINITION: Target architecture"
+```
+
+### 18.5 Output Format Standards
+
+All 3 agents must return reports in **GOLDEN STANDARD** format:
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  [AGENT NAME] - ANALYSIS REPORT                                              ║
+║  Document: [filename] | Lines: [count] | Date: [timestamp]                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  [SECTION NAME]                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Content with:                                                              │
+│  • Tables for structured data                                               │
+│  • Progress bars [████████░░] 80%                                           │
+│  • Status icons 🟢🔴🟡⚪✅❌                                                  │
+│  • Severity ratings P0/P1/P2/P3                                            │
+│                                                                             │
+│  Listen up - [Tony Stark style commentary]                                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 18.6 Post-Analysis Actions
+
+After receiving all 3 reports, the orchestrator must:
+
+```yaml
+immediate_actions:
+  1_integrate_findings:
+    - "Create unified gap analysis"
+    - "Prioritize issues by severity"
+    - "Map dependencies between fixes"
+    
+  2_create_roadmap:
+    - "Define sprint goals"
+    - "Estimate effort per task"
+    - "Assign owners"
+    - "Set deadlines"
+    
+  3_update_documentation:
+    - "Update AGENTS.md if process improved"
+    - "Document lessons learned"
+    - "Archive findings"
+    
+  4_communicate:
+    - "Present findings to user"
+    - "Get approval on roadmap"
+    - "Confirm priorities"
+```
+
+### 18.7 Example Use Cases
+
+**Case 1: Session Log Analysis**
+```
+Trigger: Session log = 5,784 lines (>2000 threshold)
+Action: Deploy 3-Agent Swarm
+Result: 
+  - Agent 1: Strategic plays (3-step terminal, Geek Mode accessibility)
+  - Agent 2: 23 files modified, 30+ commits, +5,784/-1,247 lines
+  - Agent 3: 10 claims vs reality mismatches, 9 LSP errors unresolved
+Output: Full gap analysis with roadmap to production
+```
+
+**Case 2: Audit Report Analysis**
+```
+Trigger: Security audit = 3,200 lines
+Action: Deploy 3-Agent Swarm
+Result:
+  - Agent 1: Critical vulnerabilities found
+  - Agent 2: 47 files need patching
+  - Agent 3: 12 issues marked P0, deployment blocked
+Output: Emergency remediation plan
+```
+
+### 18.8 Success Metrics
+
+```yaml
+quality_metrics:
+  coverage: "All 5,784+ lines analyzed"
+  accuracy: "Zero contradictions between agents"
+  actionability: "Every gap has owner + deadline"
+  completeness: "100% of claims validated"
+  
+time_metrics:
+  analysis_time: "<15 minutes for 5000 lines"
+  synthesis_time: "<5 minutes"
+  total_turnaround: "<20 minutes from trigger to roadmap"
+```
+
+### 18.9 Integration with Other Sections
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+║  PROTOCOL INTEGRATION MAP                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Section 4 (Subagent-Driven) ◄── Uses 3-Agent Swarm for large docs         │
+│  Section 5 (Coordination) ◄────── Orchestrates agent dispatch              │
+│  Section 17 (Shadow Testing) ◄─── Validates gaps found                     │
+│  Section 16 (Safety) ◄─────────── Prevents deployment if gaps P0/P1        │
+│                                                                             │
+│  GOLDEN STANDARD ◄─────────────── All reports must follow visual protocol  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
-║  END OF AGENTS.md v6.1 - UNIFIED AGENTS PROTOCOL                             ║
+║  END OF AGENTS.md v6.2 - UNIFIED AGENTS PROTOCOL                             ║
 ║                                                                              ║
 ║  Skills Integrated: 12                                                       ║
-║  Sections: 16 + 2 Appendices                                                 ║
+║  Sections: 18 + 2 Appendices                                                 ║
 ║  Status: ACTIVE                                                              ║
 ║                                                                              ║
 ║  "I am Iron Man." - Tony Stark                                               ║
