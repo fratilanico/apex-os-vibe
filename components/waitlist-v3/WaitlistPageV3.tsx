@@ -87,38 +87,38 @@ const WaitlistPageV3: React.FC = () => {
   const getAuraColors = () => {
     if (persona === 'PERSONAL') {
       return [
-        { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
-        { color: 'cyan' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
-        { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
-        { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
+        { color: 'amber' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
+        { color: 'amber' as const, top: '40%', right: '-5%', size: 700, opacity: 0.25 },
+        { color: 'yellow' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
+        { color: 'amber' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.15 },
       ];
     }
     if (persona === 'BUSINESS') {
       return [
-        { color: 'violet' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
-        { color: 'violet' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
-        { color: 'pink' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
-        { color: 'violet' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
+        { color: 'violet' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
+        { color: 'violet' as const, top: '40%', right: '-5%', size: 700, opacity: 0.25 },
+        { color: 'pink' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
+        { color: 'violet' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.15 },
       ];
     }
     return [
-      { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
-      { color: 'violet' as const, top: '30%', right: '-5%', size: 700, opacity: 0.45 },
-      { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
-      { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.25 },
+      { color: 'amber' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
+      { color: 'violet' as const, top: '30%', right: '-5%', size: 700, opacity: 0.25 },
+      { color: 'yellow' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
+      { color: 'amber' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.15 },
     ];
   };
 
-  const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#22d3ee';
+  const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#d4af37';
 
   return (
     <div className="relative min-h-screen w-full text-white overflow-x-hidden"
          style={{ 
-           background: 'linear-gradient(135deg, #0a1628 0%, #0d2137 25%, #0a2a3a 50%, #0d2137 75%, #0a1628 100%)'
+           background: 'linear-gradient(135deg, #050505 0%, #0a0a0a 25%, #121212 50%, #0a0a0a 75%, #050505 100%)'
          }}>
       <style>{`
         ::selection { background: ${selectionColor}33 !important; color: ${selectionColor} !important; }
-        body { background: linear-gradient(135deg, #0a1628 0%, #0d2137 25%, #0a2a3a 50%, #0d2137 75%, #0a1628 100%) !important; }
+        body { background: linear-gradient(135deg, #050505 0%, #0a0a0a 25%, #121212 50%, #0a0a0a 75%, #050505 100%) !important; }
       `}</style>
       
       {/* GEEK MODE EFFECTS */}

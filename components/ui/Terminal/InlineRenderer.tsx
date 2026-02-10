@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice|cyan|violet|emerald|pink|amber|gold|blue|lime|rose|indigo)\])/g;
+const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice|cyan|violet|emerald|pink|amber|gold|blue|lime|rose|indigo)\])/gi;
 const ICON_REGEX = /\[icon:([a-z-]+)\]/g;
 
 const ICONS: Record<string, string> = {
@@ -19,22 +19,22 @@ const ICONS: Record<string, string> = {
 };
 
 const STYLE_MAP: Record<string, string> = {
-  h1: 'text-cyan-300 font-bold tracking-widest uppercase text-sm',
-  h2: 'text-cyan-200 font-semibold tracking-wide text-sm',
-  h3: 'text-cyan-100 font-semibold text-sm',
+  h1: 'text-amber-400 font-bold tracking-widest uppercase text-sm',
+  h2: 'text-amber-300 font-semibold tracking-wide text-sm',
+  h3: 'text-amber-200 font-semibold text-sm',
   b: 'text-white font-semibold',
-  code: 'text-emerald-300 bg-white/5 px-1 rounded font-mono',
-  muted: 'text-white/40',
-  info: 'text-cyan-400',
-  warn: 'text-yellow-400',
-  success: 'text-emerald-400',
-  error: 'text-red-400',
+  code: 'text-amber-200 bg-white/5 px-1 rounded font-mono',
+  muted: 'text-white/20',
+  info: 'text-amber-400',
+  warn: 'text-yellow-500',
+  success: 'text-emerald-500',
+  error: 'text-red-500',
   choice: 'text-violet-400 font-bold italic border-b border-violet-500/30',
   cyan: 'text-cyan-400',
   violet: 'text-violet-400',
   emerald: 'text-emerald-400',
   pink: 'text-pink-400',
-  amber: 'text-amber-400',
+  amber: 'text-amber-500',
   gold: 'text-yellow-500 font-bold',
   blue: 'text-blue-400',
   lime: 'text-lime-400',
@@ -51,7 +51,7 @@ export const InlineRenderer: React.FC<{ text: string }> = ({ text }) => {
   pieces.forEach((piece, index) => {
     if (!piece) return;
     if (piece.startsWith('[') && piece.endsWith(']')) {
-      const tag = piece.slice(1, -1);
+      const tag = piece.slice(1, -1).toLowerCase();
       if (tag.startsWith('/')) {
         const closing = tag.slice(1);
         const idx = activeTags.lastIndexOf(closing);

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface AmbientGlowProps {
-  color: 'cyan' | 'emerald' | 'violet' | 'amber' | 'pink';
+  color: 'cyan' | 'emerald' | 'violet' | 'amber' | 'pink' | 'yellow';
   size?: number;
   top?: string;
   left?: string;
@@ -25,6 +25,7 @@ export const AmbientGlow: React.FC<AmbientGlowProps> = ({
     violet: '#8b5cf6',
     amber: '#f59e0b',
     pink: '#ec4899',
+    yellow: '#facc15',
   };
 
   return (

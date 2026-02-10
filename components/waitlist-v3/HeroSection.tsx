@@ -46,7 +46,7 @@ const CountdownTimer: React.FC = () => {
   }, []);
   
   return (
-    <div className="flex items-center justify-center gap-1 sm:gap-4 text-cyan-400 font-mono">
+    <div className="flex items-center justify-center gap-1 sm:gap-4 text-amber-500 font-mono">
       <div className="text-center min-w-[45px] sm:min-w-[60px]">
         <div className="text-xl sm:text-3xl font-bold">{timeLeft.days}</div>
         <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Days</div>
@@ -83,7 +83,7 @@ export const HeroSection: React.FC = () => {
         variants={item}
         className="text-5xl md:text-7xl lg:text-8xl font-black font-sans leading-tight mb-6"
       >
-        <GradientText from="cyan-400" to="emerald-400">
+        <GradientText from="amber-400" to="yellow-600">
           Build at AI Speed
         </GradientText>
       </motion.h1>
@@ -93,6 +93,17 @@ export const HeroSection: React.FC = () => {
         <RotatingPunchlines />
         <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">
           Zero equity. Maximum velocity.
+        </p>
+      </motion.div>
+
+      {/* Countdown Section */}
+      <motion.div variants={item} className="mb-12">
+        <p className="text-sm text-white/40 uppercase tracking-widest mb-4">
+          Next Webinar Launch
+        </p>
+        <CountdownTimer />
+        <p className="text-amber-500/80 text-sm mt-4 max-w-md mx-auto font-semibold">
+          First class starts 2nd week of March
         </p>
       </motion.div>
 
