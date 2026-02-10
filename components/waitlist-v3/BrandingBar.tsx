@@ -19,12 +19,12 @@ export const BrandingBar: React.FC = () => {
         
         {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
         <div className="flex items-center gap-3 z-20">
-          {/* Main Logo Image */}
-          <div className="relative flex items-center">
+          {/* Main Logo Image - Pixel Perfect Fit */}
+          <div className="relative flex items-center h-16 py-3">
             <img 
               src="/logo.png" 
               alt="APEX OS" 
-              className="h-10 md:h-12 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
+              className="h-full w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
             />
           </div>
           

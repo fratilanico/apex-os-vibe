@@ -20,26 +20,31 @@ export const GlobalOverlay: React.FC = () => {
                           location.pathname.startsWith('/waitinglist');
   const isLandingRoute = location.pathname === '/';
   
-  // Logic: Show HUD/Jarvis if:
-  // 1. User passed PasswordGate (isAuthenticated)
-  // 2. User unlocked the Terminal on the Waitlist (isUnlocked)
-  // 3. User is NOT on a "clean" route (Waitlist/Landing)
+  // Logic: 
+  // 1. JARVIS + Hints are visible on Waitlist OR if authenticated/unlocked
+  // 2. PlayerOneHUD is ONLY visible if authenticated AND NOT on Waitlist
   
-  const shouldShow = isAuthenticated || isUnlocked || (!isWaitlistRoute && !isLandingRoute);
+  const showJarvis = isAuthenticated || isUnlocked || isWaitlistRoute || !isLandingRoute;
+  const showHUD = isAuthenticated && !isWaitlistRoute;
 
-  if (!shouldShow) return null;
+  if (!showJarvis && !showHUD) return null;
 
   return (
     <>
-      <PlayerOneErrorBoundary>
-        <PlayerOneHUD />
-      </PlayerOneErrorBoundary>
+      {showHUD && (
+        <PlayerOneErrorBoundary>
+          <PlayerOneHUD />
+        </PlayerOneErrorBoundary>
+      )}
       
-      <JarvisIntegration />
-      
-      <ErrorBoundary fallback={null}>
-        <EasterEggHints />
-      </ErrorBoundary>
+      {showJarvis && (
+        <>
+          <JarvisIntegration />
+          <ErrorBoundary fallback={null}>
+            <EasterEggHints />
+          </ErrorBoundary>
+        </>
+      )}
     </>
   );
 };
