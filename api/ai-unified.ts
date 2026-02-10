@@ -20,8 +20,8 @@ const contextManager = new ContextManager();
 const responseFormatter = new ResponseFormatter();
 
 // Initialize Supabase only if configured
-const supabase = (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY)
-  ? createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY)
+const supabase = (process.env.SUPABASE_URL && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY))
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '')
   : null;
 
 /**
@@ -197,15 +197,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       { name: 'deepseek', call: callDeepSeek, enabled: !!process.env.DEEPSEEK_API_KEY }
     ];
 
-    // Reorder based on intent: Coding/Technical -> Pro first, Research -> Perplexity first
-    if (intent.type === 'coding' || intent.type === 'technical') {
-      providers = [
-        { name: 'vertex-pro', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-pro-exp-02-05'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
-        { name: 'vertex-flash', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-flash-001'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
-        { name: 'perplexity', call: callPerplexity, enabled: !!process.env.PERPLEXITY_API_KEY },
-        { name: 'deepseek', call: callDeepSeek, enabled: !!process.env.DEEPSEEK_API_KEY }
-      ];
-    } else if (intent.type === 'research') {
+    // Build system prompt based on persona
+    const personaPrompt = `You are APEX OS, an elite AI mentor. Persona: ${context.persona.toUpperCase()}.
+Focus on ${context.persona === 'founder' || context.persona === 'investor' ? 'business logic, market positioning, and strategy' : 'coding, building, and technical excellence'}.
+${context.systemContext || ''}`;
+
+    // Reorder based on intent or preference
+    if (intent.type === 'research') {
       providers = [
         { name: 'perplexity', call: callPerplexity, enabled: !!process.env.PERPLEXITY_API_KEY },
         { name: 'vertex-pro', call: (m: any, h: any, s: any) => callVertexAI(m, h, s, 'gemini-2.0-pro-exp-02-05'), enabled: !!(process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT) },
@@ -216,11 +214,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       providers = providers.filter(p => p.name === preferredProvider).concat(providers.filter(p => p.name !== preferredProvider));
     }
 
-    // Build system prompt based on persona
-    const systemPrompt = `You are APEX OS, an elite AI mentor. Persona: ${context.persona.toUpperCase()}.
-Focus on ${context.persona === 'founder' || context.persona === 'investor' ? 'ROI, metrics, and strategy' : 'coding, building, and technical skills'}.
-${context.systemContext || ''}`;
-
     // 4. Execute with Fallbacks
     let lastError: Error | null = null;
     let result: any = null;
@@ -228,7 +221,7 @@ ${context.systemContext || ''}`;
     for (const provider of providers) {
       if (!provider.enabled) continue;
       try {
-        result = await provider.call(message, context.conversationHistory, systemPrompt);
+        result = await provider.call(message, context.conversationHistory, personaPrompt);
         break; // Success!
       } catch (err) {
         lastError = err as Error;
