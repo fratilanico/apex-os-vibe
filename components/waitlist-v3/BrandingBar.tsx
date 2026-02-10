@@ -2,7 +2,6 @@ import React from 'react';
 import { useColorCycle } from '../../hooks/useColorCycle';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import { Terminal } from 'lucide-react';
-import { ChromaticLogo } from '../ui/ChromaticLogo';
 
 const COLOR_HEX: Record<string, string> = {
   cyan: '#22d3ee', emerald: '#10b981', violet: '#8b5cf6',
@@ -20,9 +19,13 @@ export const BrandingBar: React.FC = () => {
         
         {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
         <div className="flex items-center gap-3 z-20">
-          {/* Full Multi-Color Logo - scaled to fit navbar */}
-          <div className="relative overflow-hidden flex items-center" style={{ width: '320px', height: '64px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.22] origin-left" />
+          {/* Main Logo Image */}
+          <div className="relative flex items-center">
+            <img 
+              src="/logo.png" 
+              alt="APEX OS" 
+              className="h-10 md:h-12 w-auto object-contain hover:opacity-80 transition-opacity cursor-pointer"
+            />
           </div>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
