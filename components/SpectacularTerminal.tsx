@@ -519,3 +519,49 @@ export const TerminalInput: React.FC<{
     </div>
   );
 };
+
+// Default export for backward compatibility
+const SpectacularTerminal: React.FC = () => {
+  const {
+    lines,
+    inputValue,
+    setInputValue,
+    step,
+    isProcessing,
+    showPillChoice,
+    glitchActive,
+    scanActive,
+    getPlaceholder,
+    terminalRef,
+    inputRef,
+    handleCommand,
+    handlePillChoice,
+  } = useTerminal();
+
+  return (
+    <div className="flex flex-col h-full">
+      <TerminalContent
+        lines={lines}
+        step={step}
+        isProcessing={isProcessing}
+        showPillChoice={showPillChoice}
+        glitchActive={glitchActive}
+        scanActive={scanActive}
+        onPillChoice={handlePillChoice}
+        terminalRef={terminalRef}
+      />
+      <TerminalInput
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        step={step}
+        isProcessing={isProcessing}
+        showPillChoice={showPillChoice}
+        getPlaceholder={getPlaceholder}
+        onSubmit={handleCommand}
+        inputRef={inputRef}
+      />
+    </div>
+  );
+};
+
+export default SpectacularTerminal;
