@@ -1,39 +1,10 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { 
   APEX_LOGO_ASCII_LINES,
   PLAYER_ONE_ASCII
 } from '@/lib/terminal/constants';
-
-// CSS-based chromatic aberration - 3 layer multicolor effect
-const chromaticStyle = `
-  @keyframes chromatic-cyan {
-    0%, 100% { transform: translate(-3px, -2px); opacity: 0.8; }
-    25% { transform: translate(3px, 2px); opacity: 0.6; }
-    50% { transform: translate(-2px, 0px); opacity: 0.9; }
-    75% { transform: translate(2px, -2px); opacity: 0.7; }
-  }
-  @keyframes chromatic-pink {
-    0%, 100% { transform: translate(3px, 2px); opacity: 0.8; }
-    25% { transform: translate(-3px, -2px); opacity: 0.6; }
-    50% { transform: translate(2px, 0px); opacity: 0.9; }
-    75% { transform: translate(-2px, 2px); opacity: 0.7; }
-  }
-  @keyframes chromatic-main {
-    0%, 100% { transform: translate(0px, 0px); opacity: 1; }
-    50% { transform: translate(1px, -1px); opacity: 0.98; }
-  }
-  .chromatic-cyan {
-    animation: chromatic-cyan 0.15s linear infinite;
-  }
-  .chromatic-pink {
-    animation: chromatic-pink 0.12s linear infinite;
-  }
-  .chromatic-main {
-    animation: chromatic-main 0.1s linear infinite;
-  }
-`;
 
 interface ChromaticLogoProps {
   type?: 'apex' | 'player-one';
@@ -46,16 +17,6 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
   className = '',
   size = 'lg'
 }) => {
-  useEffect(() => {
-    // Inject chromatic CSS (for PLAYER_ONE chromatic effect)
-    if (!document.getElementById('chromatic-logo-style')) {
-      const style = document.createElement('style');
-      style.id = 'chromatic-logo-style';
-      style.textContent = chromaticStyle;
-      document.head.appendChild(style);
-    }
-  }, []);
-
   const sizeClasses = {
     sm: 'text-[8px] sm:text-xs',
     md: 'text-[10px] sm:text-sm',
@@ -73,7 +34,9 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
           fontVariantLigatures: 'none',
           textRendering: 'geometricPrecision',
           margin: 0,
-          padding: 0
+          padding: 0,
+          transform: 'translate3d(0, 0, 0)', // GPU acceleration
+          willChange: 'auto'
         }}
       >
         {APEX_LOGO_ASCII_LINES.map((l, i) => (
@@ -85,29 +48,43 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
     );
   }
 
-  // PLAYER_ONE uses classic chromatic aberration
+  // PLAYER_ONE uses static chromatic aberration (no animations to prevent layout shifts)
   return (
-    <div className={`relative overflow-visible font-mono leading-none ${className}`}>
-      {/* Cyan layer (offset left) */}
+    <div 
+      className={`relative overflow-visible font-mono leading-none ${className}`}
+      style={{ transform: 'translate3d(0, 0, 0)' }}
+    >
+      {/* Cyan layer (offset left) - STATIC */}
       <pre 
-        className={`absolute top-0 left-0 text-cyan-400/80 select-none pointer-events-none chromatic-cyan whitespace-pre ${sizeClasses[size]}`}
-        style={{ fontFamily: 'monospace' }}
+        className={`absolute top-0 left-0 text-cyan-400/60 select-none pointer-events-none whitespace-pre ${sizeClasses[size]}`}
+        style={{ 
+          fontFamily: 'monospace',
+          transform: 'translate(-2px, -1px)',
+          willChange: 'auto'
+        }}
       >
         {PLAYER_ONE_ASCII}
       </pre>
       
-      {/* Pink/Magenta layer (offset right) */}
+      {/* Pink/Magenta layer (offset right) - STATIC */}
       <pre 
-        className={`absolute top-0 left-0 text-pink-500/80 select-none pointer-events-none chromatic-pink whitespace-pre ${sizeClasses[size]}`}
-        style={{ fontFamily: 'monospace' }}
+        className={`absolute top-0 left-0 text-pink-500/60 select-none pointer-events-none whitespace-pre ${sizeClasses[size]}`}
+        style={{ 
+          fontFamily: 'monospace',
+          transform: 'translate(2px, 1px)',
+          willChange: 'auto'
+        }}
       >
         {PLAYER_ONE_ASCII}
       </pre>
       
-      {/* White layer (main) */}
+      {/* White layer (main) - STATIC */}
       <pre 
-        className={`text-white relative z-10 chromatic-main whitespace-pre ${sizeClasses[size]}`}
-        style={{ fontFamily: 'monospace' }}
+        className={`text-white relative z-10 whitespace-pre ${sizeClasses[size]}`}
+        style={{ 
+          fontFamily: 'monospace',
+          willChange: 'auto'
+        }}
       >
         {PLAYER_ONE_ASCII}
       </pre>

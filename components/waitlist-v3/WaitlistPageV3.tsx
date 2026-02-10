@@ -40,8 +40,8 @@ const WaitlistPageV3: React.FC = () => {
   const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
 
-  // Auto-activate GEEK mode on mount (Operator Default)
-  useEffect(() => { setMode('GEEK'); }, [setMode]);
+  // Note: Geek mode starts OFF by default - users can toggle it on
+  // This ensures optimal performance and lets users choose their experience
 
   // Content Lock / Vault Access Check
   useEffect(() => {

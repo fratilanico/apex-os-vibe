@@ -126,15 +126,16 @@ const MatrixGlitchOption: React.FC<{ onSelect: (choice: 'personal' | 'business')
           const isOtherSelected = selectedPill && selectedPill !== pill;
 
           return (
-            <motion.div
-              key={pill}
-              className="relative flex-1 max-w-md"
-              onHoverStart={() => setHoveredPill(pill)}
-              onHoverEnd={() => setHoveredPill(null)}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: isOtherSelected ? 0.3 : 1, scale: isSelected ? 1.02 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
+          <motion.div
+            key={pill}
+            className="relative flex-1 max-w-md"
+            onHoverStart={() => setHoveredPill(pill)}
+            onHoverEnd={() => setHoveredPill(null)}
+            onTap={() => setHoveredPill(pill)}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: isOtherSelected ? 0.3 : 1, scale: isSelected ? 1.02 : 1 }}
+            transition={{ duration: 0.3 }}
+          >
               <motion.div
                 className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${data.color} blur-xl`}
                 animate={{ opacity: isHovered ? 0.4 : isSelected ? 0.6 : 0.2, scale: isHovered ? 1.05 : 1 }}

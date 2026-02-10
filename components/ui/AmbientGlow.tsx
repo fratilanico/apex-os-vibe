@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface AmbientGlowProps {
   color: 'cyan' | 'emerald' | 'violet' | 'amber' | 'pink';
@@ -21,41 +20,28 @@ export const AmbientGlow: React.FC<AmbientGlowProps> = ({
   opacity = 0.15,
 }) => {
   const colorMap = {
-    cyan: 'bg-cyan-500',
-    emerald: 'bg-emerald-500',
-    violet: 'bg-violet-500',
-    amber: 'bg-amber-500',
-    pink: 'bg-pink-500',
-  };
-
-  const position = {
-    ...(top && { top }),
-    ...(left && { left }),
-    ...(right && { right }),
-    ...(bottom && { bottom }),
+    cyan: '#06b6d4',
+    emerald: '#10b981',
+    violet: '#8b5cf6',
+    amber: '#f59e0b',
+    pink: '#ec4899',
   };
 
   return (
-    <motion.div
-      animate={{
-        scale: [1, 1.2, 1],
-        opacity: [opacity * 0.5, opacity, opacity * 0.5],
-      }}
-      transition={{
-        duration: 8,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-      className={`
-        absolute pointer-events-none
-        ${colorMap[color]}
-        rounded-full
-      `}
+    <div
+      className="absolute pointer-events-none rounded-full ambient-glow"
       style={{
         width: `${size}px`,
         height: `${size}px`,
+        backgroundColor: colorMap[color],
         filter: `blur(${size / 5}px)`,
-        ...position,
+        opacity,
+        top,
+        left,
+        right,
+        bottom,
+        transform: 'translate3d(0, 0, 0)', // Force GPU layer
+        willChange: 'opacity', // Hint for browser optimization
       }}
     />
   );

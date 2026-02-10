@@ -9,12 +9,25 @@ interface MatrixRainProps {
 }
 
 // Detect if device is low-powered (tablet, mobile, older devices)
+// CRITICAL: Disable all effects on mobile/tablet to prevent flashing/seizures
 const isLowPoweredDevice = () => {
   if (typeof window === 'undefined') return false;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent) || (window.innerWidth >= 768 && window.innerWidth <= 1366);
-  const isLowMemory = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
-  return isMobile || isTablet || isLowMemory;
+  
+  // AGGRESSIVE DETECTION - Disable effects on ANY mobile or tablet
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|samsung|galaxy|tab/i.test(userAgent);
+  const isTablet = /ipad|android(?!.*mobile)|tablet|tab|samsung.*tab|galaxy.*tab/i.test(userAgent) || 
+                   (window.innerWidth >= 600 && 'ontouchstart' in window);
+  
+  // Also disable if touch device (most tablets/phones)
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // Samsung Tab Ultra detection
+  const isSamsungTab = /samsung.*tab|sm-t|galaxy.*tab/i.test(userAgent);
+  
+  // CRITICAL: Return TRUE for ANY mobile/tablet/touch device
+  // This completely disables Matrix Rain, Glitch, and other flashing effects
+  return isMobile || isTablet || isTouchDevice || isSamsungTab;
 };
 
 export const MatrixRain: React.FC<MatrixRainProps> = ({ 
@@ -27,6 +40,9 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
   const frameCountRef = useRef(0);
 
   useEffect(() => {
+    // CRITICAL: Completely disable on mobile/tablet to prevent flashing
+    if (isLowPower) return;
+    
     if (!enabled || mode !== 'GEEK') return;
     
     const canvas = canvasRef.current;
@@ -41,39 +57,22 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
     canvas.width = maxWidth;
     canvas.height = maxHeight;
 
-    // Reduce columns for low-power devices
-    const columnWidth = isLowPower ? 40 : 20;
+    const columnWidth = 20;
     const columns = Math.floor(maxWidth / columnWidth);
     const drops: number[] = new Array(columns).fill(1);
     
-    // Simpler charset for better performance
-    const chars = isLowPower 
-      ? '01'
-      : '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
+    const chars = '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
 
     let animationId: number;
-    // Skip frames on low-power devices (30fps instead of 60fps)
-    const frameSkip = isLowPower ? 2 : 1;
 
     const draw = () => {
       frameCountRef.current++;
-      
-      // Skip frames for performance
-      if (frameCountRef.current % frameSkip !== 0) {
-        animationId = requestAnimationFrame(draw);
-        return;
-      }
 
-      // Use lighter clearing on low-power devices
-      if (isLowPower) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = '#0F0';
-      ctx.font = isLowPower ? '12px monospace' : '15px monospace';
+      ctx.font = '15px monospace';
 
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)] ?? '0';
@@ -104,6 +103,8 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
     };
   }, [enabled, mode, speed, isLowPower]);
 
+  // CRITICAL: Don't render on mobile/tablet at all
+  if (isLowPower) return null;
   if (!enabled || mode !== 'GEEK') return null;
 
   return (
@@ -161,47 +162,36 @@ export const GlitchOverlay: React.FC = () => {
   );
 };
 
-// Floating ASCII particles - optimized
+// Floating ASCII particles - DISABLED on mobile/tablet to prevent flashing
 export const AsciiParticles: React.FC = () => {
   const { geekEffects, mode } = useOnboardingStore();
   const [isLowPower] = useState(() => isLowPoweredDevice());
 
+  // CRITICAL: Completely disable on mobile/tablet
+  if (isLowPower) return null;
   if (!geekEffects.enableAsciiArt || mode !== 'GEEK') return null;
 
-  // Reduce particles on low-power devices
-  const particleCount = isLowPower ? 3 : 10;
-  const particles = Array.from({ length: particleCount }, (_, i) => ({
+  // Desktop only - static positioning, NO animations to prevent 120Hz flashing
+  const particles = Array.from({ length: 5 }, (_, i) => ({
     id: i,
-    char: ['λ', '▓', '█', '◢', '◣', '◤', '◥', '╱', '╲', '╳'][i % 10],
+    char: ['λ', '▓', '█', '◢', '◣'][i % 5],
     x: Math.random() * 100,
     y: Math.random() * 100,
-    duration: Math.random() * 10 + 10,
   }));
 
   return (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
       {particles.map((p) => (
-        <motion.div
+        <div
           key={p.id}
-          className="absolute text-cyan-500/20 font-mono text-sm"
+          className="absolute text-cyan-500/10 font-mono text-sm"
           style={{ 
             left: `${p.x}%`, 
             top: `${p.y}%`,
-            willChange: 'transform, opacity',
-          }}
-          animate={{
-            y: [0, -100, 0],
-            opacity: [0.2, 0.5, 0.2],
-            rotate: isLowPower ? 0 : [0, 360], // Disable rotation on low-power
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            ease: 'linear',
           }}
         >
           {p.char}
-        </motion.div>
+        </div>
       ))}
     </div>
   );

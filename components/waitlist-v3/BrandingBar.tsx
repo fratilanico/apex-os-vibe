@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useColorCycle } from '../../hooks/useColorCycle';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import { Terminal } from 'lucide-react';
@@ -57,19 +56,18 @@ export const BrandingBar: React.FC = () => {
             </span>
           </div>
           <div className="hidden md:flex items-end gap-2 lg:gap-3 bg-white/5 px-2 lg:px-3 py-1.5 rounded-lg border border-white/5">
-            {/* Signal Bars */}
+            {/* Signal Bars - Static to prevent layout shifts */}
             <div className="flex gap-[2px] lg:gap-0.5 items-end h-4 pb-[2px]">
               {[0.3, 0.5, 0.7, 0.85, 1].map((h, i) => (
-                <motion.div
+                <div
                   key={i}
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ delay: 0.5 + i * 0.1, duration: 0.3 }}
-                  className="w-[3px] lg:w-1 rounded-[1px] origin-bottom transition-colors duration-500"
+                  className="w-[3px] lg:w-1 rounded-[1px] origin-bottom"
                   style={{
                     height: `${h * 100}%`,
                     backgroundColor: accentHex,
-                    boxShadow: i === 4 ? `0 0 8px ${accentHex}` : 'none'
+                    boxShadow: i === 4 ? `0 0 8px ${accentHex}` : 'none',
+                    transform: 'scaleY(1)',
+                    willChange: 'auto'
                   }}
                 />
               ))}
