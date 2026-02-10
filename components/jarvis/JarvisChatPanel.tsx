@@ -31,7 +31,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   onClose,
   onNavigate
 }) => {
-  const { mode, setMode, email, isUnlocked } = useOnboardingStore();
+  const { mode, setMode, email, isUnlocked, startJarvisSession, endJarvisSession, addJarvisMessage } = useOnboardingStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -127,6 +127,21 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Analytics: Track session start/end
+  useEffect(() => {
+    if (isOpen) {
+      startJarvisSession();
+    } else {
+      endJarvisSession();
+    }
+    
+    return () => {
+      if (isOpen) {
+        endJarvisSession();
+      }
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = language === 'ro-RO' 
@@ -144,6 +159,9 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       text,
       timestamp: new Date()
     }]);
+    
+    // Analytics: Track message
+    addJarvisMessage(type, text);
   };
 
   const processQuery = useCallback(async (query: string) => {

@@ -143,46 +143,100 @@ const MatrixGlitchOption: React.FC<{ onSelect: (choice: 'personal' | 'business')
 
               <motion.button
                 onClick={() => handleSelect(pill)}
-                className={`relative w-full p-6 md:p-8 rounded-2xl border backdrop-blur-xl bg-black/60 overflow-hidden group ${data.borderColor}`}
+                className={`relative w-full p-6 md:p-8 rounded-2xl border-2 backdrop-blur-xl bg-black/70 overflow-hidden group ${data.borderColor} transition-all duration-500`}
                 style={{
                   boxShadow: isHovered || isSelected 
-                    ? `0 0 40px ${data.glowColor}, 0 0 80px ${data.glowColor}40`
-                    : `0 0 20px ${data.glowColor}20`,
+                    ? `0 0 60px ${data.glowColor}, 0 0 120px ${data.glowColor}40, inset 0 0 60px ${data.glowColor}10`
+                    : `0 0 30px ${data.glowColor}30`,
                 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.03, y: -4 }}
+                whileTap={{ scale: 0.97 }}
               >
-                <motion.div className={`absolute inset-0 bg-gradient-to-br ${data.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                <div className="absolute inset-0 pointer-events-none opacity-20" style={{
-                  background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+                {/* Animated background gradient */}
+                <motion.div 
+                  className={`absolute inset-0 bg-gradient-to-br ${data.color} opacity-0 group-hover:opacity-15 transition-all duration-700`} 
+                  animate={!isHovered && !isSelected ? {
+                    opacity: [0.05, 0.1, 0.05],
+                  } : {}}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Scanlines effect */}
+                <div className="absolute inset-0 pointer-events-none opacity-10" style={{
+                  background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px)',
                 }} />
+                
+                {/* Border glow animation */}
+                <motion.div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    boxShadow: `inset 0 0 20px ${data.glowColor}40`,
+                  }}
+                />
 
                 <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-4xl filter drop-shadow-lg">{data.icon}</span>
-                    <div className="text-left">
-                      <div className={`text-xs font-mono font-bold tracking-widest uppercase bg-gradient-to-r ${data.color} bg-clip-text text-transparent`}>
+                  {/* Icon and Title Row */}
+                  <div className="flex items-center gap-4 mb-5">
+                    <motion.span 
+                      className="text-5xl filter drop-shadow-2xl"
+                      animate={!isHovered ? {
+                        scale: [1, 1.1, 1],
+                      } : {}}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      {data.icon}
+                    </motion.span>
+                    <div className="text-left flex-1">
+                      <div className={`text-[10px] font-mono font-black tracking-[0.2em] uppercase bg-gradient-to-r ${data.color} bg-clip-text text-transparent mb-1`}>
                         {data.pillNumber}
                       </div>
-                      <div className="text-xl font-bold text-white">{data.label}</div>
+                      <div className="text-2xl font-black text-white tracking-tight">{data.label}</div>
                     </div>
                   </div>
 
-                  <p className="text-white/60 text-sm text-left mb-4">{data.subtitle}</p>
+                  {/* Subtitle with gradient */}
+                  <p className={`text-sm text-left mb-5 font-medium bg-gradient-to-r ${data.color} bg-clip-text text-transparent`}>
+                    {data.subtitle}
+                  </p>
 
+                  {/* Journey Preview - Only visible on hover */}
                   <AnimatePresence>
                     {isHovered && !selectedPill && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }} 
+                        animate={{ opacity: 1, height: 'auto' }} 
+                        exit={{ opacity: 0, height: 0 }} 
+                        className="overflow-hidden"
+                      >
                         <div className="pt-4 border-t border-white/10">
-                          <div className="text-left space-y-2">
+                          <div className="text-left space-y-2.5">
                             {data.items.map((item, idx) => (
-                              <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }} className="flex items-center gap-2 text-sm text-white/80">
-                                <span className="text-xs opacity-50">{item.split(' ')[0]}</span>
-                                <span>{item.split(' ').slice(1).join(' ')}</span>
+                              <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, x: -10 }} 
+                                animate={{ opacity: 1, x: 0 }} 
+                                transition={{ delay: idx * 0.05 }} 
+                                className="flex items-center gap-3 text-sm text-white/70"
+                              >
+                                <span className="text-base">{item.split(' ')[0]}</span>
+                                <span className="font-light">{item.split(' ').slice(1).join(' ')}</span>
                               </motion.div>
                             ))}
                           </div>
-                          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className={`mt-4 text-xs italic text-center bg-gradient-to-r ${data.color} bg-clip-text text-transparent`}>
+                          <motion.p 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            transition={{ delay: 0.3 }} 
+                            className={`mt-5 text-xs italic text-center bg-gradient-to-r ${data.color} bg-clip-text text-transparent font-medium`}
+                          >
                             "{data.tagline}"
                           </motion.p>
                         </div>
@@ -190,12 +244,42 @@ const MatrixGlitchOption: React.FC<{ onSelect: (choice: 'personal' | 'business')
                     )}
                   </AnimatePresence>
 
+                  {/* Selection Ripple Effect */}
                   {isSelected && (
-                    <motion.div initial={{ scale: 0, opacity: 1 }} animate={{ scale: 3, opacity: 0 }} transition={{ duration: 0.8 }} className={`absolute inset-0 bg-gradient-to-br ${data.color} rounded-2xl`} />
+                    <motion.div 
+                      initial={{ scale: 0, opacity: 1 }} 
+                      animate={{ scale: 4, opacity: 0 }} 
+                      transition={{ duration: 0.8, ease: "easeOut" }} 
+                      className={`absolute inset-0 bg-gradient-to-br ${data.color} rounded-2xl`} 
+                    />
                   )}
                 </div>
 
-                <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${data.color} opacity-20 blur-2xl rounded-full -translate-y-1/2 translate-x-1/2`} />
+                {/* Corner accent glow */}
+                <motion.div 
+                  className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${data.color} rounded-full blur-3xl pointer-events-none`}
+                  style={{
+                    opacity: isHovered ? 0.4 : 0.2,
+                    transform: 'translate(30%, -30%)',
+                  }}
+                  animate={!isHovered ? {
+                    opacity: [0.15, 0.25, 0.15],
+                  } : {}}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                {/* Bottom corner accent */}
+                <motion.div 
+                  className={`absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr ${data.color} rounded-full blur-2xl pointer-events-none`}
+                  style={{
+                    opacity: isHovered ? 0.3 : 0.1,
+                    transform: 'translate(-30%, 30%)',
+                  }}
+                />
               </motion.button>
             </motion.div>
           );

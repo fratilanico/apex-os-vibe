@@ -17,12 +17,26 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+// Calculate initial time left to avoid showing 0 0 0 0 on load
+const calculateTimeLeft = () => {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 18);
+  const now = new Date();
+  const diff = targetDate.getTime() - now.getTime();
+  
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((diff % (1000 * 60)) / 1000),
+  };
+};
+
 // Countdown timer component
 const CountdownTimer: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   
   useEffect(() => {
-    // Target: 18 days from now (approximate cohort launch)
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + 18);
     
@@ -38,10 +52,6 @@ const CountdownTimer: React.FC = () => {
       setTimeLeft({ days, hours, minutes, seconds });
     };
     
-    // Update immediately
-    updateTimer();
-    
-    // Update every second for smooth experience
     const interval = setInterval(updateTimer, 1000);
     
     return () => clearInterval(interval);

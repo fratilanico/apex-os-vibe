@@ -24,6 +24,24 @@ export interface GeekModeEffects {
   scanlineIntensity: number; // 0-100
 }
 
+// Conversation analytics for Jarvis
+export interface ConversationMessage {
+  id: string;
+  role: 'user' | 'jarvis';
+  content: string;
+  timestamp: Date;
+  sessionId: string;
+}
+
+export interface ConversationSession {
+  id: string;
+  startTime: Date;
+  endTime?: Date;
+  messages: ConversationMessage[];
+  topics: string[];
+  satisfaction?: number;
+}
+
 interface OnboardingState {
   mode: 'STANDARD' | 'GEEK';
   step: OnboardingStep;
@@ -36,6 +54,9 @@ interface OnboardingState {
   secretTreatFound: boolean;
   isVaultOpen: boolean;
   geekEffects: GeekModeEffects;
+  // Analytics - Jarvis conversations
+  jarvisConversations: ConversationSession[];
+  currentSessionId: string | null;
   
   // Actions
   setMode: (mode: 'STANDARD' | 'GEEK') => void;
@@ -50,6 +71,10 @@ interface OnboardingState {
   unlock: () => void;
   setSecretTreatFound: (found: boolean) => void;
   setVaultOpen: (open: boolean) => void;
+  // Analytics actions
+  startJarvisSession: () => void;
+  endJarvisSession: () => void;
+  addJarvisMessage: (role: 'user' | 'jarvis', content: string) => void;
   reset: () => void;
 }
 
@@ -63,7 +88,7 @@ const defaultGeekEffects: GeekModeEffects = {
   scanlineIntensity: 0,
 };
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
+export const useOnboardingStore = create<OnboardingState>((set, get) => ({
   mode: 'STANDARD',
   step: 'boot',
   persona: null,
@@ -75,6 +100,8 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   secretTreatFound: false,
   isVaultOpen: false,
   geekEffects: { ...defaultGeekEffects },
+  jarvisConversations: [],
+  currentSessionId: null,
 
   setMode: (mode) => set(() => ({
     mode,
@@ -113,6 +140,61 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   unlock: () => set({ isUnlocked: true }),
   setSecretTreatFound: (found) => set({ secretTreatFound: found }),
   setVaultOpen: (open) => set({ isVaultOpen: open }),
+  
+  // Jarvis analytics
+  startJarvisSession: () => {
+    const sessionId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    const newSession: ConversationSession = {
+      id: sessionId,
+      startTime: new Date(),
+      messages: [],
+      topics: [],
+    };
+    set((state) => ({
+      currentSessionId: sessionId,
+      jarvisConversations: [...state.jarvisConversations, newSession],
+    }));
+    return sessionId;
+  },
+  
+  endJarvisSession: () => {
+    const { currentSessionId, jarvisConversations } = get();
+    if (!currentSessionId) return;
+    
+    set((state) => ({
+      currentSessionId: null,
+      jarvisConversations: state.jarvisConversations.map(session =>
+        session.id === currentSessionId
+          ? { ...session, endTime: new Date() }
+          : session
+      ),
+    }));
+  },
+  
+  addJarvisMessage: (role, content) => {
+    const { currentSessionId } = get();
+    if (!currentSessionId) return;
+    
+    const message: ConversationMessage = {
+      id: Date.now().toString(36),
+      role,
+      content,
+      timestamp: new Date(),
+      sessionId: currentSessionId,
+    };
+    
+    set((state) => ({
+      jarvisConversations: state.jarvisConversations.map(session =>
+        session.id === currentSessionId
+          ? { ...session, messages: [...session.messages, message] }
+          : session
+      ),
+    }));
+    
+    // TODO: Send to analytics API
+    console.log('[Analytics] Jarvis message:', { role, content: content.slice(0, 100) });
+  },
+  
   reset: () => set({
     mode: 'STANDARD',
     step: 'boot',
@@ -125,5 +207,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     secretTreatFound: false,
     isVaultOpen: false,
     geekEffects: { ...defaultGeekEffects },
+    jarvisConversations: [],
+    currentSessionId: null,
   }),
 }));
