@@ -8,18 +8,20 @@ import { processAdminCommand } from '../lib/admin/terminalAdmin';
 import { PILL_CONFIG } from '../config/pillConfig';
 import { PillChoiceSystem } from './PillChoiceSystem';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
+import { APEX_LOGO_ASCII_LINES } from '../lib/terminal/constants';
 
 interface TerminalLine {
   id: string;
   text: string;
   type: 'input' | 'output' | 'error' | 'system' | 'success' | 'jarvis' | 'matrix' | 'ascii' | 'brand-logo';
-  className?: string;
 }
 
 type TerminalStep = 'boot' | 'name' | 'email' | 'processing' | 'unlocked';
 
 const BOOT_SEQUENCE = [
-  { text: 'Initializing APEX_OS Kernel v6.4.2...', delay: 100, type: 'system' as const },
+  { text: JSON.stringify(APEX_LOGO_ASCII_LINES), delay: 50, type: 'brand-logo' as const },
+  { text: '', delay: 80, type: 'system' as const },
+  { text: 'Initializing APEX_OS Kernel v6.4.2...', delay: 200, type: 'system' as const },
   { text: 'Loading Neural Interface Protocol...', delay: 400, type: 'system' as const },
   { text: 'Connecting to 17-Agent Swarm...', delay: 700, type: 'matrix' as const },
   { text: '[OK] FULL WIRE ENGAGED', delay: 1000, type: 'success' as const },
@@ -303,7 +305,7 @@ export const TerminalContent: React.FC<{
   return (
     <div 
       ref={terminalRef}
-      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 border-cyan-500/30 overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[400px] sm:min-h-[500px] ${glitchActive ? 'animate-glitch' : ''}`}
+      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 border-cyan-500/30 overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative ${glitchActive ? 'animate-glitch' : ''}`}
     >
       {scanActive && (
         <motion.div 
