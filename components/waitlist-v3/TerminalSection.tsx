@@ -22,7 +22,7 @@ export const TerminalSection: React.FC = () => {
   } = useTerminal();
 
   return (
-    <div className="py-8 w-full">
+    <div className="w-full">
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}

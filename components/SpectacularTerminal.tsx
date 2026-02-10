@@ -305,7 +305,7 @@ export const TerminalContent: React.FC<{
   return (
     <div 
       ref={terminalRef}
-      className={`bg-black/90 backdrop-blur-2xl border-2 border-cyan-500/30 overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative h-full ${glitchActive ? 'animate-glitch' : ''}`}
+      className={`bg-black/90 backdrop-blur-2xl border-2 border-cyan-500/30 overflow-hidden flex flex-col justify-between shadow-2xl transition-all duration-1000 relative h-full ${glitchActive ? 'animate-glitch' : ''}`}
     >
       {scanActive && (
         <motion.div 
