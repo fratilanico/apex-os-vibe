@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, Mic, Globe, Activity, Terminal, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Send, Bot, Mic, Terminal, Activity } from 'lucide-react';
 import { queryAI } from '../../lib/ai/globalAIService';
 import { useLocation } from 'react-router-dom';
 import { AgentHierarchyVisualization } from '../../src/jarvis/components/AgentHierarchyVisualization';
@@ -36,7 +36,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [language, setLanguage] = useState<'en-US' | 'ro-RO'>('en-US');
+  const [language] = useState<'en-US' | 'ro-RO'>('en-US');
   const [view, setView] = useState<'chat' | 'agents'>('chat');
   const [isSpeaking, setIsSpeaking] = useState(false);
   

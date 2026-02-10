@@ -65,3 +65,134 @@ export interface UserSession {
   abandoned: boolean;
   metadata: Record<string, unknown>;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CUSTOMER ANALYTICS TABLES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface CustomerAnalytics {
+  id: string;
+  user_id: string;
+  email?: string;
+  persona: 'PERSONAL' | 'BUSINESS' | null;
+  session_id: string;
+  created_at: string;
+  updated_at: string;
+  
+  // Device info
+  device_type: 'mobile' | 'tablet' | 'desktop';
+  browser: string;
+  os: string;
+  screen_resolution: string;
+  
+  // Journey tracking
+  onboarding_step: string;
+  is_unlocked: boolean;
+  geek_mode_enabled: boolean;
+  
+  // Metadata
+  metadata: Record<string, unknown>;
+}
+
+export interface JarvisConversationAnalytics {
+  id: string;
+  user_id: string;
+  session_id: string;
+  message_id: string;
+  role: 'user' | 'jarvis';
+  content: string;
+  content_preview: string; // First 200 chars for quick view
+  timestamp: string;
+  
+  // Context
+  page_path: string;
+  persona: string;
+  geek_mode: boolean;
+  
+  // Analysis
+  message_length: number;
+  has_code: boolean;
+  has_question: boolean;
+  topics: string[];
+  sentiment: 'positive' | 'neutral' | 'negative' | null;
+  
+  // Session info
+  session_start_time: string;
+  session_duration_seconds: number;
+  message_index: number;
+}
+
+export interface TerminalCommandAnalytics {
+  id: string;
+  user_id: string;
+  session_id: string;
+  command_id: string;
+  command: string;
+  command_type: 'input' | 'admin' | 'system';
+  timestamp: string;
+  
+  // Context
+  onboarding_step: string;
+  persona: string;
+  is_unlocked: boolean;
+  
+  // Command analysis
+  response_type: 'success' | 'error' | 'info' | 'system';
+  response_preview: string;
+  execution_time_ms: number;
+  
+  // Admin commands
+  is_admin_command: boolean;
+  admin_action?: string;
+  
+  // Sequence
+  command_sequence: number;
+  time_since_last_command_ms: number;
+}
+
+export interface PillSelectionAnalytics {
+  id: string;
+  user_id: string;
+  session_id: string;
+  selected_persona: 'PERSONAL' | 'BUSINESS';
+  selected_at: string;
+  
+  // Pre-selection info
+  hovered_options: string[];
+  hover_duration_ms: number;
+  
+  // Journey context
+  name_provided: string;
+  email_provided: string;
+  time_to_decision_ms: number; // Time from handshake to selection
+  
+  // Post-selection
+  modules_unlocked: string[];
+}
+
+export interface UserJourneyAnalytics {
+  id: string;
+  user_id: string;
+  session_id: string;
+  event_type: 
+    | 'page_view' 
+    | 'terminal_open' 
+    | 'terminal_command' 
+    | 'jarvis_open' 
+    | 'jarvis_message'
+    | 'pill_hover' 
+    | 'pill_select'
+    | 'form_submit'
+    | 'vault_open'
+    | 'geek_mode_toggle';
+  event_data: Record<string, unknown>;
+  timestamp: string;
+  
+  // Navigation
+  page_path: string;
+  referrer?: string;
+  
+  // Session
+  session_duration_ms: number;
+  time_on_page_ms: number;
+}
