@@ -145,7 +145,7 @@ export class ServiceRouter {
     intent: ParsedIntent
   ): Promise<IntelligenceResponse> {
     const config = this.configs.get('perplexity')!;
-    const apiKey = process.env.PERPLEXITY_API_KEY;
+    const apiKey = typeof process !== 'undefined' ? process.env.PERPLEXITY_API_KEY : undefined;
 
     if (!apiKey) {
       throw new Error('PERPLEXITY_API_KEY not configured');
@@ -203,7 +203,7 @@ export class ServiceRouter {
     intent?: ParsedIntent
   ): Promise<IntelligenceResponse> {
     const config = this.configs.get('gemini')!;
-    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    const apiKey = typeof process !== 'undefined' ? (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY) : undefined;
 
     if (!apiKey) {
       throw new Error('GEMINI_API_KEY not configured');

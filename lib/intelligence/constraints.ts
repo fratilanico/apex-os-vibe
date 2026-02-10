@@ -1,12 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_ANON_KEY || ''
-);
+// Lazy initialization - only create client when function is called
+let supabase: ReturnType<typeof createClient> | null = null;
+
+function getSupabase() {
+  if (!supabase && typeof process !== 'undefined') {
+    supabase = createClient(
+      process.env.SUPABASE_URL || '',
+      process.env.SUPABASE_ANON_KEY || ''
+    );
+  }
+  return supabase;
+}
 
 export async function getFrontierConstraints(): Promise<string> {
-  const { data, error } = await supabase
+  const client = getSupabase();
+  if (!client) return '';
+  
+  const { data, error } = await client
     .from('frontier_intelligence')
     .select('title, category, logic, is_active');
 
