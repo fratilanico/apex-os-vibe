@@ -9,162 +9,40 @@ import {
   StudyRecommendation,
   UserPersona 
 } from '../types';
+import { modules, tools } from '../../../data/curriculumData';
 
 export class RecommendationEngine {
   private contentLibrary: StudyRecommendation[] = [
-    // AI Orchestration
-    {
-      id: 'rec_001',
+    // Transform curriculum modules into recommendations
+    ...modules.map(m => ({
+      id: m.id,
       userId: '',
-      title: 'AI Orchestration Fundamentals',
-      description: 'Learn how to coordinate multiple AI agents for complex workflows',
-      type: 'module',
-      difficulty: 'intermediate',
-      estimatedTime: 120,
-      relevanceScore: 0.95,
-      tags: ['ai-orchestration', 'agents', 'coordination'],
-      prerequisites: [],
-      url: '/learn/modules/ai-orchestration-fundamentals',
-      matchReason: 'Core skill for building AI-powered products',
-    },
-    {
-      id: 'rec_002',
+      title: m.title,
+      description: m.subtitle,
+      type: 'module' as const,
+      difficulty: (m.number === '00' ? 'beginner' : m.number === '03' ? 'advanced' : 'intermediate') as 'beginner' | 'intermediate' | 'advanced',
+      estimatedTime: parseInt(m.duration) || 60,
+      relevanceScore: 0.9,
+      tags: [m.title.toLowerCase().replace(/ /g, '-'), ...m.sections.flatMap(s => s.tools)],
+      prerequisites: m.number === '00' ? [] : [`module-${(parseInt(m.number) - 1).toString().padStart(2, '0')}`],
+      url: `/learn/modules/${m.id}`,
+      matchReason: m.objective,
+    })),
+    // Transform specialized tools into research recommendations
+    ...tools.filter(t => t.tier === 'asset').map(t => ({
+      id: `tool_${t.id}`,
       userId: '',
-      title: 'Multi-Agent Swarm Patterns',
-      description: 'Advanced patterns for scaling AI agent orchestration',
-      type: 'playbook',
-      difficulty: 'advanced',
-      estimatedTime: 90,
-      relevanceScore: 0.88,
-      tags: ['ai-orchestration', 'swarm', 'patterns'],
-      prerequisites: ['ai-orchestration-fundamentals'],
-      url: '/blog/playbook/multi-agent-swarm-patterns',
-      matchReason: 'Next step after learning fundamentals',
-    },
-
-    // Vibe Coding
-    {
-      id: 'rec_003',
-      userId: '',
-      title: 'Vibe Coding: The Complete Guide',
-      description: 'Master AI-assisted development workflows',
-      type: 'module',
-      difficulty: 'beginner',
-      estimatedTime: 60,
-      relevanceScore: 0.92,
-      tags: ['vibe-coding', 'development', 'ai-tools'],
-      prerequisites: [],
-      url: '/learn/modules/vibe-coding-guide',
-      matchReason: 'Essential for modern development',
-    },
-    {
-      id: 'rec_004',
-      userId: '',
-      title: 'Building with Claude, Cursor, and Cody',
-      description: 'Practical guide to AI-powered IDEs',
-      type: 'playbook',
-      difficulty: 'intermediate',
+      title: `Mastering ${t.name}`,
+      description: t.description,
+      type: 'playbook' as const,
+      difficulty: 'intermediate' as const,
       estimatedTime: 45,
-      relevanceScore: 0.85,
-      tags: ['vibe-coding', 'tools', 'claude', 'cursor'],
-      prerequisites: ['vibe-coding-guide'],
-      url: '/blog/playbook/ai-ide-guide',
-      matchReason: 'Hands-on tool guide',
-    },
-
-    // Content Strategy
-    {
-      id: 'rec_005',
-      userId: '',
-      title: 'Content Operations at Scale',
-      description: 'How to build a content machine for your startup',
-      type: 'playbook',
-      difficulty: 'intermediate',
-      estimatedTime: 75,
-      relevanceScore: 0.80,
-      tags: ['content-strategy', 'operations', 'scale'],
+      relevanceScore: 0.8,
+      tags: [t.id, t.category.toLowerCase(), 'tools'],
       prerequisites: [],
-      url: '/blog/strategy/content-operations-scale',
-      matchReason: 'Critical for marketing and growth',
-    },
-
-    // Deployment
-    {
-      id: 'rec_006',
-      userId: '',
-      title: 'Deploying AI Products to Production',
-      description: 'Best practices for production AI deployments',
-      type: 'module',
-      difficulty: 'advanced',
-      estimatedTime: 150,
-      relevanceScore: 0.87,
-      tags: ['deployment', 'production', 'devops'],
-      prerequisites: ['ai-orchestration-fundamentals'],
-      url: '/learn/modules/deploying-ai-products',
-      matchReason: 'Essential for shipping products',
-    },
-
-    // Fundraising
-    {
-      id: 'rec_007',
-      userId: '',
-      title: 'Seed Funding Playbook',
-      description: 'Complete guide to raising your seed round',
-      type: 'playbook',
-      difficulty: 'intermediate',
-      estimatedTime: 90,
-      relevanceScore: 0.91,
-      tags: ['fundraising', 'seed', 'investors'],
-      prerequisites: [],
-      url: '/blog/playbook/seed-funding-playbook',
-      matchReason: 'Critical for early-stage founders',
-    },
-    {
-      id: 'rec_008',
-      userId: '',
-      title: 'Pitch Deck Mastery',
-      description: 'Create investor-ready pitch decks',
-      type: 'module',
-      difficulty: 'beginner',
-      estimatedTime: 60,
-      relevanceScore: 0.83,
-      tags: ['fundraising', 'pitch-deck', 'presentations'],
-      prerequisites: [],
-      url: '/learn/modules/pitch-deck-mastery',
-      matchReason: 'Practical skill for fundraising',
-    },
-
-    // Testing & QA
-    {
-      id: 'rec_009',
-      userId: '',
-      title: 'Testing AI Systems',
-      description: 'Quality assurance for AI-powered applications',
-      type: 'module',
-      difficulty: 'advanced',
-      estimatedTime: 120,
-      relevanceScore: 0.79,
-      tags: ['testing', 'qa', 'ai-systems'],
-      prerequisites: ['deploying-ai-products'],
-      url: '/learn/modules/testing-ai-systems',
-      matchReason: 'Important for production reliability',
-    },
-
-    // Team Building
-    {
-      id: 'rec_010',
-      userId: '',
-      title: 'Hiring Your First 10 Engineers',
-      description: 'How to build an elite engineering team',
-      type: 'playbook',
-      difficulty: 'intermediate',
-      estimatedTime: 60,
-      relevanceScore: 0.76,
-      tags: ['team-building', 'hiring', 'engineering'],
-      prerequisites: [],
-      url: '/blog/playbook/hiring-first-10-engineers',
-      matchReason: 'Critical for scaling teams',
-    },
+      url: `/tools/${t.id}`,
+      matchReason: `Critical tool for ${t.category.toLowerCase()} workflows`,
+    }))
   ];
 
   async getRecommendations(

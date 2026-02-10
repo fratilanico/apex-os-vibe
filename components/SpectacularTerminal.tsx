@@ -17,21 +17,25 @@ interface TerminalLine {
 }
 
 const BOOT_SEQUENCE = [
-  { text: 'Initializing APEX_OS Kernel v6.4.2...', delay: 100, type: 'system' as const },
-  { text: 'Loading Neural Interface Protocol...', delay: 400, type: 'system' as const },
-  { text: 'Connecting to 17-Agent Swarm...', delay: 700, type: 'matrix' as const },
-  { text: '[OK] FULL WIRE ENGAGED', delay: 1000, type: 'success' as const },
-  { text: '', delay: 1100, type: 'system' as const },
-  { text: 'Protocol Active. Establishing Identity Node...', delay: 1200, type: 'jarvis' as const },
-  { text: '', delay: 1300, type: 'system' as const },
+  { text: '╔══════════════════════════════════════════════════════════════════════════════╗', delay: 0, type: 'system' as const },
+  { text: '║  🔥 APEX_OS KERNEL v6.4.2 — INITIALIZING NEURAL INTERFACE                    ║', delay: 100, type: 'system' as const },
+  { text: '╚══════════════════════════════════════════════════════════════════════════════╝', delay: 200, type: 'system' as const },
+  { text: '', delay: 300, type: 'system' as const },
+  { text: '> [SYSTEM] Loading Neural Interface Protocol...', delay: 500, type: 'system' as const },
+  { text: '> [SWARM]  Connecting to 17-Agent Swarm Intelligence...', delay: 800, type: 'matrix' as const },
+  { text: '> [LINK]   Establishing secure tunneling via GCP Cloud Run...', delay: 1100, type: 'system' as const },
+  { text: '✓ [OK] FULL WIRE ENGAGED', delay: 1400, type: 'success' as const },
+  { text: '', delay: 1500, type: 'system' as const },
+  { text: 'Listen up — identity node awaits designation.', delay: 1700, type: 'jarvis' as const },
+  { text: '', delay: 1800, type: 'system' as const },
 ];
 
 const stepPrompts: Record<string, string[]> = {
   boot: ['Initializing neural interface...', 'Establishing secure connection...'],
   idle: [
     'What should I call you, operator?',
-    'Enter your designation...',
-    'Identity node awaits input...',
+    'Designation required for swarm sync...',
+    'Identity node awaiting input...',
     'Who joins the swarm?'
   ],
   email_guard: [
@@ -53,7 +57,7 @@ const stepPrompts: Record<string, string[]> = {
   ]
 };
 
-export const useTerminal = () => {
+export const useTerminal = (onComplete?: (data: { name: string; email: string; persona: 'PERSONAL' | 'BUSINESS' }) => void) => {
   const { step, setStep, setPersona, setEmail, unlock, addHistory, trackTerminalCommand, persona, isUnlocked, email } = useOnboardingStore();
   const [bootLine, setBootLine] = useState(0);
   const [lines, setLines] = useState<TerminalLine[]>([]);
@@ -79,20 +83,38 @@ export const useTerminal = () => {
     setScanActive(true);
     setIsProcessing(true);
     
+    // Epic Scroll & Focus
+    requestAnimationFrame(() => {
+      terminalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
     addLine('', 'system');
-    addLine('═══════════════════════════════════════', 'matrix');
-    addLine('  NEURAL HANDSHAKE PROTOCOL INITIATED', 'matrix');
-    addLine('═══════════════════════════════════════', 'matrix');
-    addLine('', 'system');
+    addLine('┌───────────────────────────────────────┐', 'matrix');
+    addLine('│  NEURAL HANDSHAKE: PHASE 1/3          │', 'matrix');
+    addLine('│  Chromatic Aberration Syncing...      │', 'matrix');
+    addLine('└───────────────────────────────────────┘', 'matrix');
+    addLine('[██░░░░░░░░] 20%', 'matrix');
     
-    await new Promise(r => setTimeout(r, 1500));
-    addLine('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 100%', 'matrix');
-    
+    await new Promise(r => setTimeout(r, 1200));
     setScanActive(false);
     setGlitchActive(true);
     
-    await new Promise(r => setTimeout(r, 800));
+    addLine('┌───────────────────────────────────────┐', 'matrix');
+    addLine('│  NEURAL HANDSHAKE: PHASE 2/3          │', 'matrix');
+    addLine('│  Biometric Signature Scan...          │', 'matrix');
+    addLine('└───────────────────────────────────────┘', 'matrix');
+    addLine('[██████░░░░] 60%', 'matrix');
+    
+    await new Promise(r => setTimeout(r, 1500));
     setGlitchActive(false);
+    
+    addLine('┌───────────────────────────────────────┐', 'matrix');
+    addLine('│  NEURAL HANDSHAKE: PHASE 3/3          │', 'matrix');
+    addLine('│  Identity Node: PLAYER 1 CONNECTED    │', 'matrix');
+    addLine('└───────────────────────────────────────┘', 'matrix');
+    addLine('[██████████] 100%', 'success');
+    
+    await new Promise(r => setTimeout(r, 800));
     setIsProcessing(false);
     setStep('unlocked');
     unlock();
@@ -101,7 +123,7 @@ export const useTerminal = () => {
     addLine(`✓ IDENTITY CONFIRMED: ${name.toUpperCase()}`, 'success');
     addLine('✓ FULL WIRE ENGAGED', 'success');
     addLine('', 'system');
-    addLine('CHOOSE YOUR PATH:', 'jarvis');
+    addLine('Here\'s the deal — you choose your path now.', 'jarvis');
     
     setShowPillChoice(true);
   };
@@ -111,34 +133,53 @@ export const useTerminal = () => {
     setGlitchActive(true);
     setTimeout(() => setGlitchActive(false), 500);
     
+    const chosenPersona = choice === 'red' ? 'BUSINESS' : 'PERSONAL';
+    
     if (choice === 'red') {
       setPersona('BUSINESS');
       addLine('', 'system');
       addLine('🔴 RED PILL SELECTED: BUSINESS_ARCHITECT', 'success');
-      addLine('Initializing enterprise arbitrage metrics...', 'jarvis');
+      addLine('Listen up — initializing enterprise arbitrage metrics.', 'jarvis');
       addLine('', 'system');
-      addLine('┌─── BUSINESS MODULES UNLOCKED ───┐', 'matrix');
-      addLine('│ ⚡ AGENT_SWARM       — ACTIVE   │', 'matrix');
-      addLine('│ 🏢 ORG_BUILDER       — ACTIVE   │', 'matrix');
-      addLine('│ 📊 METRICS_DASH      — ACTIVE   │', 'matrix');
-      addLine('│ 🔒 VAULT_ACCESS      — TIER 2   │', 'matrix');
-      addLine('└─────────────────────────────────┘', 'matrix');
+      addLine('┌──────────────────────────────────────────┐', 'matrix');
+      addLine('│  BUSINESS MODULES UNLOCKED               │', 'matrix');
+      addLine('├──────────┬─────────────────┬─────────────┤', 'matrix');
+      addLine('│ Module   │ Description     │ Status      │', 'matrix');
+      addLine('├──────────┼─────────────────┼─────────────┤', 'matrix');
+      addLine('│ SWARM    │ Agent Orchest.  │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ ORG      │ Build Systems   │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ METRICS  │ Unit Economics  │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ VAULT    │ Tier 2 Access   │ 🔒 LOCKED   │', 'matrix');
+      addLine('└──────────┴─────────────────┴─────────────┘', 'matrix');
     } else {
       setPersona('PERSONAL');
       addLine('', 'system');
       addLine('🔵 BLUE PILL SELECTED: PERSONAL_BUILDER', 'success');
-      addLine('Initializing individual arbitrage metrics...', 'jarvis');
+      addLine('Listen up — initializing individual arbitrage metrics.', 'jarvis');
       addLine('', 'system');
-      addLine('┌─── PERSONAL MODULES UNLOCKED ───┐', 'matrix');
-      addLine('│ ⚡ VIBE_VELOCITY      — ACTIVE   │', 'matrix');
-      addLine('│ 🧠 SKILL_TREE         — ACTIVE   │', 'matrix');
-      addLine('│ 🎮 NPC_FEED           — ACTIVE   │', 'matrix');
-      addLine('│ 🔒 AGENT_FORGE        — TIER 2   │', 'matrix');
-      addLine('└─────────────────────────────────┘', 'matrix');
+      addLine('┌──────────────────────────────────────────┐', 'matrix');
+      addLine('│  PERSONAL MODULES UNLOCKED               │', 'matrix');
+      addLine('├──────────┬─────────────────┬─────────────┤', 'matrix');
+      addLine('│ Module   │ Description     │ Status      │', 'matrix');
+      addLine('├──────────┼─────────────────┼─────────────┤', 'matrix');
+      addLine('│ VIBE     │ AI-Native Dev   │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ TREE     │ Skill Mastery   │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ NPC      │ System Theory   │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ FORGE    │ Tier 2 Access   │ 🔒 LOCKED   │', 'matrix');
+      addLine('└──────────┴─────────────────┴─────────────┘', 'matrix');
     }
     
     addLine('', 'system');
-    addLine('Type "help" for available commands or "vault" to access your Founder Bible.', 'system');
+    addLine('The terminal is hot. Try "help" or access the "vault".', 'system');
+
+    // Trigger completion callback
+    if (onComplete) {
+      onComplete({
+        name: formData.name,
+        email: formData.email,
+        persona: chosenPersona
+      });
+    }
   };
 
   useEffect(() => {
@@ -234,11 +275,34 @@ export const useTerminal = () => {
       }
       
       if (lower === 'help') {
-        addLine('AVAILABLE COMMANDS:', 'system');
-        addLine('  status   - Check swarm sync', 'system');
-        addLine('  vault    - Access Founder Bible', 'system');
-        addLine('  clear    - Clear terminal', 'system');
+        addLine('╔══════════════════════════════════════════════════════════════════════════════╗', 'system');
+        addLine('║  AVAILABLE COMMANDS — APEX_OS OPERATOR INTERFACE                             ║', 'system');
+        addLine('╚══════════════════════════════════════════════════════════════════════════════╝', 'system');
+        addLine('', 'system');
+        addLine('  status   - Full system diagnostics & swarm sync', 'system');
+        addLine('  vault    - Access encrypted Founder Bible modules', 'system');
+        addLine('  academy  - Enter the Learning Matrix', 'system');
+        addLine('  clear    - Flush terminal buffer', 'system');
+        addLine('  admin    - Escalate privileges (Level 5 required)', 'system');
+        addLine('', 'system');
+        addLine('Any other input will be routed to the 17-Agent Swarm Intelligence.', 'jarvis');
         trackTerminalCommand(trimmed, 'system', 'HELP displayed');
+        return;
+      }
+
+      if (lower === 'status') {
+        addLine('╔═══════════════════════════════════════╗', 'matrix');
+        addLine('║  SYSTEM STATUS: CORE_SWARM            ║', 'matrix');
+        addLine('╠═══════════════════════════════════════╣', 'matrix');
+        addLine('║  ✓ JARVIS   : [██████████] 100%       ║', 'matrix');
+        addLine('║  ✓ ARCHITECT: [████████░░] 80%        ║', 'matrix');
+        addLine('║  ! SWARM_GTM: [████░░░░░░] 40%        ║', 'matrix');
+        addLine('╚═══════════════════════════════════════╝', 'matrix');
+        addLine('', 'system');
+        addLine(`Operator:  ${formData.name || 'Unknown'}`, 'system');
+        addLine(`Identity:  ${persona || 'Pending'}`, 'system');
+        addLine(`Neural:    ${isUnlocked ? 'SYNCED' : 'UNSTABLE'}`, 'system');
+        trackTerminalCommand(trimmed, 'system', 'STATUS displayed');
         return;
       }
 
@@ -249,8 +313,15 @@ export const useTerminal = () => {
       }
 
       if (lower === 'vault') {
-        addLine('ACCESSING PRIVATE RESOURCE VAULT...', 'jarvis');
-        trackTerminalCommand(trimmed, 'system', 'VAULT accessed');
+        addLine('╔══════════════════════════════════════════════════════════════════════════════╗', 'jarvis');
+        addLine('║  ACCESSING PRIVATE RESOURCE VAULT...                                         ║', 'jarvis');
+        addLine('╚══════════════════════════════════════════════════════════════════════════════╝', 'jarvis');
+        addLine('', 'system');
+        addLine('> [SECURITY] Verifying access tier...', 'system');
+        addLine('> [SECURITY] Tier 2 credentials required.', 'error');
+        addLine('', 'system');
+        addLine('Here\'s the deal — you haven\'t unlocked the Founder Bible yet. Ship something first.', 'jarvis');
+        trackTerminalCommand(trimmed, 'system', 'VAULT accessed (denied)');
         return;
       }
 
@@ -533,7 +604,7 @@ export const TerminalInput: React.FC<{
   );
 };
 
-export const SpectacularTerminal: React.FC = () => {
+export const SpectacularTerminal: React.FC<{ onComplete?: (data: any) => void }> = ({ onComplete }) => {
   const {
     lines,
     inputValue,
@@ -548,7 +619,7 @@ export const SpectacularTerminal: React.FC = () => {
     inputRef,
     handleCommand,
     handlePillChoice,
-  } = useTerminal();
+  } = useTerminal(onComplete);
 
   return (
     <div className="flex flex-col h-full">

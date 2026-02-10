@@ -318,8 +318,8 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           initial={{ opacity: 0, y: 100, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 100, scale: 0.95 }}
-          className={`fixed bottom-24 left-4 right-4 sm:left-6 sm:right-auto sm:w-96 md:w-[28rem] lg:w-[32rem] h-[60vh] sm:h-[500px] md:h-[600px] max-h-[80vh] bg-slate-900/95 backdrop-blur-2xl rounded-2xl border transition-all duration-500 shadow-2xl z-50 flex flex-col overflow-hidden ${isGeek ? 'border-cyan-500/50' : 'border-white/10'}`}
-          style={{ maxWidth: isGeek ? '600px' : '500px' }}
+          className={`fixed bottom-24 left-4 right-4 sm:left-6 sm:right-auto sm:w-[32rem] md:w-[36rem] lg:w-[42rem] h-[60vh] sm:h-[500px] md:h-[600px] max-h-[80vh] bg-slate-900/95 backdrop-blur-2xl rounded-2xl border transition-all duration-500 shadow-2xl z-50 flex flex-col overflow-hidden ${isGeek ? 'border-cyan-500/50' : 'border-white/10'}`}
+          style={{ maxWidth: isGeek ? '900px' : '600px' }}
         >
           {/* Header */}
           <div className={`flex items-center justify-between p-4 border-b transition-colors duration-500 ${isGeek ? 'border-cyan-500/30 bg-cyan-500/10' : 'border-white/10 bg-white/5'}`}>

@@ -59,6 +59,30 @@ const WaitlistPageV3: React.FC = () => {
     });
   }, []);
 
+  const handleTerminalComplete = useCallback(async (data: { name: string; email: string; persona: 'PERSONAL' | 'BUSINESS' }) => {
+    try {
+      const res = await fetch('/api/waitlist/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          profileType: data.persona.toLowerCase(),
+          mode: 'GEEK_V3',
+          platform: 'terminal-handshake',
+          version: '3.0_TERMINAL',
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        handleSuccess(result);
+      }
+    } catch (err) {
+      console.error('Terminal submission failed:', err);
+    }
+  }, [handleSuccess]);
+
   // Persona-driven aura colors - RESTORED to rich visible gradients
   const getAuraColors = () => {
     if (persona === 'PERSONAL') {
@@ -131,7 +155,7 @@ const WaitlistPageV3: React.FC = () => {
 
         {/* 5. Terminal — THE REVEAL (Restored to top position per user request) */}
         <div id="terminal-handshake" className="py-8 scroll-mt-24">
-          <TerminalSection />
+          <TerminalSection onComplete={handleTerminalComplete} />
         </div>
 
         {/* 2. Community (Social Proof) */}

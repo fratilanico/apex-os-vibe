@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TerminalContent, TerminalInput, useTerminal } from '../SpectacularTerminal';
 
-export const TerminalSection: React.FC = () => {
+export const TerminalSection: React.FC<{ onComplete?: (data: any) => void }> = ({ onComplete }) => {
   const {
     lines,
     inputValue,
@@ -19,7 +19,7 @@ export const TerminalSection: React.FC = () => {
     inputRef,
     handleCommand,
     handlePillChoice,
-  } = useTerminal();
+  } = useTerminal(onComplete);
 
   return (
     <div className="w-full">

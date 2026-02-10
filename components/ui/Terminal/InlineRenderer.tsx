@@ -13,6 +13,9 @@ const ICONS: Record<string, string> = {
   star: '⭐',
   brain: '🧠',
   shield: '🛡️',
+  money: '💰',
+  gear: '⚙️',
+  lock: '🔒',
 };
 
 const STYLE_MAP: Record<string, string> = {

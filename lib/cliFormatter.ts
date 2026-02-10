@@ -14,9 +14,10 @@
 
 /**
  * The Golden Standard Width for HUD components
+ * Optimized for desktop readability and mobile adaptation
  */
-export const HUD_WIDTH = 42;
-export const MOBILE_HUD_WIDTH = 32;
+export const HUD_WIDTH = 80;
+export const MOBILE_HUD_WIDTH = 42;
 
 /**
  * Color codes for terminal output (applied via CSS classes)
@@ -241,7 +242,19 @@ const ICON_MAP: Record<string, string> = {
   warn: '⚠️',
   info: 'ℹ️',
   star: '⭐',
+  brain: '🧠',
+  shield: '🛡️',
+  money: '💰',
+  gear: '⚙️',
+  lock: '🔒',
 };
+
+/**
+ * Replace [icon:name] with emoji
+ */
+export function injectIcons(text: string): string {
+  return text.replace(/\[icon:([a-z-]+)\]/g, (_, name) => ICON_MAP[name] || '•');
+}
 
 export function formatNodeList(nodes: {id: string, label: string, type: string, status?: string}[]): string {
   const headers = ['ID', 'LABEL', 'TYPE'];
