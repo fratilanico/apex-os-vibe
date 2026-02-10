@@ -348,7 +348,7 @@ export const TerminalContent: React.FC<{
               }`}
             >
               {line.type === 'ascii' || line.type === 'brand-logo' ? (
-                <pre className="font-mono whitespace-pre leading-[0.85] text-[6px] sm:text-xs">
+                <pre className="font-mono whitespace-pre leading-[0.85] text-[6px] sm:text-xs" style={{ fontFamily: '"Courier New", Courier, monospace', letterSpacing: '0px', textRendering: 'geometricPrecision' as const }}>
                   {line.type === 'brand-logo' ? (
                     (() => {
                       try {

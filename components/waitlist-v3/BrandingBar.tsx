@@ -21,8 +21,8 @@ export const BrandingBar: React.FC = () => {
         {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
         <div className="flex items-center gap-3 z-20">
           {/* Chromatic ASCII Logo - Fixed sizing with scale (working deploy approach) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity overflow-visible" style={{ width: '140px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.50] origin-left -ml-2 sm:-ml-0" />
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity overflow-visible" style={{ width: '120px' }}>
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.35] origin-left" />
           </div>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
