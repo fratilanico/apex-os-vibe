@@ -14,9 +14,9 @@
 
 /**
  * The Golden Standard Width for HUD components
- * Optimized for desktop readability and mobile adaptation
+ * Optimized for readability without excessive wrapping
  */
-export const HUD_WIDTH = 80;
+export const HUD_WIDTH = 64;
 export const MOBILE_HUD_WIDTH = 42;
 
 /**

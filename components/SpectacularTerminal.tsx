@@ -9,6 +9,8 @@ import { PILL_CONFIG } from '../config/pillConfig';
 import { PillChoiceSystem } from './PillChoiceSystem';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { queryAI } from '../lib/ai/globalAIService';
+import { APEX_LOGO_ASCII_LINES } from '../lib/terminal/constants';
+import { convertMarkdownToCLI } from '../lib/cliFormatter';
 
 interface TerminalLine {
   id: string;
@@ -17,43 +19,45 @@ interface TerminalLine {
 }
 
 const BOOT_SEQUENCE = [
-  { text: '╔══════════════════════════════════════════════════════════════════════════════╗', delay: 0, type: 'system' as const },
-  { text: '║  🔥 APEX_OS KERNEL v6.4.2 — INITIALIZING NEURAL INTERFACE                    ║', delay: 100, type: 'system' as const },
-  { text: '╚══════════════════════════════════════════════════════════════════════════════╝', delay: 200, type: 'system' as const },
-  { text: '', delay: 300, type: 'system' as const },
-  { text: '> [SYSTEM] Loading Neural Interface Protocol...', delay: 500, type: 'system' as const },
-  { text: '> [SWARM]  Connecting to 17-Agent Swarm Intelligence...', delay: 800, type: 'matrix' as const },
-  { text: '> [LINK]   Establishing secure tunneling via GCP Cloud Run...', delay: 1100, type: 'system' as const },
-  { text: '✓ [OK] FULL WIRE ENGAGED', delay: 1400, type: 'success' as const },
-  { text: '', delay: 1500, type: 'system' as const },
-  { text: 'Listen up — identity node awaits designation.', delay: 1700, type: 'jarvis' as const },
-  { text: '', delay: 1800, type: 'system' as const },
+  { text: JSON.stringify(APEX_LOGO_ASCII_LINES), delay: 0, type: 'brand-logo' as const },
+  { text: '', delay: 100, type: 'system' as const },
+  { text: '╔══════════════════════════════════════════════════════════════════════════════╗', delay: 200, type: 'system' as const },
+  { text: '║  🔥 APEX_OS KERNEL v6.4.2 — INITIALIZING NEURAL INTERFACE                    ║', delay: 300, type: 'system' as const },
+  { text: '╚══════════════════════════════════════════════════════════════════════════════╝', delay: 400, type: 'system' as const },
+  { text: '', delay: 500, type: 'system' as const },
+  { text: '> [SYSTEM] Loading Neural Interface Protocol...', delay: 700, type: 'system' as const },
+  { text: '> [SWARM]  Connecting to 17-Agent Swarm Intelligence...', delay: 1000, type: 'matrix' as const },
+  { text: '> [LINK]   Establishing secure tunneling via GCP Cloud Run...', delay: 1300, type: 'system' as const },
+  { text: '✓ [OK] FULL WIRE ENGAGED', delay: 1600, type: 'success' as const },
+  { text: '', delay: 1700, type: 'system' as const },
+  { text: 'Identity node awaits. Who joins the swarm today?', delay: 1900, type: 'jarvis' as const },
+  { text: '', delay: 2000, type: 'system' as const },
 ];
 
 const stepPrompts: Record<string, string[]> = {
-  boot: ['Initializing neural interface...', 'Establishing secure connection...'],
+  boot: ['Initializing...', 'Connecting...'],
   idle: [
-    'What should I call you, operator?',
-    'Designation required for swarm sync...',
-    'Identity node awaiting input...',
-    'Who joins the swarm?'
+    'What is your name?',
+    'Enter your name...',
+    'Awaiting identification...',
+    'Who is joining us?'
   ],
   email_guard: [
-    'Drop your digital coordinates...',
-    'Where can the swarm reach you?',
-    'Email for neural link...',
-    'Secure comms channel?'
+    'What is your email?',
+    'Where can we reach you?',
+    'Enter your coordinates...',
+    'Secure link?'
   ],
-  processing: ['Processing neural handshake...', 'Syncing with 17-agent swarm...'],
+  processing: ['Syncing...', 'Validating...'],
   unlocked: [
     'Try "help" for commands...',
-    'Ask about the 10-day protocol...',
+    'Ask me anything...',
     'Ready for your mission?',
     'Vault access: type "vault"...',
     'Admin? Try "admin"...',
     'Status check? Type "status"...',
-    'Your move, operator...',
-    'Swarm awaiting your command...'
+    'Next move?',
+    'Awaiting command...'
   ]
 };
 
@@ -90,8 +94,8 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
 
     addLine('', 'system');
     addLine('┌───────────────────────────────────────┐', 'matrix');
-    addLine('│  NEURAL HANDSHAKE: PHASE 1/3          │', 'matrix');
-    addLine('│  Chromatic Aberration Syncing...      │', 'matrix');
+    addLine('│  SYSTEM HANDSHAKE: PHASE 1/3          │', 'matrix');
+    addLine('│  Syncing configuration...             │', 'matrix');
     addLine('└───────────────────────────────────────┘', 'matrix');
     addLine('[██░░░░░░░░] 20%', 'matrix');
     
@@ -100,8 +104,8 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
     setGlitchActive(true);
     
     addLine('┌───────────────────────────────────────┐', 'matrix');
-    addLine('│  NEURAL HANDSHAKE: PHASE 2/3          │', 'matrix');
-    addLine('│  Biometric Signature Scan...          │', 'matrix');
+    addLine('│  SYSTEM HANDSHAKE: PHASE 2/3          │', 'matrix');
+    addLine('│  Scanning details...                  │', 'matrix');
     addLine('└───────────────────────────────────────┘', 'matrix');
     addLine('[██████░░░░] 60%', 'matrix');
     
@@ -109,8 +113,8 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
     setGlitchActive(false);
     
     addLine('┌───────────────────────────────────────┐', 'matrix');
-    addLine('│  NEURAL HANDSHAKE: PHASE 3/3          │', 'matrix');
-    addLine('│  Identity Node: PLAYER 1 CONNECTED    │', 'matrix');
+    addLine('│  SYSTEM HANDSHAKE: PHASE 3/3          │', 'matrix');
+    addLine('│  System: CONNECTED                    │', 'matrix');
     addLine('└───────────────────────────────────────┘', 'matrix');
     addLine('[██████████] 100%', 'success');
     
@@ -120,10 +124,10 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
     unlock();
     
     addLine('', 'system');
-    addLine(`✓ IDENTITY CONFIRMED: ${name.toUpperCase()}`, 'success');
-    addLine('✓ FULL WIRE ENGAGED', 'success');
+    addLine(`✓ SYSTEM ACTIVE: ${name.toUpperCase()}`, 'success');
+    addLine('✓ CONNECTION ESTABLISHED', 'success');
     addLine('', 'system');
-    addLine('Here\'s the deal — you choose your path now.', 'jarvis');
+    addLine('Alright, you\'re in. Choose your journey below.', 'jarvis');
     
     setShowPillChoice(true);
   };
@@ -138,33 +142,33 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
     if (choice === 'red') {
       setPersona('BUSINESS');
       addLine('', 'system');
-      addLine('🔴 RED PILL SELECTED: BUSINESS_ARCHITECT', 'success');
-      addLine('Listen up — initializing enterprise arbitrage metrics.', 'jarvis');
+      addLine('🔴 RED PILL SELECTED: BUSINESS ARCHITECT', 'success');
+      addLine('Initializing business dashboards and metrics.', 'jarvis');
       addLine('', 'system');
       addLine('┌──────────────────────────────────────────┐', 'matrix');
       addLine('│  BUSINESS MODULES UNLOCKED               │', 'matrix');
       addLine('├──────────┬─────────────────┬─────────────┤', 'matrix');
       addLine('│ Module   │ Description     │ Status      │', 'matrix');
       addLine('├──────────┼─────────────────┼─────────────┤', 'matrix');
-      addLine('│ SWARM    │ Agent Orchest.  │ 🟢 ACTIVE   │', 'matrix');
-      addLine('│ ORG      │ Build Systems   │ 🟢 ACTIVE   │', 'matrix');
-      addLine('│ METRICS  │ Unit Economics  │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ TEAM     │ Agent Network   │ 🟢 READY    │', 'matrix');
+      addLine('│ BUILD    │ Systems Setup   │ 🟢 READY    │', 'matrix');
+      addLine('│ STATS    │ ROI & Growth    │ 🟢 READY    │', 'matrix');
       addLine('│ VAULT    │ Tier 2 Access   │ 🔒 LOCKED   │', 'matrix');
       addLine('└──────────┴─────────────────┴─────────────┘', 'matrix');
     } else {
       setPersona('PERSONAL');
       addLine('', 'system');
-      addLine('🔵 BLUE PILL SELECTED: PERSONAL_BUILDER', 'success');
-      addLine('Listen up — initializing individual arbitrage metrics.', 'jarvis');
+      addLine('🔵 BLUE PILL SELECTED: PERSONAL BUILDER', 'success');
+      addLine('Initializing personal building tools.', 'jarvis');
       addLine('', 'system');
       addLine('┌──────────────────────────────────────────┐', 'matrix');
       addLine('│  PERSONAL MODULES UNLOCKED               │', 'matrix');
       addLine('├──────────┬─────────────────┬─────────────┤', 'matrix');
       addLine('│ Module   │ Description     │ Status      │', 'matrix');
       addLine('├──────────┼─────────────────┼─────────────┤', 'matrix');
-      addLine('│ VIBE     │ AI-Native Dev   │ 🟢 ACTIVE   │', 'matrix');
-      addLine('│ TREE     │ Skill Mastery   │ 🟢 ACTIVE   │', 'matrix');
-      addLine('│ NPC      │ System Theory   │ 🟢 ACTIVE   │', 'matrix');
+      addLine('│ SKILLS   │ Tool Mastery    │ 🟢 READY    │', 'matrix');
+      addLine('│ VIBE     │ Modern Dev      │ 🟢 READY    │', 'matrix');
+      addLine('│ PROJECTS │ Simple Theory   │ 🟢 READY    │', 'matrix');
       addLine('│ FORGE    │ Tier 2 Access   │ 🔒 LOCKED   │', 'matrix');
       addLine('└──────────┴─────────────────┴─────────────┘', 'matrix');
     }
@@ -252,6 +256,44 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
         trackTerminalCommand(trimmed, 'input', 'Invalid email format', 'error');
         return;
       }
+
+      // Check if email already exists in our system (Welcome Back logic)
+      setIsProcessing(true);
+      try {
+        const response = await fetch(`/api/waitlist/status?email=${encodeURIComponent(trimmed)}`);
+        const result = await response.json();
+        
+        if (result.exists) {
+          setFormData(p => ({ ...p, email: trimmed, name: result.name || p.name }));
+          setEmail(trimmed);
+          if (result.persona) setPersona(result.persona.toUpperCase());
+          
+          addLine(`✓ Welcome back, operator ${result.name || ''}.`, 'success');
+          addLine('> [SYNC] Restoring neural configuration...', 'matrix');
+          await new Promise(r => setTimeout(r, 1000));
+          
+          setStep('unlocked');
+          unlock();
+          
+          addLine('', 'system');
+          addLine('Identity verified via remote node.', 'jarvis');
+          addLine('Link established. Swarm access granted.', 'success');
+          
+          if (onComplete) {
+            onComplete({
+              name: result.name || formData.name,
+              email: trimmed,
+              persona: result.persona?.toUpperCase() || 'PERSONAL'
+            });
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn('Failed to check email status:', err);
+      } finally {
+        setIsProcessing(false);
+      }
+
       setFormData(p => ({ ...p, email: trimmed }));
       setEmail(trimmed);
       addLine('✓ Email Locked.', 'success');
@@ -276,32 +318,32 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
       
       if (lower === 'help') {
         addLine('╔══════════════════════════════════════════════════════════════════════════════╗', 'system');
-        addLine('║  AVAILABLE COMMANDS — APEX_OS OPERATOR INTERFACE                             ║', 'system');
+        addLine('║  AVAILABLE COMMANDS — SYSTEM INTERFACE                                       ║', 'system');
         addLine('╚══════════════════════════════════════════════════════════════════════════════╝', 'system');
         addLine('', 'system');
-        addLine('  status   - Full system diagnostics & swarm sync', 'system');
-        addLine('  vault    - Access encrypted Founder Bible modules', 'system');
-        addLine('  academy  - Enter the Learning Matrix', 'system');
-        addLine('  clear    - Flush terminal buffer', 'system');
-        addLine('  admin    - Escalate privileges (Level 5 required)', 'system');
+        addLine('  status   - View system diagnostics', 'system');
+        addLine('  vault    - Access your personal resources', 'system');
+        addLine('  academy  - Visit the Learning Matrix', 'system');
+        addLine('  clear    - Clear the terminal', 'system');
+        addLine('  admin    - Admin access (requires password)', 'system');
         addLine('', 'system');
-        addLine('Any other input will be routed to the 17-Agent Swarm Intelligence.', 'jarvis');
+        addLine('You can also ask me anything, and I will route it to our AI network.', 'jarvis');
         trackTerminalCommand(trimmed, 'system', 'HELP displayed');
         return;
       }
 
       if (lower === 'status') {
         addLine('╔═══════════════════════════════════════╗', 'matrix');
-        addLine('║  SYSTEM STATUS: CORE_SWARM            ║', 'matrix');
+        addLine('║  SYSTEM STATUS: ONLINE                ║', 'matrix');
         addLine('╠═══════════════════════════════════════╣', 'matrix');
-        addLine('║  ✓ JARVIS   : [██████████] 100%       ║', 'matrix');
+        addLine('║  ✓ ASSISTANT: [██████████] 100%       ║', 'matrix');
         addLine('║  ✓ ARCHITECT: [████████░░] 80%        ║', 'matrix');
-        addLine('║  ! SWARM_GTM: [████░░░░░░] 40%        ║', 'matrix');
+        addLine('║  ! NETWORK  : [████░░░░░░] 40%        ║', 'matrix');
         addLine('╚═══════════════════════════════════════╝', 'matrix');
         addLine('', 'system');
-        addLine(`Operator:  ${formData.name || 'Unknown'}`, 'system');
-        addLine(`Identity:  ${persona || 'Pending'}`, 'system');
-        addLine(`Neural:    ${isUnlocked ? 'SYNCED' : 'UNSTABLE'}`, 'system');
+        addLine(`User:      ${formData.name || 'Unknown'}`, 'system');
+        addLine(`Persona:   ${persona || 'Pending'}`, 'system');
+        addLine(`Link:      ${isUnlocked ? 'CONNECTED' : 'STANDBY'}`, 'system');
         trackTerminalCommand(trimmed, 'system', 'STATUS displayed');
         return;
       }
@@ -314,13 +356,13 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
 
       if (lower === 'vault') {
         addLine('╔══════════════════════════════════════════════════════════════════════════════╗', 'jarvis');
-        addLine('║  ACCESSING PRIVATE RESOURCE VAULT...                                         ║', 'jarvis');
+        addLine('║  ACCESSING RESOURCE VAULT...                                                 ║', 'jarvis');
         addLine('╚══════════════════════════════════════════════════════════════════════════════╝', 'jarvis');
         addLine('', 'system');
-        addLine('> [SECURITY] Verifying access tier...', 'system');
-        addLine('> [SECURITY] Tier 2 credentials required.', 'error');
+        addLine('> [SECURITY] Checking access level...', 'system');
+        addLine('> [SECURITY] Additional steps required.', 'error');
         addLine('', 'system');
-        addLine('Here\'s the deal — you haven\'t unlocked the Founder Bible yet. Ship something first.', 'jarvis');
+        addLine('Looks like you haven\'t unlocked the full vault yet. Let\'s keep building.', 'jarvis');
         trackTerminalCommand(trimmed, 'system', 'VAULT accessed (denied)');
         return;
       }
@@ -338,7 +380,8 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
           context: `Terminal Operator Session. Step: ${step}. Persona: ${persona}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}.`
         });
         
-        addLine(response.content, 'jarvis');
+        const formatted = convertMarkdownToCLI(response.content);
+        addLine(formatted, 'jarvis');
         trackTerminalCommand(trimmed, 'input', response.content, 'success');
       } catch (error) {
         addLine('Communication error. Swarm link unstable.', 'error');

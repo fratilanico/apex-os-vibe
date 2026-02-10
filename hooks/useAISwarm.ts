@@ -1,8 +1,8 @@
-import { useOnboardingStore } from '../../stores/useOnboardingStore';
-import { queryAI } from '../../lib/ai/globalAIService';
+import { useOnboardingStore } from '../stores/useOnboardingStore';
+import { queryAI } from '../lib/ai/globalAIService';
 
 const useAISwarm = () => {
-  const { addHistory, trackTerminalCommand, persona, isUnlocked, email } = useOnboardingStore();
+  const { trackTerminalCommand, persona, isUnlocked, email } = useOnboardingStore();
 
   const querySwarm = async (message: string, history: any[]) => {
     const context = `Terminal Operator Session. Persona: ${persona}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}.`;
