@@ -19,42 +19,54 @@ const item = {
 
 // Countdown timer component
 const CountdownTimer: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   
   useEffect(() => {
     // Target: 18 days from now (approximate cohort launch)
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + 18);
     
-    const interval = setInterval(() => {
+    const updateTimer = () => {
       const now = new Date();
       const diff = targetDate.getTime() - now.getTime();
       
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       
-      setTimeLeft({ days, hours, minutes });
-    }, 60000); // Update every minute
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    
+    // Update immediately
+    updateTimer();
+    
+    // Update every second for smooth experience
+    const interval = setInterval(updateTimer, 1000);
     
     return () => clearInterval(interval);
   }, []);
   
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-4 text-cyan-400 font-mono">
-      <div className="text-center">
-        <div className="text-2xl sm:text-3xl font-bold">{timeLeft.days}</div>
-        <div className="text-[10px] uppercase tracking-wider text-white/40">Days</div>
+    <div className="flex items-center justify-center gap-1 sm:gap-4 text-cyan-400 font-mono">
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.days}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Days</div>
       </div>
-      <div className="text-xl">:</div>
-      <div className="text-center">
-        <div className="text-2xl sm:text-3xl font-bold">{timeLeft.hours}</div>
-        <div className="text-[10px] uppercase tracking-wider text-white/40">Hours</div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.hours}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Hrs</div>
       </div>
-      <div className="text-xl">:</div>
-      <div className="text-center">
-        <div className="text-2xl sm:text-3xl font-bold">{timeLeft.minutes}</div>
-        <div className="text-[10px] uppercase tracking-wider text-white/40">Minutes</div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.minutes}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Min</div>
+      </div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.seconds}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Sec</div>
       </div>
     </div>
   );

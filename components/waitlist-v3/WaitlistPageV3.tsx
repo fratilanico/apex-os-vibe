@@ -85,7 +85,7 @@ const WaitlistPageV3: React.FC = () => {
       { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
       { color: 'violet' as const, top: '30%', right: '-5%', size: 700, opacity: 0.45 },
       { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.40 },
-      { color: 'pink' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
+      { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.25 },
     ];
   };
 
