@@ -19,10 +19,10 @@ export const BrandingBar: React.FC = () => {
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
         {/* LEFT: LOGO ONLY - Far left corner */}
-        <div className="flex items-center overflow-hidden h-16">
-          {/* Chromatic ASCII Logo (Scaled for Navbar) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity -ml-2 md:-ml-4 h-full flex items-center">
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.5] md:scale-[0.55] origin-left max-h-14" />
+        <div className="flex items-center h-16">
+          {/* Chromatic ASCII Logo (Sleek, compact) */}
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity">
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.35] md:scale-[0.4] origin-left" />
           </div>
         </div>
 

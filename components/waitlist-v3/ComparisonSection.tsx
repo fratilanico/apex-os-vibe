@@ -42,7 +42,7 @@ export const ComparisonSection: React.FC = () => {
           onClick={() => setView('old')}
           className={`px-10 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
             view === 'old'
-              ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-gray-300'
+              ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/25'
               : 'bg-transparent text-white/20 hover:text-white/40'
           }`}
         >
@@ -84,11 +84,11 @@ export const ComparisonSection: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/5 border border-white/5 rounded-3xl p-8 text-left"
+                className="bg-red-500/5 border border-red-500/10 rounded-3xl p-8 text-left"
               >
-                <item.icon className="w-8 h-8 text-white/30 mb-4" />
-                <h3 className="text-xl font-bold text-white/30 mb-2">{item.title}</h3>
-                <p className="text-white/30 text-sm leading-relaxed">{item.desc}</p>
+                <item.icon className="w-8 h-8 text-red-400/60 mb-4" />
+                <h3 className="text-xl font-bold text-red-200/80 mb-2">{item.title}</h3>
+                <p className="text-red-200/40 text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>

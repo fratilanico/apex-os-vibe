@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
@@ -8,26 +8,35 @@ interface MatrixRainProps {
   speed?: number;
 }
 
-// Detect if device is low-powered (tablet, mobile, older devices)
-// CRITICAL: Disable all effects on mobile/tablet to prevent flashing/seizures
-const isLowPoweredDevice = () => {
-  if (typeof window === 'undefined') return false;
+// Device type detection
+const getDeviceType = () => {
+  if (typeof window === 'undefined') return { isMobile: false, isTablet: false, isSamsungTab: false };
   
-  // AGGRESSIVE DETECTION - Disable effects on ANY mobile or tablet
   const userAgent = navigator.userAgent.toLowerCase();
-  const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|samsung|galaxy|tab/i.test(userAgent);
-  const isTablet = /ipad|android(?!.*mobile)|tablet|tab|samsung.*tab|galaxy.*tab/i.test(userAgent) || 
-                   (window.innerWidth >= 600 && 'ontouchstart' in window);
-  
-  // Also disable if touch device (most tablets/phones)
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
-  // Samsung Tab Ultra detection
+  const isMobile = /android(?!.*tab|.*tablet)|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+  const isTablet = /ipad|android.*tablet|android.*tab|samsung.*tab|galaxy.*tab/i.test(userAgent) || 
+                   (window.innerWidth >= 600 && window.innerWidth <= 1400 && 'ontouchstart' in window);
   const isSamsungTab = /samsung.*tab|sm-t|galaxy.*tab/i.test(userAgent);
   
-  // CRITICAL: Return TRUE for ANY mobile/tablet/touch device
-  // This completely disables Matrix Rain, Glitch, and other flashing effects
-  return isMobile || isTablet || isTouchDevice || isSamsungTab;
+  return { isMobile, isTablet, isSamsungTab };
+};
+
+// Determine if we should disable effects completely (mobile phones only)
+// Tablets get effects with reduced intensity to prevent flashing
+const shouldDisableEffects = () => {
+  const { isMobile } = getDeviceType();
+  return isMobile; // Only disable on mobile phones, allow on tablets with safety measures
+};
+
+// Get tablet-optimized settings to prevent flashing
+const getTabletSettings = () => {
+  const { isTablet, isSamsungTab } = getDeviceType();
+  return {
+    isTablet: isTablet || isSamsungTab,
+    frameSkip: isTablet || isSamsungTab ? 3 : 1, // Render every 3rd frame on tablets
+    intensity: isTablet || isSamsungTab ? 0.15 : 0.20, // 15% opacity on tablets vs 20%
+    charLimit: isTablet || isSamsungTab ? 30 : 60, // Fewer characters
+  };
 };
 
 export const MatrixRain: React.FC<MatrixRainProps> = ({ 
@@ -36,12 +45,12 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { mode } = useOnboardingStore();
-  const [isLowPower] = useState(() => isLowPoweredDevice());
+  const tabletSettings = getTabletSettings();
   const frameCountRef = useRef(0);
 
   useEffect(() => {
-    // CRITICAL: Completely disable on mobile/tablet to prevent flashing
-    if (isLowPower) return;
+    // CRITICAL: Disable on mobile phones only - tablets get reduced effects
+    if (shouldDisableEffects()) return;
     
     if (!enabled || mode !== 'GEEK') return;
     
@@ -51,22 +60,31 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Limit canvas size for performance
+      // Limit canvas size for performance - smaller on tablets to prevent flashing
     const maxWidth = Math.min(window.innerWidth, 1920);
     const maxHeight = Math.min(window.innerHeight, 1080);
     canvas.width = maxWidth;
     canvas.height = maxHeight;
 
-    const columnWidth = 20;
+    const columnWidth = tabletSettings.isTablet ? 30 : 20; // Wider columns = fewer elements on tablets
     const columns = Math.floor(maxWidth / columnWidth);
     const drops: number[] = new Array(columns).fill(1);
     
-    const chars = '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
+    // Limit character set on tablets
+    const chars = tabletSettings.isTablet 
+      ? '01'  // Binary only on tablets - less visual noise
+      : '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
 
     let animationId: number;
 
     const draw = () => {
       frameCountRef.current++;
+
+      // Frame skipping for tablets - only render every Nth frame
+      if (frameCountRef.current % tabletSettings.frameSkip !== 0) {
+        animationId = requestAnimationFrame(draw);
+        return;
+      }
 
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -74,7 +92,12 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
       ctx.fillStyle = '#0F0';
       ctx.font = '15px monospace';
 
-      for (let i = 0; i < drops.length; i++) {
+      // Limit iteration to fewer columns on tablets
+      const maxIterations = tabletSettings.isTablet 
+        ? Math.min(drops.length, 40) 
+        : drops.length;
+
+      for (let i = 0; i < maxIterations; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)] ?? '0';
         const dropPos = drops[i] ?? 0;
         ctx.fillText(text, i * columnWidth, dropPos * 20);
@@ -101,17 +124,20 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [enabled, mode, speed, isLowPower]);
+  }, [enabled, mode, speed, tabletSettings]);
 
-  // CRITICAL: Don't render on mobile/tablet at all
-  if (isLowPower) return null;
+  // CRITICAL: Don't render on mobile phones (keep effects off for small devices)
+  if (shouldDisableEffects()) return null;
   if (!enabled || mode !== 'GEEK') return null;
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 z-0 pointer-events-none opacity-20"
-      style={{ mixBlendMode: 'screen' }}
+      className="fixed inset-0 z-0 pointer-events-none"
+      style={{ 
+        mixBlendMode: 'screen',
+        opacity: tabletSettings.intensity, // Reduced opacity on tablets
+      }}
     />
   );
 };
@@ -143,12 +169,13 @@ export const Scanlines: React.FC = () => {
 // Glitch overlay effect - optimized for performance
 export const GlitchOverlay: React.FC = () => {
   const { geekEffects } = useOnboardingStore();
-  const [isLowPower] = useState(() => isLowPoweredDevice());
+  const tabletSettings = getTabletSettings();
 
   if (!geekEffects.enableGlitchEffects) return null;
   
-  // Disable on low-power devices to prevent flickering
-  if (isLowPower) return null;
+  // CRITICAL: Disable glitch effects on tablets to prevent flashing/seizures
+  // Glitch effects are too intense for 120Hz displays
+  if (tabletSettings.isTablet) return null;
 
   return (
     <div
@@ -162,17 +189,18 @@ export const GlitchOverlay: React.FC = () => {
   );
 };
 
-// Floating ASCII particles - DISABLED on mobile/tablet to prevent flashing
+// Floating ASCII particles - Reduced on tablets to prevent flashing
 export const AsciiParticles: React.FC = () => {
   const { geekEffects, mode } = useOnboardingStore();
-  const [isLowPower] = useState(() => isLowPoweredDevice());
+  const tabletSettings = getTabletSettings();
 
-  // CRITICAL: Completely disable on mobile/tablet
-  if (isLowPower) return null;
+  // CRITICAL: Disable on mobile phones only - tablets get reduced particles
+  if (shouldDisableEffects()) return null;
   if (!geekEffects.enableAsciiArt || mode !== 'GEEK') return null;
 
-  // Desktop only - static positioning, NO animations to prevent 120Hz flashing
-  const particles = Array.from({ length: 5 }, (_, i) => ({
+  // Reduce particle count on tablets to prevent visual overload
+  const particleCount = tabletSettings.isTablet ? 3 : 5;
+  const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
     char: ['λ', '▓', '█', '◢', '◣'][i % 5],
     x: Math.random() * 100,

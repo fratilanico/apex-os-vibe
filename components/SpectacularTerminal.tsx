@@ -66,6 +66,58 @@ export const SpectacularTerminal: React.FC = () => {
   const [scanActive, setScanActive] = useState(false);
   const [showPillChoice, setShowPillChoice] = useState(false);
 
+  // Rotating engaging prompts based on step
+  const [promptIndex, setPromptIndex] = useState(0);
+  
+  const stepPrompts: Record<TerminalStep, string[]> = {
+    boot: ['Initializing neural interface...', 'Establishing secure connection...'],
+    name: [
+      'What should I call you, operator?',
+      'Enter your designation...',
+      'Identity node awaits input...',
+      'Who joins the swarm?'
+    ],
+    email: [
+      'Drop your digital coordinates...',
+      'Where can the swarm reach you?',
+      'Email for neural link...',
+      'Secure comms channel?'
+    ],
+    processing: ['Processing neural handshake...', 'Syncing with 17-agent swarm...'],
+    unlocked: [
+      'Try "help" for commands...',
+      'Ask about the 10-day protocol...',
+      'Ready for your mission?',
+      'Vault access: type "vault"...',
+      'Admin? Try "admin"...',
+      'Status check? Type "status"...',
+      'Your move, operator...',
+      'Swarm awaiting your command...'
+    ]
+  };
+
+  // Cycle through prompts every 4 seconds
+  useEffect(() => {
+    const currentStep = step as TerminalStep;
+    if (currentStep === 'boot' || currentStep === 'processing') return;
+    
+    const prompts = stepPrompts[currentStep] || ['Type response...'];
+    const interval = setInterval(() => {
+      setPromptIndex((prev) => (prev + 1) % prompts.length);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [step]);
+
+  // Get current placeholder based on step
+  const getPlaceholder = () => {
+    const currentStep = step as TerminalStep;
+    if (currentStep === 'boot') return 'Initializing...';
+    if (currentStep === 'processing') return 'Processing...';
+    const prompts = stepPrompts[currentStep] || ['Type response...'];
+    return prompts[promptIndex % prompts.length];
+  };
+
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logoRenderedRef = useRef(false);
@@ -383,7 +435,7 @@ export const SpectacularTerminal: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className="flex-1 bg-transparent outline-none text-white text-base font-mono placeholder-white/20"
-            placeholder={(step as TerminalStep) === 'boot' ? "Initializing..." : "Type response..."}
+            placeholder={getPlaceholder()}
             disabled={(step as TerminalStep) === 'boot' || isProcessing || showPillChoice}
             autoFocus
           />

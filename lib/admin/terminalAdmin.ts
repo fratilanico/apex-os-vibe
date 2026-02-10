@@ -24,27 +24,43 @@ export const adminCommands: Record<string, AdminCommand> = {
     handler: (args: string[]) => {
       const password = args[0];
       if (!password) {
-        return ['ERROR: Password required', 'Usage: auth <password>'];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     AUTHENTICATION REQUIRED        ║',
+          '╚════════════════════════════════════╝',
+          '',
+          '> Awaiting credentials...',
+          '> Usage: auth <access_key>',
+        ];
       }
       
       if (password === ADMIN_PASSWORD) {
         isAdminAuthenticated = true;
         adminSessionExpiry = Date.now() + SESSION_DURATION;
         return [
-          '✓ AUTHENTICATION SUCCESSFUL',
-          '═══════════════════════════════',
-          'Admin access granted.',
-          'Session expires in 30 minutes.',
+          '╔════════════════════════════════════╗',
+          '║    ✓ ACCESS GRANTED - LEVEL 5      ║',
+          '╚════════════════════════════════════╝',
           '',
-          'Available admin commands:',
-          '  pill <option>     - Switch pill style',
-          '  geek <effect>     - Toggle geek effects',
-          '  status            - View system status',
-          '  logout            - End admin session',
+          '> Neural handshake complete.',
+          '> Session active for 30 minutes.',
+          '',
+          'Available protocols:',
+          '  pill <style>    - Switch visual theme',
+          '  geek <effect>   - Toggle FX modules',
+          '  status          - System diagnostics',
+          '  logout          - Terminate session',
         ];
       }
       
-      return ['✗ AUTHENTICATION FAILED', 'Invalid password.'];
+      return [
+        '╔════════════════════════════════════╗',
+        '║     ✗ ACCESS DENIED                ║',
+        '╚════════════════════════════════════╝',
+        '',
+        '> Invalid credentials.',
+        '> Attempts logged.',
+      ];
     },
   },
 
@@ -54,7 +70,14 @@ export const adminCommands: Record<string, AdminCommand> = {
     hidden: true,
     handler: (args: string[]) => {
       if (!checkAuth()) {
-        return ['ERROR: Authentication required', 'Use: auth <password>'];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     ✗ UNAUTHORIZED                 ║',
+          '╚════════════════════════════════════╝',
+          '',
+          '> Authentication required.',
+          '> Use: auth <access_key>',
+        ];
       }
 
       const option = args[0] as PillOption;
@@ -62,26 +85,38 @@ export const adminCommands: Record<string, AdminCommand> = {
       
       if (!option) {
         return [
-          'Current pill option: ' + currentPillOption,
+          `> Current visual theme: [${currentPillOption.toUpperCase()}]`,
           '',
-          'Available options:',
-          ...validOptions.map(opt => `  ${opt}`),
+          'Available themes:',
+          '  matrix     - Classic terminal aesthetic',
+          '  commander  - Military command interface', 
+          '  arcade     - Retro gaming vibes',
+          '  dashboard  - Analytics cockpit view',
+          '  story      - Narrative journey mode',
           '',
-          'Usage: pill <option>',
+          '> Usage: pill <theme>',
         ];
       }
 
       if (!validOptions.includes(option)) {
-        return ['ERROR: Invalid pill option', `Valid options: ${validOptions.join(', ')}`];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     ✗ INVALID THEME                ║',
+          '╚════════════════════════════════════╝',
+          '',
+          `> "${option}" not found in registry.`,
+          `> Valid themes: ${validOptions.join(', ')}`,
+        ];
       }
 
       currentPillOption = option;
       return [
-        `✓ PILL OPTION CHANGED`,
-        '═══════════════════════════════',
-        `Active: ${option}`,
+        '╔════════════════════════════════════╗',
+        '║    ✓ VISUAL THEME UPDATED          ║',
+        '╚════════════════════════════════════╝',
         '',
-        'Refresh page to see changes.',
+        `> Active theme: [${option.toUpperCase()}]`,
+        '> Reload page to apply changes.',
       ];
     },
   },
@@ -92,7 +127,14 @@ export const adminCommands: Record<string, AdminCommand> = {
     hidden: true,
     handler: (args: string[]) => {
       if (!checkAuth()) {
-        return ['ERROR: Authentication required', 'Use: auth <password>'];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     ✗ UNAUTHORIZED                 ║',
+          '╚════════════════════════════════════╝',
+          '',
+          '> Authentication required.',
+          '> Use: auth <access_key>',
+        ];
       }
 
       const effect = args[0];
@@ -107,32 +149,52 @@ export const adminCommands: Record<string, AdminCommand> = {
 
       if (!effect) {
         return [
-          'GEEK MODE EFFECTS CONTROL',
-          '═══════════════════════════════',
+          '╔════════════════════════════════════╗',
+          '║     FX MODULES CONTROL             ║',
+          '╚════════════════════════════════════╝',
           '',
-          'Available effects:',
-          '  matrixrain    - Toggle Matrix rain',
-          '  glitch        - Toggle glitch effects',
-          '  ascii         - Toggle ASCII particles',
-          '  scanlines     - Toggle CRT scanlines',
-          '  all           - Enable all effects',
-          '  none          - Disable all effects',
+          'Available modules:',
+          '  matrixrain    - Digital rain simulation',
+          '  glitch        - Signal interference FX',
+          '  ascii         - Character particle system',
+          '  scanlines     - CRT monitor emulation',
+          '  all           - Activate all modules',
+          '  none          - Disable all modules',
           '',
-          'Usage: geek <effect>',
+          '> Usage: geek <module>',
         ];
       }
 
       if (!validEffects.includes(effect)) {
-        return ['ERROR: Invalid effect', `Valid effects: ${validEffects.join(', ')}`];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     ✗ UNKNOWN MODULE               ║',
+          '╚════════════════════════════════════╝',
+          '',
+          `> Module "${effect}" not found.`,
+          `> Available: ${validEffects.join(', ')}`,
+        ];
       }
 
-      // Return commands that will be processed by the store
+      // Show thematic output without exposing internal toggle commands
+      const effectNames: Record<string, string> = {
+        matrixrain: 'DIGITAL RAIN',
+        glitch: 'SIGNAL INTERFERENCE',
+        ascii: 'PARTICLE SYSTEM',
+        scanlines: 'CRT EMULATION',
+        all: 'ALL MODULES',
+        none: 'ALL MODULES',
+      };
+
+      const action = effect === 'none' ? 'DEACTIVATED' : 'ACTIVATED';
+      
       return [
-        `✓ GEEK EFFECT: ${effect.toUpperCase()}`,
-        '═══════════════════════════════',
-        `Command: toggle_${effect}`,
+        '╔════════════════════════════════════╗',
+        `║    ✓ ${effectNames[effect]} ${action}`,
+        '╚════════════════════════════════════╝',
         '',
-        'Effect will update in real-time.',
+        `> Module status: [${action}]`,
+        '> Visual effects updating...',
       ];
     },
   },
@@ -143,7 +205,14 @@ export const adminCommands: Record<string, AdminCommand> = {
     hidden: true,
     handler: () => {
       if (!checkAuth()) {
-        return ['ERROR: Authentication required', 'Use: auth <password>'];
+        return [
+          '╔════════════════════════════════════╗',
+          '║     ✗ UNAUTHORIZED                 ║',
+          '╚════════════════════════════════════╝',
+          '',
+          '> Authentication required.',
+          '> Use: auth <access_key>',
+        ];
       }
 
       const timeLeft = adminSessionExpiry ? Math.max(0, adminSessionExpiry - Date.now()) : 0;
@@ -151,16 +220,20 @@ export const adminCommands: Record<string, AdminCommand> = {
       const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
 
       return [
-        'SYSTEM STATUS',
-        '═══════════════════════════════',
-        `Pill Option: ${currentPillOption}`,
-        `Admin Session: ${minutesLeft}m ${secondsLeft}s remaining`,
+        '╔════════════════════════════════════╗',
+        '║      SYSTEM DIAGNOSTICS            ║',
+        '╚════════════════════════════════════╝',
         '',
-        'Active Effects:',
-        '  ✓ Matrix Rain',
-        '  ✓ Scanlines',
-        '  ✓ Glitch Effects',
-        '  ✓ ASCII Particles',
+        `> Visual Theme:     [${currentPillOption.toUpperCase()}]`,
+        `> Session Time:     [${minutesLeft}m ${secondsLeft.toString().padStart(2, '0')}s]`,
+        '',
+        'Active FX Modules:',
+        '  [■] Matrix Rain     - ONLINE',
+        '  [■] Scanlines       - ONLINE',
+        '  [■] Glitch FX       - ONLINE',
+        '  [■] ASCII Particles - ONLINE',
+        '',
+        '> System status: OPTIMAL',
       ];
     },
   },
@@ -173,9 +246,12 @@ export const adminCommands: Record<string, AdminCommand> = {
       isAdminAuthenticated = false;
       adminSessionExpiry = null;
       return [
-        '✓ LOGGED OUT',
-        '═══════════════════════════════',
-        'Admin session terminated.',
+        '╔════════════════════════════════════╗',
+        '║    ✓ SESSION TERMINATED            ║',
+        '╚════════════════════════════════════╝',
+        '',
+        '> Neural link severed.',
+        '> All admin privileges revoked.',
       ];
     },
   },
@@ -206,11 +282,13 @@ export function processAdminCommand(input: string): { isAdmin: boolean; response
     return {
       isAdmin: true,
       response: [
-        'ADMIN PROTOCOL INITIATED',
-        '═══════════════════════════════',
-        'Authentication required.',
+        '╔════════════════════════════════════╗',
+        '║      ADMIN PROTOCOL INITIATED      ║',
+        '╚════════════════════════════════════╝',
         '',
-        'Use: auth <password>',
+        '> Level 5 access required.',
+        '',
+        '> Use: auth <access_key>',
       ],
     };
   }
