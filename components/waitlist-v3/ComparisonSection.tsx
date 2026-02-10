@@ -27,23 +27,23 @@ export const ComparisonSection: React.FC = () => {
       </h2>
 
       {/* Toggle */}
-      <div className="inline-flex mb-12">
+      <div className="inline-flex mb-12 bg-white/5 rounded-2xl p-1.5">
         <button
           onClick={() => setView('new')}
-          className={`px-8 py-3 text-sm font-semibold rounded-l-xl transition-all duration-300 ${
+          className={`px-10 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
             view === 'new'
-              ? 'bg-gradient-to-r from-[#06b6d4] to-[#059669] text-white'
-              : 'bg-white/5 text-white/40'
+              ? 'bg-gradient-to-r from-cyan-500 to-emerald-500 text-white shadow-lg shadow-cyan-500/25'
+              : 'bg-transparent text-white/30 hover:text-white/60'
           }`}
         >
           NEW
         </button>
         <button
           onClick={() => setView('old')}
-          className={`px-8 py-3 text-sm font-semibold rounded-r-xl transition-all duration-300 ${
+          className={`px-10 py-3 text-sm font-bold rounded-xl transition-all duration-300 ${
             view === 'old'
-              ? 'bg-white/10 text-white'
-              : 'bg-white/5 text-white/40'
+              ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-gray-300'
+              : 'bg-transparent text-white/20 hover:text-white/40'
           }`}
         >
           OLD
