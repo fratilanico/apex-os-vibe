@@ -2,7 +2,7 @@ import React from 'react';
 import { useColorCycle } from '../../hooks/useColorCycle';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import { Terminal } from 'lucide-react';
-import { ChromaticLogo } from '../ui/ChromaticLogo';
+import { APEX_LOGO_ASCII_MOBILE } from '../../lib/terminal/constants';
 
 const COLOR_HEX: Record<string, string> = {
   cyan: '#22d3ee', emerald: '#10b981', violet: '#8b5cf6',
@@ -20,10 +20,19 @@ export const BrandingBar: React.FC = () => {
         
         {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
         <div className="flex items-center gap-3 z-20">
-          {/* Chromatic ASCII Logo - Fixed sizing with scale (working deploy approach) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity overflow-visible" style={{ width: '60px', height: '20px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.12] origin-top-left" />
-          </div>
+          {/* Compact ASCII Logo - Mobile version for navbar */}
+          <pre 
+            className="font-mono text-[10px] leading-tight text-white/90 hover:opacity-80 transition-opacity cursor-pointer whitespace-pre"
+            style={{ 
+              fontFamily: '"Courier New", Courier, monospace',
+              letterSpacing: '0px',
+              textRendering: 'geometricPrecision' as const,
+              margin: 0,
+              padding: 0
+            }}
+          >
+            {APEX_LOGO_ASCII_MOBILE}
+          </pre>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
           <div className="md:hidden">
