@@ -9,8 +9,7 @@ interface MatrixRainProps {
 }
 
 export const MatrixRain: React.FC<MatrixRainProps> = ({ 
-  enabled = true, 
-  density = 50,
+  enabled = true,
   speed = 1 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,13 +42,14 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
       ctx.font = '15px monospace';
 
       for (let i = 0; i < drops.length; i++) {
-        const text = chars[Math.floor(Math.random() * chars.length)];
-        ctx.fillText(text, i * 20, drops[i] * 20);
+        const text = chars[Math.floor(Math.random() * chars.length)] ?? '0';
+        const dropPos = drops[i] ?? 0;
+        ctx.fillText(text, i * 20, dropPos * 20);
 
-        if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+        if (dropPos * 20 > canvas.height && Math.random() > 0.975) {
           drops[i] = 0;
         }
-        drops[i] += speed;
+        drops[i] = (drops[i] ?? 0) + speed;
       }
 
       animationId = requestAnimationFrame(draw);

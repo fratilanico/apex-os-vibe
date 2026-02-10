@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useOnboardingStore } from '../stores/useOnboardingStore';
 
 export type PillOption = 'matrix' | 'commander' | 'arcade' | 'dashboard' | 'story';
 

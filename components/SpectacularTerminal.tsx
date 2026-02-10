@@ -4,7 +4,9 @@ import { Loader2, Wifi, Shield, Terminal } from 'lucide-react';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { APEX_LOGO_ASCII_LINES, PLAYER_ONE_ASCII } from '../lib/terminal/constants';
-import { PillChoice } from './PillChoice';
+import { PillChoiceSystem } from './PillChoiceSystem';
+import { PILL_CONFIG } from '../config/pillConfig';
+import { processAdminCommand } from '../lib/admin/terminalAdmin';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL - GOLDEN STANDARD v6.4.2
@@ -246,6 +248,17 @@ export const SpectacularTerminal: React.FC = () => {
     if ((step as TerminalStep) === 'unlocked') {
       const lower = trimmed.toLowerCase();
       
+      // HIDDEN ADMIN COMMANDS - Not shown in help
+      const adminResult = processAdminCommand(lower);
+      if (adminResult.isAdmin) {
+        if (Array.isArray(adminResult.response)) {
+          adminResult.response.forEach(line => addLine(line, 'system'));
+        } else {
+          addLine(adminResult.response, 'system');
+        }
+        return;
+      }
+      
       if (lower === 'help') {
         addLine('AVAILABLE COMMANDS:', 'system');
         addLine('  status   - Check swarm sync', 'system');
@@ -346,7 +359,10 @@ export const SpectacularTerminal: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mt-8"
           >
-            <PillChoice onSelect={handlePillChoice} />
+            <PillChoiceSystem 
+              activeOption={PILL_CONFIG.activeOption} 
+              onSelect={handlePillChoice} 
+            />
           </motion.div>
         )}
 
