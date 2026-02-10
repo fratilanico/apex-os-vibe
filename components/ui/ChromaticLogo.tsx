@@ -12,6 +12,16 @@ interface ChromaticLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
+// Shared font style for pixel-perfect box-drawing character alignment
+const LOGO_FONT_STYLE: React.CSSProperties = {
+  fontFamily: '"Courier New", Courier, monospace',
+  fontVariantLigatures: 'none',
+  textRendering: 'geometricPrecision',
+  letterSpacing: '0px',
+  WebkitFontSmoothing: 'none' as unknown as string,
+  MozOsxFontSmoothing: 'unset' as unknown as string,
+};
+
 export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({ 
   type = 'apex',
   className = '',
@@ -30,12 +40,10 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
       <pre 
         className={`font-mono overflow-visible whitespace-pre leading-[0.85] ${sizeClasses[size]} ${className}`}
         style={{ 
-          fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
-          fontVariantLigatures: 'none',
-          textRendering: 'geometricPrecision',
+          ...LOGO_FONT_STYLE,
           margin: 0,
           padding: 0,
-          transform: 'translate3d(0, 0, 0)', // GPU acceleration
+          transform: 'translate3d(0, 0, 0)',
           willChange: 'auto'
         }}
       >
@@ -58,7 +66,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
       <pre 
         className={`absolute top-0 left-0 text-cyan-400/60 select-none pointer-events-none whitespace-pre ${sizeClasses[size]}`}
         style={{ 
-          fontFamily: 'monospace',
+          ...LOGO_FONT_STYLE,
           transform: 'translate(-2px, -1px)',
           willChange: 'auto'
         }}
@@ -70,7 +78,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
       <pre 
         className={`absolute top-0 left-0 text-pink-500/60 select-none pointer-events-none whitespace-pre ${sizeClasses[size]}`}
         style={{ 
-          fontFamily: 'monospace',
+          ...LOGO_FONT_STYLE,
           transform: 'translate(2px, 1px)',
           willChange: 'auto'
         }}
@@ -82,7 +90,7 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
       <pre 
         className={`text-white relative z-10 whitespace-pre ${sizeClasses[size]}`}
         style={{ 
-          fontFamily: 'monospace',
+          ...LOGO_FONT_STYLE,
           willChange: 'auto'
         }}
       >

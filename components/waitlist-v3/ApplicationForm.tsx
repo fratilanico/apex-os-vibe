@@ -176,7 +176,7 @@ const CharCounter: React.FC<{ length: number; min: number }> = ({
 export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   onSuccess,
 }) => {
-  const { setMode } = useOnboardingStore();
+  const { mode, setMode } = useOnboardingStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
@@ -620,10 +620,14 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
       ) : (
         <button
           type="button"
-          onClick={() => setMode('GEEK')}
-          className="flex items-center gap-2 text-cyan-400/60 hover:text-cyan-400 transition-colors text-[10px] font-mono uppercase tracking-widest border border-cyan-400/20 px-3 py-1 rounded-lg bg-cyan-400/5"
+          onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
+          className={`flex items-center gap-2 transition-colors text-[10px] font-mono uppercase tracking-widest border px-3 py-1 rounded-lg ${
+            mode === 'GEEK'
+              ? 'text-cyan-400 border-cyan-400/50 bg-cyan-400/10 shadow-[0_0_8px_rgba(34,211,238,0.2)]'
+              : 'text-cyan-400/60 hover:text-cyan-400 border-cyan-400/20 bg-cyan-400/5'
+          }`}
         >
-          <Terminal className="w-3 h-3" /> Geek Mode
+          <Terminal className="w-3 h-3" /> {mode === 'GEEK' ? 'Geek: ON' : 'Geek Mode'}
         </button>
       )}
 

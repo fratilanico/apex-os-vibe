@@ -5,8 +5,7 @@
  * Single source of truth for terminal-related constants.
  */
 
-// Multi-color Gemini-style gradient logo
-// Each line rendered with different color for gradient effect
+// Multi-color Gemini-style gradient logo with box-drawing chars for 3D depth
 export const APEX_LOGO_ASCII_LINES = [
   { text: " █████╗ ██████╗ ███████╗██╗  ██╗    ██████╗  ███████╗", color: "#3B82F6" }, // Blue
   { text: "██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝   ██╔═══██╗██╔════╝ ", color: "#06B6D4" }, // Cyan
@@ -19,6 +18,7 @@ export const APEX_LOGO_ASCII_LINES = [
 // Plain version for backwards compatibility
 export const APEX_LOGO_ASCII = APEX_LOGO_ASCII_LINES.map(l => l.text).join('\n');
 
+// Box-drawing chars for 3D depth look
 export const PLAYER_ONE_ASCII = `
  ██████╗ ██╗      █████╗ ██╗   ██╗███████╗██████╗      ██╗
  ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝██╔════╝██╔══██╗    ███║

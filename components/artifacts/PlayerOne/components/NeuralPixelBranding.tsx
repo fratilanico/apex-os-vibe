@@ -103,9 +103,10 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
       <pre 
         className="font-mono overflow-visible whitespace-pre leading-[0.85] text-[10px] sm:text-sm mb-2 transition-all duration-400"
         style={{ 
-          fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+          fontFamily: '"Courier New", Courier, monospace',
           fontVariantLigatures: 'none',
           textRendering: 'geometricPrecision',
+          letterSpacing: '0px',
           margin: 0,
           padding: 0,
           opacity: visible ? 1 : 0, 
@@ -160,6 +161,10 @@ export const NeuralPixelBranding: React.FC<NeuralPixelBrandingProps> = ({
           <pre
             className="text-[10px] sm:text-sm leading-tight transition-colors duration-600 whitespace-pre"
             style={{
+              fontFamily: '"Courier New", Courier, monospace',
+              fontVariantLigatures: 'none',
+              textRendering: 'geometricPrecision',
+              letterSpacing: '0px',
               color: isAuthorized ? 'rgba(52, 211, 153, 0.9)' : 'rgba(34, 211, 238, 0.9)',
               textShadow: isAuthorized 
                 ? '0 0 20px rgba(52, 211, 153, 0.5)'
