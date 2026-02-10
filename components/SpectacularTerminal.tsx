@@ -425,20 +425,156 @@ export const SpectacularTerminal: React.FC = () => {
         )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-white/10 bg-white/5 p-4">
-        <form onSubmit={(e) => { e.preventDefault(); handleCommand(inputValue); }} className="flex items-center gap-4">
-          <span className="text-xl font-bold text-cyan-400">λ</span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-white text-base font-mono placeholder-white/20"
-            placeholder={getPlaceholder()}
-            disabled={(step as TerminalStep) === 'boot' || isProcessing || showPillChoice}
-            autoFocus
+      {/* FUTURISTIC TERMINAL INPUT - Wire Animation & Glow */}
+      <div className="relative border-t border-white/10 bg-black/40 backdrop-blur-xl">
+        {/* Animated wire border - travels around the input area */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Top wire */}
+          <motion.div
+            className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
+            initial={{ width: "0%", left: "0%" }}
+            animate={{ 
+              width: ["0%", "30%", "30%", "0%"],
+              left: ["0%", "0%", "70%", "100%"]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              times: [0, 0.4, 0.6, 1]
+            }}
+            style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.4)" }}
           />
+          {/* Right wire */}
+          <motion.div
+            className="absolute top-0 right-0 w-[2px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent"
+            initial={{ height: "0%", top: "0%" }}
+            animate={{ 
+              height: ["0%", "100%", "100%", "0%"],
+              top: ["0%", "0%", "0%", "100%"]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.75,
+              times: [0, 0.4, 0.6, 1]
+            }}
+            style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.4)" }}
+          />
+          {/* Bottom wire */}
+          <motion.div
+            className="absolute bottom-0 right-0 h-[2px] bg-gradient-to-l from-transparent via-cyan-400 to-transparent"
+            initial={{ width: "0%", right: "0%" }}
+            animate={{ 
+              width: ["0%", "30%", "30%", "0%"],
+              right: ["0%", "0%", "70%", "100%"]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5,
+              times: [0, 0.4, 0.6, 1]
+            }}
+            style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.4)" }}
+          />
+          {/* Left wire */}
+          <motion.div
+            className="absolute bottom-0 left-0 w-[2px] bg-gradient-to-t from-transparent via-cyan-400 to-transparent"
+            initial={{ height: "0%", bottom: "0%" }}
+            animate={{ 
+              height: ["0%", "100%", "100%", "0%"],
+              bottom: ["0%", "0%", "0%", "100%"]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2.25,
+              times: [0, 0.4, 0.6, 1]
+            }}
+            style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.4)" }}
+          />
+        </div>
+
+        {/* Ambient glow pulse */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-cyan-500/5"
+          animate={{
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+
+        {/* Input form */}
+        <form onSubmit={(e) => { e.preventDefault(); handleCommand(inputValue); }} className="relative flex items-center gap-4 p-4">
+          {/* Animated lambda symbol */}
+          <motion.span 
+            className="text-2xl font-bold text-cyan-400"
+            animate={{
+              textShadow: [
+                "0 0 10px rgba(34, 211, 238, 0.5)",
+                "0 0 20px rgba(34, 211, 238, 0.8)",
+                "0 0 10px rgba(34, 211, 238, 0.5)"
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            λ
+          </motion.span>
+          
+          {/* Enhanced input with glow */}
+          <div className="flex-1 relative">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="w-full bg-transparent outline-none text-white text-base font-mono placeholder-white/30"
+              placeholder={getPlaceholder()}
+              disabled={(step as TerminalStep) === 'boot' || isProcessing || showPillChoice}
+              autoFocus
+            />
+            {/* Cursor glow effect */}
+            {!inputValue && (step as TerminalStep) !== 'boot' && !isProcessing && !showPillChoice && (
+              <motion.div
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 bg-cyan-400"
+                animate={{
+                  opacity: [1, 0, 1],
+                  boxShadow: [
+                    "0 0 10px rgba(34, 211, 238, 1)",
+                    "0 0 20px rgba(34, 211, 238, 0.5)",
+                    "0 0 10px rgba(34, 211, 238, 1)"
+                  ]
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              />
+            )}
+          </div>
+
+          {/* Enter hint */}
+          {!inputValue && (step as TerminalStep) !== 'boot' && !isProcessing && !showPillChoice && (
+            <motion.span
+              className="text-[10px] font-mono text-cyan-400/50 uppercase tracking-widest hidden sm:block"
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              [ENTER] Execute
+            </motion.span>
+          )}
         </form>
       </div>
     </motion.div>
