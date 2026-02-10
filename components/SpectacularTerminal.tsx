@@ -564,4 +564,5 @@ const SpectacularTerminal: React.FC = () => {
   );
 };
 
+export { SpectacularTerminal };
 export default SpectacularTerminal;
