@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Wifi, Shield, Terminal } from 'lucide-react';
-import { useOnboardingStore } from '../../stores/useOnboardingStore';
-import { processAdminCommand } from '../../lib/admin/terminalAdmin';
-import { PILL_CONFIG } from '../../config/pillConfig';
-import { PillChoiceSystem } from '../PillChoiceSystem';
-import { InlineRenderer } from '../ui/Terminal/InlineRenderer';
+import { useOnboardingStore } from '../stores/useOnboardingStore';
+import { processAdminCommand } from '../lib/admin/terminalAdmin';
+import { PILL_CONFIG } from '../config/pillConfig';
+import { PillChoiceSystem } from './PillChoiceSystem';
+import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 
 interface TerminalLine {
   id: string;
