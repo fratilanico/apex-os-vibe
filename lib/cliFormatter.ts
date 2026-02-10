@@ -201,13 +201,13 @@ export function convertMarkdownToCLI(markdown: string): string {
   const targetWidth = getTargetWidth();
   
   // Convert headers to styled tags
-  output = output.replace(/^###\s+(.+)$/gm, '[h3]$1[/h3]\n');
-  output = output.replace(/^##\s+(.+)$/gm, '[h2]$1[/h2]\n');
-  output = output.replace(/^#\s+(.+)$/gm, '[h1]$1[/h1]\n');
+  output = output.replace(/^###\s+(.+)$/gm, '[h3][violet]$1[/violet][/h3]\n');
+  output = output.replace(/^##\s+(.+)$/gm, '[h2][cyan]$1[/cyan][/h2]\n');
+  output = output.replace(/^#\s+(.+)$/gm, '[h1][gold]$1[/gold][/h1]\n');
 
   // Bold / italic markers
-  output = output.replace(/\*\*(.+?)\*\*/g, '[b]$1[/b]');
-  output = output.replace(/__(.+?)__/g, '[b]$1[/b]');
+  output = output.replace(/\*\*(.+?)\*\*/g, '[emerald]$1[/emerald]');
+  output = output.replace(/__(.+?)__/g, '[emerald]$1[/emerald]');
   output = output.replace(/\*(.+?)\*/g, '$1');
   output = output.replace(/_(.+?)_/g, '$1');
   

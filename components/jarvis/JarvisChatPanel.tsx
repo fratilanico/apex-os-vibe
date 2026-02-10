@@ -324,8 +324,8 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           {/* Header */}
           <div className={`flex items-center justify-between p-4 border-b transition-colors duration-500 ${isGeek ? 'border-cyan-500/30 bg-cyan-500/10' : 'border-white/10 bg-white/5'}`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center relative">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center relative bg-black/40 border border-white/10">
+                <img src="/logo.png" alt="APEX" className="w-7 h-7 object-contain" />
                 {(isProcessing || isSpeaking) && (
                   <motion.div
                     className="absolute -inset-1 rounded-full border-2 border-cyan-400 border-t-transparent"

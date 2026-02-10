@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice)\])/g;
+const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice|cyan|violet|emerald|pink|amber|gold|blue|lime|rose|indigo)\])/g;
 const ICON_REGEX = /\[icon:([a-z-]+)\]/g;
 
 const ICONS: Record<string, string> = {
@@ -30,9 +30,20 @@ const STYLE_MAP: Record<string, string> = {
   success: 'text-emerald-400',
   error: 'text-red-400',
   choice: 'text-violet-400 font-bold italic border-b border-violet-500/30',
+  cyan: 'text-cyan-400',
+  violet: 'text-violet-400',
+  emerald: 'text-emerald-400',
+  pink: 'text-pink-400',
+  amber: 'text-amber-400',
+  gold: 'text-yellow-500 font-bold',
+  blue: 'text-blue-400',
+  lime: 'text-lime-400',
+  rose: 'text-rose-400',
+  indigo: 'text-indigo-400',
 };
 
 export const InlineRenderer: React.FC<{ text: string }> = ({ text }) => {
+  if (!text) return null;
   const pieces = text.split(TAG_REGEX);
   const activeTags: string[] = [];
   const nodes: React.ReactNode[] = [];

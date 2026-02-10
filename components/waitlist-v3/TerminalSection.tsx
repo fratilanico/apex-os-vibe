@@ -16,6 +16,7 @@ export const TerminalSection: React.FC<{ onComplete?: (data: any) => void }> = (
     scanActive,
     getPlaceholder,
     terminalRef,
+    scrollRef,
     inputRef,
     handleCommand,
     handlePillChoice,
@@ -53,6 +54,7 @@ export const TerminalSection: React.FC<{ onComplete?: (data: any) => void }> = (
               scanActive={scanActive}
               onPillChoice={handlePillChoice}
               terminalRef={terminalRef}
+              scrollRef={scrollRef}
             />
 
             {/* Scanline overlay */}
