@@ -333,7 +333,7 @@ export const TerminalContent: React.FC<{
       </div>
 
       {/* Output */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 font-mono space-y-1 sm:space-y-2 custom-scrollbar">
         <AnimatePresence>
           {lines.map((line) => (
             <motion.div
