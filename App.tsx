@@ -158,6 +158,19 @@ const PublicRoutes: React.FC = () => {
   );
 };
 
+// Hide HUD/CTA on specific routes to keep the page clean
+const HideOnCleanRoutes: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const isCleanRoute = 
+    location.pathname === '/' || 
+    location.pathname.startsWith('/waitlist') || 
+    location.pathname.startsWith('/waitinglist') ||
+    location.pathname.startsWith('/whitelist');
+    
+  if (isCleanRoute) return null;
+  return <>{children}</>;
+};
+
 const App = (): React.ReactElement => {
   // Initialize web vitals monitoring
   useWebVitals();
@@ -165,11 +178,11 @@ const App = (): React.ReactElement => {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <HideOnWaitlist>
+      <HideOnCleanRoutes>
         <PlayerOneErrorBoundary>
           <PlayerOneHUD />
         </PlayerOneErrorBoundary>
-      </HideOnWaitlist>
+      </HideOnCleanRoutes>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public routes - no password protection */}
@@ -185,21 +198,14 @@ const App = (): React.ReactElement => {
           <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </Suspense>
-      <HideOnWaitlist>
+      <HideOnCleanRoutes>
         <StickyCTA />
         <ErrorBoundary fallback={null}>
           <EasterEggHints />
         </ErrorBoundary>
-      </HideOnWaitlist>
+      </HideOnCleanRoutes>
     </BrowserRouter>
   );
 };
 
 export default App;
-
-// Hide HUD/CTA on waitlist/waitinglist routes to keep the page clean
-const HideOnWaitlist: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  if (location.pathname.startsWith('/waitlist') || location.pathname.startsWith('/waitinglist')) return null;
-  return <>{children}</>;
-};
