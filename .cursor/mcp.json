@@ -55,6 +55,13 @@
       "env": {
         "AGENT_MODE": "error-handler"
       }
+    },
+    "notion": {
+      "command": "npx",
+      "args": ["-y", "@smithery/notion@latest"],
+      "env": {
+        "NOTION_API_TOKEN": "${NOTION_API_KEY}"
+      }
     }
   }
 }

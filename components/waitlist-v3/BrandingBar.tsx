@@ -21,8 +21,8 @@ export const BrandingBar: React.FC = () => {
         {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
         <div className="flex items-center gap-3 z-20">
           {/* Full Multi-Color Logo - scaled to fit navbar */}
-          <div className="relative overflow-hidden" style={{ width: '140px', height: '48px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.50] origin-top-left" />
+          <div className="relative overflow-visible h-14 flex items-center">
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.45] origin-left" />
           </div>
           
           {/* GEEK MODE TOGGLE - Mobile only (left side) */}
