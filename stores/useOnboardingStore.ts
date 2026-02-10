@@ -4,7 +4,7 @@ import {
   trackTerminalCommand, 
   trackRecommendation,
   trackUserInteraction,
-  TerminalCommandAnalytics
+  type TerminalCommandAnalytics
 } from '../lib/supabase';
 import { getOrCreateUserId } from '../lib/userIdentity';
 import { UserProfile } from '../lib/intelligence/types';

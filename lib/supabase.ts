@@ -68,20 +68,6 @@ export interface TerminalCommandAnalytics {
   time_since_last_command_ms: number;
 }
 
-export interface PillSelectionAnalytics {
-  id: string;
-  user_id: string;
-  session_id: string;
-  selected_persona: 'PERSONAL' | 'BUSINESS';
-  selected_at: string;
-  hovered_options: string[];
-  hover_duration_ms: number;
-  name_provided: string;
-  email_provided: string;
-  time_to_decision_ms: number;
-  modules_unlocked: string[];
-}
-
 export interface UserJourneyAnalytics {
   id: string;
   user_id: string;
@@ -121,75 +107,62 @@ export interface RecommendationAnalytics {
 // SUPABASE CLIENT INITIALIZATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Safe environment variable accessor
 const getEnvVar = (key: string): string => {
   if (typeof window !== 'undefined') {
-    // Browser side (Vite uses import.meta.env)
     // @ts-ignore
-    return (import.meta.env?.[`VITE_${key}`] || import.meta.env?.[`NEXT_PUBLIC_${key}`] || '');
+    return import.meta.env[`VITE_${key}`] || '';
   }
-  // Server side
-  return process.env[key] || process.env[`VITE_${key}`] || process.env[`NEXT_PUBLIC_${key}`] || '';
+  return process.env[key] || process.env[`VITE_${key}`] || '';
 };
 
 const SUPABASE_URL = getEnvVar('SUPABASE_URL');
-const SUPABASE_KEY = getEnvVar('SUPABASE_ANON_KEY') || getEnvVar('SUPABASE_SERVICE_ROLE_KEY') || getEnvVar('SUPABASE_KEY');
+const SUPABASE_KEY = getEnvVar('SUPABASE_ANON_KEY') || getEnvVar('SUPABASE_SERVICE_ROLE_KEY');
 
-// CRITICAL P0 FIX: Never call createClient with empty/invalid URL
+// CRITICAL P0 FIX: Prevent crash
 export const supabase = (SUPABASE_URL && SUPABASE_URL.startsWith('http')) 
   ? createClient(SUPABASE_URL, SUPABASE_KEY) 
   : null;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ANALYTICS TRACKING HELPERS
+// TRACKING HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const withRetry = async <T>(fn: (client: any) => Promise<T>, retries = 3): Promise<T | null> => {
+const withRetry = async <T>(fn: (client: any) => Promise<T>, retries = 2): Promise<T | null> => {
   if (!supabase) return null;
   try {
     const result = await fn(supabase);
     return result;
   } catch (error) {
-    if (retries <= 0) {
-      console.error('[Supabase] Operation failed after retries:', error);
-      return null;
-    }
+    if (retries <= 0) return null;
     await new Promise(r => setTimeout(r, 1000));
     return withRetry(fn, retries - 1);
   }
 };
 
-export async function trackJarvisMessage(data: Omit<JarvisConversationAnalytics, 'id' | 'timestamp'>) {
-  return withRetry(client => client.from('jarvis_conversations').insert({
+export async function trackJarvisMessage(data: Partial<JarvisConversationAnalytics>) {
+  return withRetry(client => client.from('jarvis_conversations').insert([{
     ...data,
-    timestamp: new Date().toISOString(),
-  }));
+    timestamp: new Date().toISOString()
+  }]));
 }
 
-export async function trackTerminalCommand(data: Omit<TerminalCommandAnalytics, 'id' | 'timestamp'>) {
-  return withRetry(client => client.from('terminal_commands').insert({
+export async function trackTerminalCommand(data: Partial<TerminalCommandAnalytics>) {
+  return withRetry(client => client.from('terminal_commands').insert([{
     ...data,
-    timestamp: new Date().toISOString(),
-  }));
+    timestamp: new Date().toISOString()
+  }]));
 }
 
-export async function trackRecommendation(data: Omit<RecommendationAnalytics, 'id' | 'timestamp'>) {
-  return withRetry(client => client.from('recommendations').insert({
+export async function trackRecommendation(data: Partial<RecommendationAnalytics>) {
+  return withRetry(client => client.from('recommendations').insert([{
     ...data,
-    timestamp: new Date().toISOString(),
-  }));
+    timestamp: new Date().toISOString()
+  }]));
 }
 
-export async function trackUserInteraction(data: Omit<UserJourneyAnalytics, 'id' | 'timestamp'>) {
-  return withRetry(client => client.from('user_interactions').insert({
+export async function trackUserInteraction(data: Partial<UserJourneyAnalytics>) {
+  return withRetry(client => client.from('user_interactions').insert([{
     ...data,
-    timestamp: new Date().toISOString(),
-  }));
-}
-
-export async function trackPillSelection(data: Omit<PillSelectionAnalytics, 'id' | 'selected_at'>) {
-  return withRetry(client => client.from('pill_selection_analytics').insert({
-    ...data,
-    selected_at: new Date().toISOString(),
-  }));
+    timestamp: new Date().toISOString()
+  }]));
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error)\])/g;
+const TAG_REGEX = /(\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|choice)\])/g;
 const ICON_REGEX = /\[icon:([a-z-]+)\]/g;
 
 const ICONS: Record<string, string> = {
@@ -11,6 +11,8 @@ const ICONS: Record<string, string> = {
   warn: '⚠️',
   info: 'ℹ️',
   star: '⭐',
+  brain: '🧠',
+  shield: '🛡️',
 };
 
 const STYLE_MAP: Record<string, string> = {
@@ -18,12 +20,13 @@ const STYLE_MAP: Record<string, string> = {
   h2: 'text-cyan-200 font-semibold tracking-wide text-sm',
   h3: 'text-cyan-100 font-semibold text-sm',
   b: 'text-white font-semibold',
-  code: 'text-emerald-300 bg-white/5 px-1 rounded',
+  code: 'text-emerald-300 bg-white/5 px-1 rounded font-mono',
   muted: 'text-white/40',
   info: 'text-cyan-400',
   warn: 'text-yellow-400',
   success: 'text-emerald-400',
   error: 'text-red-400',
+  choice: 'text-violet-400 font-bold italic border-b border-violet-500/30',
 };
 
 export const InlineRenderer: React.FC<{ text: string }> = ({ text }) => {
