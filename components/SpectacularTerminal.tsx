@@ -533,7 +533,7 @@ export const TerminalInput: React.FC<{
   );
 };
 
-const SpectacularTerminal: React.FC = () => {
+export const SpectacularTerminal: React.FC = () => {
   const {
     lines,
     inputValue,
