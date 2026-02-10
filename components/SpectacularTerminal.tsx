@@ -4,6 +4,7 @@ import { Loader2, Wifi, Shield, Terminal } from 'lucide-react';
 import { InlineRenderer } from './ui/Terminal/InlineRenderer';
 import { useOnboardingStore } from '../stores/useOnboardingStore';
 import { APEX_LOGO_ASCII_LINES, PLAYER_ONE_ASCII } from '../lib/terminal/constants';
+import { PillChoice } from './PillChoice';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL - GOLDEN STANDARD v6.4.2
@@ -338,30 +339,14 @@ export const SpectacularTerminal: React.FC = () => {
           ))}
         </AnimatePresence>
 
-        {/* Red/Blue Pill Choice */}
+        {/* Red/Blue Pill Choice - Matrix Style */}
         {showPillChoice && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 space-y-3"
+            className="mt-8"
           >
-            <p className="text-violet-400 font-semibold text-sm">Choose your path:</p>
-            <div className="flex gap-3 flex-wrap">
-              <button
-                onClick={() => handlePillChoice('business')}
-                className="px-6 py-3 bg-red-500/20 border border-red-500/50 rounded-lg hover:bg-red-500/30 transition-all text-red-400 font-bold text-sm flex items-center gap-2"
-              >
-                <span className="text-lg">🔴</span>
-                RED PILL — Orchestrate a Fleet
-              </button>
-              <button
-                onClick={() => handlePillChoice('personal')}
-                className="px-6 py-3 bg-blue-500/20 border border-blue-500/50 rounded-lg hover:bg-blue-500/30 transition-all text-blue-400 font-bold text-sm flex items-center gap-2"
-              >
-                <span className="text-lg">🔵</span>
-                BLUE PILL — Master the Stack
-              </button>
-            </div>
+            <PillChoice onSelect={handlePillChoice} />
           </motion.div>
         )}
 

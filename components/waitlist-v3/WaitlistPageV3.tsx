@@ -3,6 +3,7 @@ import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
 /* ── Background ── */
 import { AmbientGlow } from '../ui/AmbientGlow';
+import { MatrixRain, Scanlines, GlitchOverlay, AsciiParticles, GeekModeIndicator } from '../effects/GeekModeEffects';
 
 /* ── Page sections (SECTION 5 ALIGNMENT) ── */
 import { BrandingBar } from './BrandingBar';
@@ -100,6 +101,12 @@ const WaitlistPageV3: React.FC = () => {
         body { background: linear-gradient(135deg, #0a1628 0%, #0d2137 25%, #0a2a3a 50%, #0d2137 75%, #0a1628 100%) !important; }
       `}</style>
       
+      {/* GEEK MODE EFFECTS */}
+      <MatrixRain enabled={true} />
+      <Scanlines />
+      <GlitchOverlay />
+      <AsciiParticles />
+
       {/* Background glow orbs - Rich teal/cyan gradient overlays */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         {/* Base ambient layer */}
@@ -168,6 +175,9 @@ const WaitlistPageV3: React.FC = () => {
 
       {/* Notion Vault */}
       <NotionVaultOverlay isOpen={isVaultOpen} onClose={() => setVaultOpen(false)} vaultUrl={VAULT_URL} />
+
+      {/* Geek Mode Status Indicator */}
+      <GeekModeIndicator />
     </div>
   );
 };

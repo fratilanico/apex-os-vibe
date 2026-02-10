@@ -13,6 +13,17 @@ export type OnboardingStep =
 
 export type Persona = 'PERSONAL' | 'BUSINESS' | null;
 
+// Geek Mode Effects
+export interface GeekModeEffects {
+  enableMatrixRain: boolean;
+  enableGlitchEffects: boolean;
+  enableAsciiArt: boolean;
+  enableTerminalSounds: boolean;
+  showHiddenCommands: boolean;
+  enhancedAnimations: boolean;
+  scanlineIntensity: number; // 0-100
+}
+
 interface OnboardingState {
   mode: 'STANDARD' | 'GEEK';
   step: OnboardingStep;
@@ -24,9 +35,12 @@ interface OnboardingState {
   isUnlocked: boolean;
   secretTreatFound: boolean;
   isVaultOpen: boolean;
+  geekEffects: GeekModeEffects;
   
   // Actions
   setMode: (mode: 'STANDARD' | 'GEEK') => void;
+  toggleGeekEffect: (effect: keyof GeekModeEffects) => void;
+  setGeekEffect: (effect: keyof GeekModeEffects, value: boolean | number) => void;
   setStep: (step: OnboardingStep) => void;
   setPersona: (persona: Persona) => void;
   setEmail: (email: string) => void;
@@ -39,6 +53,16 @@ interface OnboardingState {
   reset: () => void;
 }
 
+const defaultGeekEffects: GeekModeEffects = {
+  enableMatrixRain: false,
+  enableGlitchEffects: false,
+  enableAsciiArt: false,
+  enableTerminalSounds: false,
+  showHiddenCommands: false,
+  enhancedAnimations: false,
+  scanlineIntensity: 0,
+};
+
 export const useOnboardingStore = create<OnboardingState>((set) => ({
   mode: 'STANDARD',
   step: 'boot',
@@ -50,8 +74,36 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   isUnlocked: false,
   secretTreatFound: false,
   isVaultOpen: false,
+  geekEffects: { ...defaultGeekEffects },
 
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => set(() => ({
+    mode,
+    // Auto-enable geek effects when switching to GEEK mode
+    geekEffects: mode === 'GEEK' ? {
+      enableMatrixRain: true,
+      enableGlitchEffects: true,
+      enableAsciiArt: true,
+      enableTerminalSounds: true,
+      showHiddenCommands: true,
+      enhancedAnimations: true,
+      scanlineIntensity: 30,
+    } : { ...defaultGeekEffects }
+  })),
+  
+  toggleGeekEffect: (effect) => set((state) => ({
+    geekEffects: {
+      ...state.geekEffects,
+      [effect]: !state.geekEffects[effect],
+    }
+  })),
+  
+  setGeekEffect: (effect, value) => set((state) => ({
+    geekEffects: {
+      ...state.geekEffects,
+      [effect]: value,
+    }
+  })),
+  
   setStep: (step) => set({ step }),
   setPersona: (persona) => set({ persona }),
   setEmail: (email) => set({ email }),
@@ -72,5 +124,6 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     isUnlocked: false,
     secretTreatFound: false,
     isVaultOpen: false,
+    geekEffects: { ...defaultGeekEffects },
   }),
 }));
