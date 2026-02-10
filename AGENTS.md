@@ -1122,6 +1122,385 @@ banned:
 
 ---
 
+## 17. Shadow Testing & Regression Testing Protocol (GOLDEN STANDARD)
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  SECTION 17: SHADOW TESTING & REGRESSION PROTOCOL               ║
+║  Priority: CRITICAL | Status: MANDATORY PRE-DEPLOY              ║
+║  Added: 2026-02-10 | Author: @apex-os-monster                   ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+### 17.1 Protocol Overview
+
+**MANDATORY:** No code deploys to production without completing ALL phases of shadow testing.
+
+**Definition:** Shadow testing = testing the new deployment alongside production to catch issues before they affect users.
+
+**Regression testing = verifying existing functionality still works after changes.**
+
+### 17.2 Pre-Flight Checklist (BEFORE Testing)
+
+```yaml
+pre_flight:
+  - [ ] Code committed to feature branch
+  - [ ] Build passes locally: npm run build
+  - [ ] TypeScript compiles: npm run typecheck
+  - [ ] No console.log in production code
+  - [ ] Environment variables set
+  - [ ] Feature flags configured
+  - [ ] Rollback plan documented
+```
+
+### 17.3 Shadow Testing Phases
+
+#### PHASE 1: Visual Regression Testing (CRITICAL)
+
+**Objective:** Catch layout breaks, overflow issues, visual glitches
+
+**Test Matrix:**
+```
+┌─────────────────┬──────────────────────────────────────────┐
+│ Device          │ Viewport      │ Priority │ Time Alloc  │
+├─────────────────┼───────────────┼──────────┼─────────────┤
+│ Desktop Chrome  │ 1920x1080     │ P0       │ 5 min       │
+│ Desktop Firefox │ 1920x1080     │ P1       │ 3 min       │
+│ Desktop Safari  │ 1920x1080     │ P1       │ 3 min       │
+│ Tablet iPad     │ 768x1024      │ P0       │ 5 min       │
+│ Tablet Samsung  │ 800x1200      │ P0       │ 5 min       │
+│ Mobile iPhone   │ 375x812       │ P0       │ 5 min       │
+│ Mobile Android  │ 360x740       │ P0       │ 5 min       │
+│ Small Mobile    │ 320x568       │ P2       │ 3 min       │
+└─────────────────┴───────────────┴──────────┴─────────────┘
+```
+
+**Visual Checklist:**
+```yaml
+navbar:
+  - [ ] Logo visible and properly sized
+  - [ ] No overlapping elements
+  - [ ] All buttons accessible
+  - [ ] Signal bars visible (desktop)
+  - [ ] Player ID visible (desktop)
+  
+hero_section:
+  - [ ] Title readable
+  - [ ] Subtitle visible
+  - [ ] Terminal/CTA accessible
+  - [ ] No overflow issues
+  
+terminal:
+  - [ ] Content visible
+  - [ ] Input at bottom
+  - [ ] No extra black space
+  - [ ] Wire animation visible (if enabled)
+  - [ ] Scroll works properly
+  
+comparison_section:
+  - [ ] NEW tab readable
+  - [ ] OLD tab readable (minimum 30% opacity)
+  - [ ] Toggle switches work
+  - [ ] Cards don't overlap
+  
+forms:
+  - [ ] All inputs visible
+  - [ ] Placeholder text readable
+  - [ ] Submit button accessible
+  - [ ] Error states visible
+  
+footer:
+  - [ ] Links clickable
+  - [ ] Copyright visible
+  - [ ] Glow effect present
+```
+
+#### PHASE 2: Functional Regression Testing (CRITICAL)
+
+**Objective:** Ensure existing features still work
+
+**Test Flows:**
+
+**Flow A: Terminal Handshake (3-Step)**
+```yaml
+steps:
+  1: "Page loads → Boot sequence plays"
+  2: "Enter name (2+ chars) → Press Enter"
+  3: "Enter email → Press Enter"
+  4: "Handshake animation plays"
+  5: "Red/Blue pill choice appears"
+  6: "Select pill → Modules unlock"
+  7: "Admin commands work"
+  
+validation:
+  - [ ] Boot sequence completes
+  - [ ] Name validates (rejects short names)
+  - [ ] Email validates (rejects invalid format)
+  - [ ] Handshake shows glitch effects
+  - [ ] Pill choice displays 5 options
+  - [ ] Admin auth works (password: apex-admin-2026)
+  - [ ] Commands respond correctly
+  - [ ] No console errors
+```
+
+**Flow B: Geek Mode Toggle**
+```yaml
+steps:
+  1: "Click 'Geek: OFF' button"
+  2: "Verify effects appear (desktop)"
+  3: "Verify effects reduced (tablet)"
+  4: "Verify no effects (mobile)"
+  5: "Click again to turn off"
+  
+validation:
+  - [ ] Button toggles state
+  - [ ] Effects appropriate for device
+  - [ ] No flashing on 120Hz displays
+  - [ ] No console errors
+```
+
+**Flow C: Navigation**
+```yaml
+steps:
+  1: "Click all nav links"
+  2: "Verify page transitions"
+  3: "Check scroll position"
+  4: "Test mobile menu"
+  
+validation:
+  - [ ] All routes accessible
+  - [ ] No 404s
+  - [ ] Smooth transitions
+  - [ ] Mobile menu works
+```
+
+#### PHASE 3: Performance Testing (HIGH)
+
+**Metrics:**
+```yaml
+core_web_vitals:
+  LCP: "< 2.5s (Largest Contentful Paint)"
+  FID: "< 100ms (First Input Delay)"
+  CLS: "< 0.1 (Cumulative Layout Shift)"
+  FCP: "< 1.5s (First Contentful Paint)"
+  TTI: "< 3.5s (Time to Interactive)"
+  
+animation_performance:
+  frame_rate: "60fps target"
+  dropped_frames: "< 5%"
+  gpu_usage: "Check in DevTools"
+  
+bundle_size:
+  total: "< 500KB gzipped"
+  initial_js: "< 200KB"
+  images: "Optimized, lazy loaded"
+```
+
+**Tools:**
+- Chrome DevTools Lighthouse
+- Chrome DevTools Performance tab
+- React DevTools Profiler
+- WebPageTest.org
+
+#### PHASE 4: Accessibility Testing (MEDIUM)
+
+**Checks:**
+```yaml
+keyboard_navigation:
+  - [ ] Tab order logical
+  - [ ] Focus indicators visible
+  - [ ] Enter activates buttons
+  - [ ] Escape closes modals
+  - [ ] Space toggles checkboxes
+  
+screen_reader:
+  - [ ] ARIA labels present
+  - [ ] Alt text meaningful
+  - [ ] Headings hierarchy correct
+  - [ ] Links descriptive
+  
+color_contrast:
+  - [ ] Text 4.5:1 ratio
+  - [ ] Large text 3:1 ratio
+  - [ ] UI components 3:1 ratio
+  
+motion:
+  - [ ] Respect prefers-reduced-motion
+  - [ ] No auto-playing videos
+  - [ ] Pause/stop controls present
+```
+
+#### PHASE 5: Cross-Browser Testing (MEDIUM)
+
+**Browsers:**
+```yaml
+desktop:
+  chrome: "Latest 2 versions"
+  firefox: "Latest 2 versions"
+  safari: "Latest 2 versions"
+  edge: "Latest 2 versions"
+  
+mobile:
+  ios_safari: "Latest 2 versions"
+  chrome_android: "Latest 2 versions"
+  samsung_internet: "Latest version"
+```
+
+### 17.4 Regression Testing Matrix
+
+**After ANY change, verify:**
+
+```yaml
+smoke_tests:
+  - [ ] Homepage loads
+  - [ ] Terminal initializes
+  - [ ] No console errors
+  - [ ] All routes accessible
+  
+critical_paths:
+  - [ ] Signup flow works
+  - [ ] Payment processing works
+  - [ ] Admin panel accessible
+  - [ ] Analytics tracking works
+  
+visual_regression:
+  - [ ] Screenshots match baseline
+  - [ ] No unintended layout shifts
+  - [ ] Fonts load correctly
+  - [ ] Images display properly
+```
+
+### 17.5 Bug Severity Classification
+
+```yaml
+P0_critical:
+  definition: "Prevents core functionality, affects all users"
+  examples:
+    - "Terminal doesn't load"
+    - "Cannot submit forms"
+    - "Site crashes on load"
+    - "Seizure-inducing animations"
+  action: "DEPLOYMENT BLOCKED - Fix immediately"
+  
+P1_high:
+  definition: "Major feature broken, workaround exists"
+  examples:
+    - "Logo not visible"
+    - "Buttons overlap on mobile"
+    - "Geek mode broken"
+    - "Performance degraded"
+  action: "DEPLOYMENT BLOCKED - Fix before deploy"
+  
+P2_medium:
+  definition: "Minor issue, doesn't block core flow"
+  examples:
+    - "Animation slightly off"
+    - "Color contrast low"
+    - "Spacing inconsistent"
+  action: "Can deploy with known issue, fix in next cycle"
+  
+P3_low:
+  definition: "Cosmetic issue only"
+  examples:
+    - "Typo in copy"
+    - "Shadow slightly wrong"
+    - "Font weight off by 100"
+  action: "Deploy and fix in next cycle"
+```
+
+### 17.6 Testing Documentation
+
+**MANDATORY:** Document all findings
+
+```markdown
+## Shadow Test Report - YYYY-MM-DD
+
+### Test Environment
+- Branch: feature/name
+- Commit: abc123
+- Tester: @agent-name
+- Duration: XX minutes
+
+### Devices Tested
+- [ ] Desktop Chrome 1920x1080
+- [ ] Tablet iPad 768x1024
+- [ ] Mobile iPhone 375x812
+
+### Results Summary
+- Total Issues: X
+- P0: X
+- P1: X
+- P2: X
+- P3: X
+
+### Critical Issues (P0/P1)
+1. [Issue description]
+   - Device: [which device]
+   - Steps to reproduce: [steps]
+   - Expected: [expected behavior]
+   - Actual: [actual behavior]
+   - Screenshot: [link]
+
+### Resolved Issues
+1. [Issue] → Fixed in commit [hash]
+
+### Sign-off
+- [ ] All P0/P1 issues resolved
+- [ ] Performance metrics met
+- [ ] Accessibility checks pass
+- [ ] Ready for production
+
+Tester: @agent-name
+Date: YYYY-MM-DD
+```
+
+### 17.7 Golden Standard Enforcement
+
+**MANDATORY RULES:**
+
+```yaml
+pre_deploy_requirements:
+  - "ALL P0 issues MUST be resolved"
+  - "ALL P1 issues SHOULD be resolved (or documented with approval)"
+  - "Visual regression testing on minimum 3 devices"
+  - "Functional testing on critical paths"
+  - "Performance metrics within thresholds"
+  - "No console errors in production build"
+  - "Shadow test report documented"
+  
+post_deploy_verification:
+  - "Verify production URL within 5 minutes"
+  - "Run smoke tests on production"
+  - "Check error monitoring (Sentry/etc)"
+  - "Verify analytics tracking"
+  - "Monitor for 1 hour post-deploy"
+  
+rollback_criteria:
+  - "P0 issue discovered in production"
+  - "Error rate > 1%"
+  - "Performance degraded > 50%"
+  - "User complaints spike"
+  - "Any security vulnerability"
+```
+
+### 17.8 Quick Reference: Testing Commands
+
+```bash
+# Local testing
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run typecheck    # TypeScript check
+
+# Deployment
+vercel deploy        # Deploy to preview
+vercel --prod        # Deploy to production
+
+# Verification
+curl -s https://infoacademy.uk | head -20  # Check production
+```
+
+---
+
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
