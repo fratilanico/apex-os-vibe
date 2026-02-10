@@ -2,9 +2,25 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { SpectacularTerminal } from '../SpectacularTerminal';
+import { TerminalContent, TerminalInput, useTerminal } from '../SpectacularTerminal';
 
 export const TerminalSection: React.FC = () => {
+  const {
+    lines,
+    inputValue,
+    setInputValue,
+    step,
+    isProcessing,
+    showPillChoice,
+    glitchActive,
+    scanActive,
+    getPlaceholder,
+    terminalRef,
+    inputRef,
+    handleCommand,
+    handlePillChoice,
+  } = useTerminal();
+
   return (
     <div className="py-8 w-full">
       <motion.section
@@ -14,7 +30,7 @@ export const TerminalSection: React.FC = () => {
         transition={{ duration: 0.8, ease: 'easeOut' }}
         className="w-full"
       >
-        {/* Terminal window frame - breaking out to full width */}
+        {/* Terminal window frame - Input is OUTSIDE the scrollable area */}
         <div className="rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/90 w-full max-w-full transition-all duration-700">
           {/* Title bar */}
           <div className="h-10 bg-white/5 flex items-center px-4 gap-2 border-b border-white/5">
@@ -26,11 +42,18 @@ export const TerminalSection: React.FC = () => {
             </span>
           </div>
 
-          {/* Body - responsive height */}
-          <div className="relative">
-            <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] overflow-y-auto">
-              <SpectacularTerminal />
-            </div>
+          {/* Content area - scrollable */}
+          <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] overflow-y-auto">
+            <TerminalContent
+              lines={lines}
+              step={step}
+              isProcessing={isProcessing}
+              showPillChoice={showPillChoice}
+              glitchActive={glitchActive}
+              scanActive={scanActive}
+              onPillChoice={handlePillChoice}
+              terminalRef={terminalRef}
+            />
 
             {/* Scanline overlay */}
             <div
@@ -41,6 +64,18 @@ export const TerminalSection: React.FC = () => {
               }}
             />
           </div>
+
+          {/* Input bar - FIXED at bottom, outside scroll area */}
+          <TerminalInput
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            step={step}
+            isProcessing={isProcessing}
+            showPillChoice={showPillChoice}
+            getPlaceholder={getPlaceholder}
+            onSubmit={handleCommand}
+            inputRef={inputRef}
+          />
         </div>
       </motion.section>
     </div>

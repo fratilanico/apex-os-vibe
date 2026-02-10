@@ -18,26 +18,43 @@ export const BrandingBar: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-md md:backdrop-blur-xl border-b border-white/5 transition-all duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
-        {/* LEFT: LOGO ONLY - Far left corner */}
-        <div className="flex items-center">
-          {/* Chromatic ASCII Logo (Scaled for Navbar) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity -ml-4 md:-ml-6">
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.55] md:scale-[0.6] origin-left" />
+        {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
+        <div className="flex items-center gap-3 z-20">
+          {/* Chromatic ASCII Logo - Fixed sizing */}
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity overflow-visible" style={{ width: '140px' }}>
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.50] origin-left -ml-2 sm:-ml-0" />
+          </div>
+          
+          {/* GEEK MODE TOGGLE - Mobile only (left side) */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full border transition-all duration-300 ${
+                mode === 'GEEK' 
+                  ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.2)]' 
+                  : 'bg-white/5 border-white/10 text-white/40'
+              }`}
+            >
+              <Terminal className="w-3 h-3" />
+              <span className="text-[8px] font-mono font-bold tracking-wider uppercase">
+                {mode === 'GEEK' ? 'ON' : 'OFF'}
+              </span>
+            </button>
           </div>
         </div>
 
-        {/* CENTER: GEEK MODE TOGGLE */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        {/* CENTER: GEEK MODE TOGGLE - Desktop only */}
+        <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <button
             onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
-            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded-full border transition-all duration-300 group whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300 group whitespace-nowrap ${
               mode === 'GEEK' 
-                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)] md:shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
+                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
                 : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
             }`}
           >
-            <Terminal className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
-            <span className="text-[9px] md:text-[10px] sm:text-xs font-mono font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
+            <Terminal className={`w-3.5 h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
+            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
               {mode === 'GEEK' ? 'Geek: ON' : 'Geek: OFF'}
             </span>
           </button>

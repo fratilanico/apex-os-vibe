@@ -673,7 +673,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
         {renderProgress()}
 
         {/* Form card */}
-        <GlassCard className="p-8 max-w-2xl mx-auto" hover={false}>
+        <GlassCard className="p-8 max-w-2xl mx-auto bg-black/40" hover={false}>
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
