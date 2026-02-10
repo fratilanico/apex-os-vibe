@@ -87,11 +87,20 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     utterance.lang = language;
     
     // 2. TUNE VOICE FOR JARVIS FEEL
-    // Try to find a sophisticated British male voice if available
+    // Best 5 Browser Voice Options (Heuristic matching)
     const voices = synthRef.current.getVoices();
     const jarvisVoice = voices.find(v => 
-      (v.name.includes('Google UK English Male') || v.name.includes('Daniel') || v.name.includes('Arthur')) && v.lang.startsWith('en')
-    ) || voices.find(v => v.lang.startsWith('en') && v.name.includes('Male'));
+      // 1. Google UK English Male (The best free Jarvis vibe)
+      v.name.includes('Google UK English Male') || 
+      // 2. Daniel (Standard sophisticated British)
+      v.name.includes('Daniel') || 
+      // 3. Arthur (Deep resonance)
+      v.name.includes('Arthur') ||
+      // 4. Microsoft Thomas (Formal British)
+      v.name.includes('Thomas') ||
+      // 5. Google US English (Fallback)
+      (v.lang.startsWith('en') && v.name.includes('Male'))
+    );
     
     if (jarvisVoice) {
       utterance.voice = jarvisVoice;

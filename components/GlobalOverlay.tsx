@@ -23,10 +23,9 @@ export const GlobalOverlay: React.FC = () => {
   // Logic: Show HUD/Jarvis if:
   // 1. User passed PasswordGate (isAuthenticated)
   // 2. User unlocked the Terminal on the Waitlist (isUnlocked)
-  // 3. User is on the Waitlist page (Always visible per request)
-  // 4. User is NOT on a "clean" route (Landing)
+  // 3. User is NOT on a "clean" route (Waitlist/Landing)
   
-  const shouldShow = isAuthenticated || isUnlocked || isWaitlistRoute || !isLandingRoute;
+  const shouldShow = isAuthenticated || isUnlocked || (!isWaitlistRoute && !isLandingRoute);
 
   if (!shouldShow) return null;
 
