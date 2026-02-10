@@ -78,7 +78,7 @@ export class RecommendationEngine {
       userId: '',
       title: 'Content Operations at Scale',
       description: 'How to build a content machine for your startup',
-      type: 'strategy',
+      type: 'playbook',
       difficulty: 'intermediate',
       estimatedTime: 75,
       relevanceScore: 0.80,

@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { GlassCard } from '../ui/GlassCard';
 import { CountdownTimer } from '../CountdownTimer';
 
-// 21 days from Feb 7, 2026
-const WEBINAR_DATE = new Date('2026-02-28T18:00:00Z');
+// Friday 27th February 2026 at 6:00 PM UK time (GMT)
+const WEBINAR_DATE = new Date('2026-02-27T18:00:00+00:00');
 
 export const CountdownSection: React.FC = () => {
   return (
