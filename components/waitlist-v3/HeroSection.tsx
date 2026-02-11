@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Zap, Calendar, Bot } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { GradientText } from '../ui/GradientText';
-import { StatCard } from '../ui/StatCard';
 import { RotatingPunchlines } from '../ui/RotatingPunchlines';
 
 const container = {
@@ -18,24 +17,79 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+// Calculate initial time left to avoid showing 0 0 0 0 on load
+const calculateTimeLeft = () => {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 18);
+  const now = new Date();
+  const diff = targetDate.getTime() - now.getTime();
+  
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((diff % (1000 * 60)) / 1000),
+  };
+};
+
+// Countdown timer component
+const CountdownTimer: React.FC = () => {
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  
+  useEffect(() => {
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 18);
+    
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <div className="flex items-center justify-center gap-1 sm:gap-4 text-cyan-400 font-mono">
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.days}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Days</div>
+      </div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.hours}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Hrs</div>
+      </div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.minutes}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Min</div>
+      </div>
+      <div className="text-lg sm:text-xl">:</div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.seconds}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Sec</div>
+      </div>
+    </div>
+  );
+};
+
 export const HeroSection: React.FC = () => {
   return (
     <motion.section
       variants={container}
       initial="hidden"
       animate="show"
-      className="py-24 md:py-32 text-center"
+      className="py-16 md:py-24 text-center"
     >
-      {/* Badge */}
-      <motion.div variants={item} className="flex justify-center mb-8">
-        <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-sm text-cyan-400 font-bold tracking-widest uppercase">
-            Direct Handshake Active — Sovereign Tier
-          </span>
-        </div>
-      </motion.div>
-
       {/* Headline */}
       <motion.h1
         variants={item}
@@ -46,23 +100,40 @@ export const HeroSection: React.FC = () => {
         </GradientText>
       </motion.h1>
 
-      {/* Polychromatic Rotating Punchlines - FULL GEEK MODE */}
-      <motion.div variants={item} className="mb-16">
+      {/* Rotating Punchlines */}
+      <motion.div variants={item} className="mb-12">
         <RotatingPunchlines />
         <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">
           Zero equity. Maximum velocity.
         </p>
       </motion.div>
 
-      {/* Stat Cards */}
-      <motion.div
-        variants={container}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto"
+      {/* Countdown Section */}
+      <motion.div variants={item} className="mb-12">
+        <p className="text-sm text-white/40 uppercase tracking-widest mb-4">
+          Next Webinar Launch
+        </p>
+        <CountdownTimer />
+        <p className="text-cyan-400/80 text-sm mt-4 max-w-md mx-auto font-semibold">
+          First class starts 2nd week of March
+        </p>
+        <p className="text-white/30 text-sm mt-2 max-w-md mx-auto">
+          Secure your spot. Limited bandwidth available for personalized onboarding.
+        </p>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <motion.div 
+        variants={item}
+        className="flex flex-col items-center gap-2 text-white/30"
       >
-        <StatCard icon={Users} number="2,847+" label="Neural Syncs" accent="cyan" delay={0} />
-        <StatCard icon={Zap} number="153" label="Bandwidth Available" accent="emerald" delay={0.1} />
-        <StatCard icon={Calendar} number="30" label="Days to Launch" accent="amber" delay={0.2} />
-        <StatCard icon={Bot} number="17" label="Active Swarm" accent="violet" delay={0.3} />
+        <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <ArrowDown className="w-5 h-5" />
+        </motion.div>
       </motion.div>
     </motion.section>
   );
