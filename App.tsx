@@ -1,12 +1,9 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { PasswordGate } from './components/PasswordGate';
 import { ScrollToTop } from './components/ScrollToTop';
-import { StickyCTA } from './components/StickyCTA';
-import { EasterEggHints } from './components/EasterEggHints';
-import { PlayerOneHUD } from './components/artifacts/PlayerOne/PlayerOneHUD';
-import { PlayerOneErrorBoundary } from './components/artifacts/PlayerOne/PlayerOneErrorBoundary';
+import { GlobalOverlay } from './components/GlobalOverlay';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useWebVitals } from './hooks/useWebVitals';
 
@@ -29,7 +26,6 @@ const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
 const WaitlistPage = lazy(() => import('./components/waitlist-v3/WaitlistPageV3'));
 const WaitingListPage = lazy(() => import('./pages/WaitingList'));
-// const NewsletterHubPage = lazy(() => import('./components/NewsletterHub').then(m => ({ default: m.NewsletterHub })));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -165,11 +161,7 @@ const App = (): React.ReactElement => {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <HideOnWaitlist>
-        <PlayerOneErrorBoundary>
-          <PlayerOneHUD />
-        </PlayerOneErrorBoundary>
-      </HideOnWaitlist>
+      <GlobalOverlay />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public routes - no password protection */}
@@ -185,21 +177,8 @@ const App = (): React.ReactElement => {
           <Route path="/*" element={<ProtectedRoutes />} />
         </Routes>
       </Suspense>
-      <HideOnWaitlist>
-        <StickyCTA />
-        <ErrorBoundary fallback={null}>
-          <EasterEggHints />
-        </ErrorBoundary>
-      </HideOnWaitlist>
     </BrowserRouter>
   );
 };
 
 export default App;
-
-// Hide HUD/CTA on waitlist/waitinglist routes to keep the page clean
-const HideOnWaitlist: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  if (location.pathname.startsWith('/waitlist') || location.pathname.startsWith('/waitinglist')) return null;
-  return <>{children}</>;
-};

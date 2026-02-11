@@ -95,15 +95,15 @@ function getTierContext(tier: number): string {
   if (tier >= 1) {
     const m00 = curriculumModules.find(m => m.id === 'module-00');
     const m01 = curriculumModules.find(m => m.id === 'module-01');
-    if (m00) context += `\\nMODULE 00 FULL:\\n\${JSON.stringify(m00)}\\n`;
-    if (m01) context += `\\nMODULE 01 FULL:\\n\${JSON.stringify(m01)}\\n`;
+    if (m00) context += `\\nMODULE 00 FULL:\\n${JSON.stringify(m00)}\\n`;
+    if (m01) context += `\\nMODULE 01 FULL:\\n${JSON.stringify(m01)}\\n`;
     context += "\\nAGENTS.md (Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\\n";
   }
   if (tier >= 2) {
-    context += `\\nFULL CURRICULUM:\\n\${JSON.stringify(curriculumModules)}\\n`;
+    context += `\\nFULL CURRICULUM:\\n${JSON.stringify(curriculumModules)}\\n`;
     try {
       const agentsMd = fs.readFileSync('./AGENTS.md', 'utf-8');
-      context += `\\nAGENTS.md BIBLE:\\n\${agentsMd}\\n`;
+      context += `\\nAGENTS.md BIBLE:\\n${agentsMd}\\n`;
     } catch (e) {}
   }
   return context;
@@ -155,7 +155,7 @@ function buildSystemPrompt(
   const geekContext = mode === 'GEEK' ? GEEK_MODE_CONTEXT : '';
   const combined = [
     finalBasePrompt,
-    `CURRENT_USER_SYNC_LEVEL: \${tierContext}`,
+    `CURRENT_USER_SYNC_LEVEL: ${tierContext}`,
     geekContext,
     systemPrompt,
     context
@@ -202,7 +202,7 @@ interface AIProvider {
 const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
   let timeoutId: NodeJS.Timeout;
   const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(\`\${label} timeout after \${ms}ms\`)), ms);
+    timeoutId = setTimeout(() => reject(new Error(`${label} timeout after ${ms}ms`)), ms);
   });
   try {
     return await Promise.race([promise, timeout]);
@@ -220,13 +220,13 @@ const callPerplexity = async (message: string, history: any[], systemPrompt: str
   if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
   const resp = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
-    headers: { 'Authorization': \`Bearer \${apiKey}\`, 'Content-Type': 'application/json' },
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'sonar-reasoning-pro',
       messages: [{ role: 'system', content: systemPrompt }, ...history.slice(-10), { role: 'user', content: message }],
     }),
   });
-  if (!resp.ok) throw new Error(\`Perplexity error: \${resp.status}\`);
+  if (!resp.ok) throw new Error(`Perplexity error: ${resp.status}`);
   const data = await resp.json();
   return { content: data.choices[0].message.content, provider: 'perplexity', model: data.model, latency: Date.now() };
 };
@@ -237,7 +237,7 @@ const checkPerplexityHealth = async (): Promise<boolean> => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3000);
   try {
-    const resp = await fetch('https://api.perplexity.ai/models', { headers: { 'Authorization': \`Bearer \${apiKey}\` }, signal: controller.signal });
+    const resp = await fetch('https://api.perplexity.ai/models', { headers: { 'Authorization': `Bearer ${apiKey}` }, signal: controller.signal });
     return resp.ok;
   } catch (e) { return false; } finally { clearTimeout(timeout); }
 };
@@ -261,16 +261,16 @@ const callVertexModel = async (message: string, history: any[], systemPrompt: st
   const client = await auth.getClient();
   const tokenResp = await client.getAccessToken();
   const accessToken = typeof tokenResp === 'string' ? tokenResp : tokenResp?.token;
-  const vertexUrl = \`https://\${location}-aiplatform.googleapis.com/v1/projects/\${projectId}/locations/\${location}/publishers/google/models/\${model}:generateContent\`;
+  const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
   const response = await fetch(vertexUrl, {
     method: 'POST',
-    headers: { Authorization: \`Bearer \${accessToken}\`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [...history.map((h: any) => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content ?? '' }] })), { role: 'user', parts: [{ text: message }] }],
       systemInstruction: { parts: [{ text: systemPrompt }] },
     }),
   });
-  if (!response.ok) throw new Error(\`Vertex error: \${response.status}\`);
+  if (!response.ok) throw new Error(`Vertex error: ${response.status}`);
   const data = await response.json();
   return { content: data?.candidates?.[0]?.content?.parts?.[0]?.text || '', provider: 'vertex-ai', model, latency: Date.now() };
 };
@@ -336,7 +336,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!provider.enabled) continue;
       try {
         const healthy = provider.name === 'perplexity' ? await checkPerplexityHealth() : true;
-        if (!healthy) throw new Error(\`\${provider.name} unhealthy\`);
+        if (!healthy) throw new Error(`${provider.name} unhealthy`);
         
         const result = await withTimeout(provider.call(message, history, resolvedSystemPrompt), 60000, provider.name);
         
@@ -348,12 +348,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ content: finalContent, provider: result.provider, model: result.model, latency: Date.now() - startTime });
       } catch (error) {
         lastError = error as Error;
-        console.error(\`[Unified AI] \${provider.name} failed:\`, lastError.message);
+        console.error(`[Unified AI] ${provider.name} failed:`, lastError.message);
       }
     }
 
     throw lastError || new Error('All providers failed');
   } catch (err: any) {
-    return res.status(500).json({ error: 'OS_INTEL_OFFLINE', content: \`⚠️ NEURAL_LINK_SEVERED: \${err?.message || 'Cascade Failure'}.\`, provider: 'offline', model: 'fallback', latency: Date.now() - startTime });
+    return res.status(500).json({ error: 'OS_INTEL_OFFLINE', content: `⚠️ NEURAL_LINK_SEVERED: ${err?.message || 'Cascade Failure'}.`, provider: 'offline', model: 'fallback', latency: Date.now() - startTime });
   }
 }
