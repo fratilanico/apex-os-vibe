@@ -18,6 +18,9 @@ interface TerminalLine {
   type: 'input' | 'output' | 'error' | 'system' | 'success' | 'jarvis' | 'matrix' | 'ascii' | 'brand-logo';
 }
 
+// Color cycle for dynamic terminal effects
+const COLOR_CYCLE = ['#06b6d4', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
+
 const BOOT_SEQUENCE = [
   { text: JSON.stringify(APEX_LOGO_ASCII_LINES), delay: 0, type: 'brand-logo' as const },
   { text: '', delay: 100, type: 'system' as const },
@@ -62,10 +65,11 @@ const stepPrompts: Record<string, string[]> = {
 };
 
 export const useTerminal = (onComplete?: (data: { name: string; email: string; persona: 'PERSONAL' | 'BUSINESS' }) => void) => {
-  const { step, setStep, setPersona, setEmail, unlock, addHistory, trackTerminalCommand, persona, isUnlocked, email } = useOnboardingStore();
+  const { step, setStep, setPersona, setEmail, unlock, addHistory, persona, isUnlocked, email } = useOnboardingStore();
   const [bootLine, setBootLine] = useState(0);
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [colorIndex, setColorIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '' });
   const [glitchActive, setGlitchActive] = useState(false);
@@ -76,6 +80,16 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
   const terminalRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Color cycle - changes every 8 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setColorIndex(prev => (prev + 1) % COLOR_CYCLE.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentColor = persona === 'BUSINESS' ? '#8b5cf6' : COLOR_CYCLE[colorIndex];
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -357,7 +371,7 @@ export const useTerminal = (onComplete?: (data: { name: string; email: string; p
   };
 
   return {
-    lines, inputValue, setInputValue, step, isProcessing, showPillChoice, glitchActive, scanActive, getPlaceholder, terminalRef, scrollRef, inputRef, handleCommand, handlePillChoice,
+    lines, inputValue, setInputValue, step, isProcessing, showPillChoice, glitchActive, scanActive, getPlaceholder, terminalRef, scrollRef, inputRef, handleCommand, handlePillChoice, currentColor,
   };
 };
 
@@ -411,18 +425,18 @@ export const TerminalContent: React.FC<{
 };
 
 export const TerminalInput: React.FC<{
-  inputValue: string; setInputValue: (value: string) => void; step: OnboardingStep; isProcessing: boolean; showPillChoice: boolean; getPlaceholder: () => string; onSubmit: (value: string) => void; inputRef: React.RefObject<HTMLInputElement | null>;
-}> = ({ inputValue, setInputValue, step, isProcessing, showPillChoice, getPlaceholder, onSubmit, inputRef }) => {
+  inputValue: string; setInputValue: (value: string) => void; step: OnboardingStep; isProcessing: boolean; showPillChoice: boolean; getPlaceholder: () => string; onSubmit: (value: string) => void; inputRef: React.RefObject<HTMLInputElement | null>; currentColor: string;
+}> = ({ inputValue, setInputValue, step, isProcessing, showPillChoice, getPlaceholder, onSubmit, inputRef, currentColor }) => {
   return (
     <div className="relative border-t border-white/10 bg-black/40 backdrop-blur-xl">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" animate={{ width: ["0%", "30%", "30%", "0%"], left: ["0%", "0%", "70%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8)" }} />
-        <motion.div className="absolute top-0 right-0 w-[2px] bg-gradient-to-b from-transparent via-cyan-400 to-transparent" animate={{ height: ["0%", "100%", "100%", "0%"], top: ["0%", "0%", "0%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.75, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8)" }} />
-        <motion.div className="absolute bottom-0 right-0 h-[2px] bg-gradient-to-l from-transparent via-cyan-400 to-transparent" animate={{ width: ["0%", "30%", "30%", "0%"], right: ["0%", "0%", "70%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8)" }} />
-        <motion.div className="absolute bottom-0 left-0 w-[2px] bg-gradient-to-t from-transparent via-cyan-400 to-transparent" animate={{ height: ["0%", "100%", "100%", "0%"], bottom: ["0%", "0%", "0%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2.25, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: "0 0 10px rgba(34, 211, 238, 0.8)" }} />
+        <motion.div className="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-transparent to-transparent" animate={{ width: ["0%", "30%", "30%", "0%"], left: ["0%", "0%", "70%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: `0 0 10px ${currentColor}80`, background: `linear-gradient(90deg, transparent, ${currentColor}, transparent)` }} />
+        <motion.div className="absolute top-0 right-0 w-[2px] bg-gradient-to-b from-transparent to-transparent" animate={{ height: ["0%", "100%", "100%", "0%"], top: ["0%", "0%", "0%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.75, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: `0 0 10px ${currentColor}80`, background: `linear-gradient(180deg, transparent, ${currentColor}, transparent)` }} />
+        <motion.div className="absolute bottom-0 right-0 h-[2px] bg-gradient-to-l from-transparent to-transparent" animate={{ width: ["0%", "30%", "30%", "0%"], right: ["0%", "0%", "70%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: `0 0 10px ${currentColor}80`, background: `linear-gradient(270deg, transparent, ${currentColor}, transparent)` }} />
+        <motion.div className="absolute bottom-0 left-0 w-[2px] bg-gradient-to-t from-transparent to-transparent" animate={{ height: ["0%", "100%", "100%", "0%"], bottom: ["0%", "0%", "0%", "100%"] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 2.25, times: [0, 0.4, 0.6, 1] }} style={{ boxShadow: `0 0 10px ${currentColor}80`, background: `linear-gradient(0deg, transparent, ${currentColor}, transparent)` }} />
       </div>
       <form onSubmit={(e) => { e.preventDefault(); onSubmit(inputValue); }} className="relative flex items-center gap-4 p-4">
-        <span className="text-2xl font-bold text-cyan-400">λ</span>
+        <span className="text-2xl font-bold font-mono transition-colors duration-1000" style={{ color: currentColor }}>λ</span>
         <div className="flex-1 relative">
           <input ref={inputRef} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} className="w-full bg-transparent outline-none text-white text-base font-mono placeholder-white/30" placeholder={getPlaceholder()} disabled={step === 'boot' || isProcessing || showPillChoice} autoFocus />
         </div>
@@ -432,11 +446,11 @@ export const TerminalInput: React.FC<{
 };
 
 export const SpectacularTerminal: React.FC<{ onComplete?: (data: any) => void }> = ({ onComplete }) => {
-  const { lines, inputValue, setInputValue, step, isProcessing, showPillChoice, glitchActive, scanActive, getPlaceholder, terminalRef, scrollRef, inputRef, handleCommand, handlePillChoice } = useTerminal(onComplete);
+  const { lines, inputValue, setInputValue, step, isProcessing, showPillChoice, glitchActive, scanActive, getPlaceholder, terminalRef, scrollRef, inputRef, handleCommand, handlePillChoice, currentColor } = useTerminal(onComplete);
   return (
     <div className="flex flex-col h-full">
       <TerminalContent lines={lines} step={step} isProcessing={isProcessing} showPillChoice={showPillChoice} glitchActive={glitchActive} scanActive={scanActive} onPillChoice={handlePillChoice} terminalRef={terminalRef} scrollRef={scrollRef} />
-      <TerminalInput inputValue={inputValue} setInputValue={setInputValue} step={step} isProcessing={isProcessing} showPillChoice={showPillChoice} getPlaceholder={getPlaceholder} onSubmit={handleCommand} inputRef={inputRef} />
+      <TerminalInput inputValue={inputValue} setInputValue={setInputValue} step={step} isProcessing={isProcessing} showPillChoice={showPillChoice} getPlaceholder={getPlaceholder} onSubmit={handleCommand} inputRef={inputRef} currentColor={currentColor} />
     </div>
   );
 };

@@ -83,14 +83,14 @@ const WaitlistPageV3: React.FC = () => {
     }
   }, [handleSuccess]);
 
-  // Persona-driven aura colors - RESTORED to rich visible gradients
+  // Persona-driven aura colors - ORIGINAL cyan/emerald/violet scheme
   const getAuraColors = () => {
     if (persona === 'PERSONAL') {
       return [
-        { color: 'amber' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
-        { color: 'amber' as const, top: '40%', right: '-5%', size: 700, opacity: 0.25 },
-        { color: 'yellow' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
-        { color: 'amber' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.15 },
+        { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
+        { color: 'cyan' as const, top: '40%', right: '-5%', size: 700, opacity: 0.25 },
+        { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
+        { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.15 },
       ];
     }
     if (persona === 'BUSINESS') {
@@ -102,14 +102,14 @@ const WaitlistPageV3: React.FC = () => {
       ];
     }
     return [
-      { color: 'amber' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
+      { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.35 },
       { color: 'violet' as const, top: '30%', right: '-5%', size: 700, opacity: 0.25 },
-      { color: 'yellow' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
-      { color: 'amber' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.15 },
+      { color: 'emerald' as const, bottom: '20%', left: '-10%', size: 600, opacity: 0.20 },
+      { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 400, opacity: 0.15 },
     ];
   };
 
-  const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#d4af37';
+  const selectionColor = persona === 'BUSINESS' ? '#8b5cf6' : '#06b6d4';
 
   return (
     <div className="relative min-h-screen w-full text-white overflow-x-hidden"

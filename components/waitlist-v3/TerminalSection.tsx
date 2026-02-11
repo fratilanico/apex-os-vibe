@@ -20,6 +20,7 @@ export const TerminalSection: React.FC<{ onComplete?: (data: any) => void }> = (
     inputRef,
     handleCommand,
     handlePillChoice,
+    currentColor,
   } = useTerminal(onComplete);
 
   return (
@@ -77,6 +78,7 @@ export const TerminalSection: React.FC<{ onComplete?: (data: any) => void }> = (
             getPlaceholder={getPlaceholder}
             onSubmit={handleCommand}
             inputRef={inputRef}
+            currentColor={currentColor || '#06b6d4'}
           />
         </div>
       </motion.section>

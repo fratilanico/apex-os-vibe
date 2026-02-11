@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface AmbientGlowProps {
   color: 'cyan' | 'emerald' | 'violet' | 'amber' | 'pink' | 'yellow';
@@ -29,20 +30,28 @@ export const AmbientGlow: React.FC<AmbientGlowProps> = ({
   };
 
   return (
-    <div
+    <motion.div
       className="absolute pointer-events-none rounded-full ambient-glow"
       style={{
         width: `${size}px`,
         height: `${size}px`,
         backgroundColor: colorMap[color],
         filter: `blur(${size / 5}px)`,
-        opacity,
         top,
         left,
         right,
         bottom,
         transform: 'translate3d(0, 0, 0)', // Force GPU layer
         willChange: 'opacity', // Hint for browser optimization
+      }}
+      animate={{
+        scale: [1, 1.2, 1],
+        opacity: [opacity * 0.5, opacity, opacity * 0.5],
+      }}
+      transition={{
+        duration: 8,
+        repeat: Infinity,
+        ease: 'easeInOut',
       }}
     />
   );
