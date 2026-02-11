@@ -16,7 +16,7 @@
  * The Golden Standard Width for HUD components
  */
 export const HUD_WIDTH = 42;
-export const MOBILE_HUD_WIDTH = 32;
+export const MOBILE_HUD_WIDTH = 42; // Force 42 chars on mobile for consistent rendering
 
 /**
  * Color codes for terminal output (applied via CSS classes)
@@ -200,13 +200,13 @@ export function convertMarkdownToCLI(markdown: string): string {
   const targetWidth = getTargetWidth();
   
   // Convert headers to styled tags
-  output = output.replace(/^###\s+(.+)$/gm, '[h3]$1[/h3]\n');
-  output = output.replace(/^##\s+(.+)$/gm, '[h2]$1[/h2]\n');
-  output = output.replace(/^#\s+(.+)$/gm, '[h1]$1[/h1]\n');
+  output = output.replace(/^###\s+(.+)$/gm, '[h3][violet]$1[/violet][/h3]\n');
+  output = output.replace(/^##\s+(.+)$/gm, '[h2][cyan]$1[/cyan][/h2]\n');
+  output = output.replace(/^#\s+(.+)$/gm, '[h1][gold]$1[/gold][/h1]\n');
 
   // Bold / italic markers
-  output = output.replace(/\*\*(.+?)\*\*/g, '[b]$1[/b]');
-  output = output.replace(/__(.+?)__/g, '[b]$1[/b]');
+  output = output.replace(/\*\*(.+?)\*\*/g, '[emerald]$1[/emerald]');
+  output = output.replace(/__(.+?)__/g, '[emerald]$1[/emerald]');
   output = output.replace(/\*(.+?)\*/g, '$1');
   output = output.replace(/_(.+?)_/g, '$1');
   
@@ -233,6 +233,9 @@ export function convertMarkdownToCLI(markdown: string): string {
   return wrappedLines.join('\n');
 }
 
+/**
+ * Full ICON_MAP with 12 icons (Golden Standard)
+ */
 const ICON_MAP: Record<string, string> = {
   bolt: '⚡',
   rocket: '🚀',
@@ -241,11 +244,75 @@ const ICON_MAP: Record<string, string> = {
   warn: '⚠️',
   info: 'ℹ️',
   star: '⭐',
+  brain: '🧠',
+  shield: '🛡️',
+  money: '💰',
+  gear: '⚙️',
+  lock: '🔒',
 };
 
+/**
+ * Replace [icon:name] with emoji
+ */
+export function injectIcons(text: string): string {
+  return text.replace(/\[icon:([a-z-]+)\]/g, (_, name) => ICON_MAP[name] || '•');
+}
+
+/**
+ * Format a list of nodes as a table
+ */
+export function formatNodeList(nodes: {id: string, label: string, type: string, status?: string}[]): string {
+  const headers = ['ID', 'LABEL', 'TYPE'];
+  const rows = nodes.map(n => [n.id.substring(0, 8), n.label.substring(0, 15), n.type.substring(0, 8)]);
+  return formatTable(headers, rows);
+}
+
+/**
+ * Format an ASCII map of nodes
+ */
+export function formatAsciiMap(currentLabel: string, nodes: {id: string, label: string}[]): string {
+    let output = `\n      [ ${currentLabel} ]\n`;
+    output += `         |\n`;
+    output += `    +----+----+\n`;
+    nodes.slice(0, 3).forEach(n => {
+        output += `    | ${n.label}\n`;
+    });
+    return output;
+}
+
+/**
+ * Format player stats as a table
+ */
+export function formatPlayerStats(stats: any): string {
+    const headers = ['STAT', 'VALUE'];
+    const rows = Object.entries(stats).map(([k, v]) => [k, String(v)]);
+    return formatTable(headers, rows);
+}
+
+/**
+ * Format a list of skills as a table
+ */
+export function formatSkillsList(skills: {id: string, name: string, level: number}[]): string {
+    const headers = ['SKILL', 'LVL'];
+    const rows = skills.map(s => [s.name, String(s.level)]);
+    return formatTable(headers, rows);
+}
+
+/**
+ * Format a list of quests as a table
+ */
+export function formatQuestList(quests: {id: string, title: string, status: string}[]): string {
+    const headers = ['QUEST', 'STATUS'];
+    const rows = quests.map(q => [q.title.substring(0, 20), q.status]);
+    return formatTable(headers, rows);
+}
+
+/**
+ * Strip CLI tags and convert icons (for plain text output)
+ */
 export function stripCliTags(text: string): string {
   let output = text;
   output = output.replace(/\[icon:([a-z-]+)\]/g, (_, name) => ICON_MAP[name] ?? '•');
-  output = output.replace(/\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error)\]/g, '');
+  output = output.replace(/\[(?:\/)?(?:h1|h2|h3|b|code|muted|info|warn|success|error|violet|cyan|gold|emerald)\]/g, '');
   return output;
 }
