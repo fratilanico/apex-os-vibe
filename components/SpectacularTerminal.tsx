@@ -11,6 +11,7 @@ import {
   PLAYER_ONE_ASCII
 } from '../lib/terminal/constants';
 import { RotatingCTA } from './ui/Terminal/RotatingCTA';
+import { queryAI } from '../lib/ai/globalAIService';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
@@ -347,17 +348,41 @@ export const SpectacularTerminal: React.FC = () => {
   const handleChat = async (msg: string) => {
     setIsProcessing(true);
     try {
-      const res = await fetch('/api/ai-unified', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: msg,
-          userEmail: email,
-          context: `User persona: ${persona}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist.` 
-        }),
+      // Build rolling history from recent terminal lines (strategy A - no store changes)
+      const recentLines = lines.slice(-20); // Last 20 lines for context
+      const history: { role: 'user' | 'assistant'; content: string }[] = [];
+      
+      for (const line of recentLines) {
+        if (line.type === 'input') {
+          // Strip the "> " prefix from input lines
+          const content = line.text.replace(/^>\s*/, '');
+          if (content && content !== msg) { // Don't include current message
+            history.push({ role: 'user', content });
+          }
+        } else if (line.type === 'output' || line.type === 'jarvis') {
+          // Only include substantial responses (not empty lines)
+          if (line.text && line.text.length > 10) {
+            history.push({ role: 'assistant', content: line.text });
+          }
+        }
+      }
+      
+      // Keep only last 8-10 conversational turns to stay within token limits
+      const trimmedHistory = history.slice(-10);
+      
+      // Parser-compatible context with Mode and pathname
+      const mode = persona === 'PERSONAL' ? 'GEEK' : 'STANDARD';
+      const context = `The user is on the "/waitlist" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}. User persona: ${persona || 'undetermined'}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist.`;
+      
+      // Use queryAI for resilience (timeouts, error handling, fallback)
+      const response = await queryAI({
+        message: msg,
+        userEmail: email,
+        context,
+        history: trimmedHistory,
       });
-      const data = await res.json();
-      const content = data?.content || 'Intelligence unreachable.';
+      
+      const content = response?.content || 'Intelligence unreachable.';
       const formatted = CLIFormatter.convertMarkdownToCLI(content);
       formatted.split('\n').forEach(l => addTerminalLine(l, 'output'));
     } catch (e) {
