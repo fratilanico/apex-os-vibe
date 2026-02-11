@@ -345,9 +345,6 @@ auto_triggers:
     
   error-handling:
     keywords: ["error boundary", "try-catch", "null guard", "error handling"]
-    
-  google-adk-operational-playbook:
-    keywords: ["google adk", "agent development kit", "adk workflow", "adk orchestration", "multi-agent with google", "adk integration plan", "vertex agent orchestration", "tool-calling agent graph", "session memory + tools", "adk evals"]
 ```
 
 ---
