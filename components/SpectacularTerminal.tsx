@@ -106,6 +106,8 @@ export const SpectacularTerminal: React.FC = () => {
     persona, setPersona, 
     trajectory, setTrajectory,
     pillPromptedAt, setPillPromptedAt,
+    strictMode, setStrictMode,
+    showSuggestions, setShowSuggestions,
     name, setName,
     phone, setPhone,
     discovery,
@@ -127,7 +129,11 @@ export const SpectacularTerminal: React.FC = () => {
   const [scanActive, setScanActive] = useState(false);
   const [showPillChoice, setShowPillChoice] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [cliWrapWidth, setCliWrapWidth] = useState<number>(42);
+  const [cliWrapWidth, setCliWrapWidth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 42;
+    return window.innerWidth < 640 ? 42 : 100;
+  });
+  const [lastUserMessage, setLastUserMessage] = useState<string>('');
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -152,13 +158,20 @@ export const SpectacularTerminal: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Responsive CLI wrap width (42..96) based on terminal pane
+  // Responsive CLI wrap width
+  // - Mobile: force ~42 chars
+  // - Tablet/Desktop: fill available width (clamped)
   useEffect(() => {
     const el = terminalRef.current;
     if (!el) return;
 
     const compute = () => {
       try {
+        // Mobile requirement: keep CLI width ~42 for readability.
+        if (window.innerWidth < 640) {
+          setCliWrapWidth(42);
+          return;
+        }
         const style = window.getComputedStyle(el);
         const padL = parseFloat(style.paddingLeft || '0') || 0;
         const padR = parseFloat(style.paddingRight || '0') || 0;
@@ -181,7 +194,8 @@ export const SpectacularTerminal: React.FC = () => {
         if (!charWidth || !Number.isFinite(charWidth)) return;
 
         const cols = Math.floor(innerWidthPx / charWidth);
-        const clamped = Math.max(42, Math.min(96, cols));
+        const maxCols = Math.max(80, Math.min(140, cols));
+        const clamped = Math.max(42, Math.min(maxCols, cols));
         setCliWrapWidth(clamped);
       } catch {
         // Keep default width.
@@ -197,6 +211,32 @@ export const SpectacularTerminal: React.FC = () => {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  const getDynamicSuggestions = useCallback((): string[] => {
+    const tId = trajectory === 'RED' ? 'RED' : 'BLUE';
+    const base = TRAJECTORY_CONFIG[tId].defaultPrompts;
+    const t = (lastUserMessage || '').trim().toLowerCase();
+    if (!t) return base;
+
+    // If user explicitly says "build mvp" (or similar), stop interrogating.
+    if (/\bmvp\b|build\s+mvp|ship\s+mvp|prototype/.test(t)) {
+      return [
+        'Give me 3 MVP definitions for my idea and pick the fastest one.',
+        'Assume no clarity. Infer the likely product and propose the smallest measurable outcome in 10 days.',
+        'Turn "build mvp" into a concrete scope: 3 user stories + success metrics + deployment checklist.',
+      ];
+    }
+
+    if (/module\s*0|module\s*00|the\s+shift/.test(t)) {
+      return [
+        'Explain Module 00 in one mental model + one practical exercise.',
+        'Give me a 15-minute drill to adopt the orchestrator mindset today.',
+        'What is the biggest mistake people make with AI coding?'
+      ];
+    }
+
+    return base;
+  }, [trajectory, lastUserMessage]);
   
   // Always use full ASCII - scaling handles mobile
   const playerOneLogo = PLAYER_ONE_ASCII;
@@ -554,9 +594,20 @@ export const SpectacularTerminal: React.FC = () => {
         goal ? `Goal: ${goal}` : undefined,
         `Unlocked: ${isUnlocked ? 'true' : 'false'}`,
         `Step: ${step}`,
+        `StrictMode: ${strictMode ? 'on' : 'off'}`,
       ].filter(Boolean).join(' | ');
 
-      const context = `The user is on the "/waitlist" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}. User persona: ${persona || 'undetermined'}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist. StateHints: ${stateHints}`;
+      const context = `The user is on the "/waitlist" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}. User persona: ${persona || 'undetermined'}. Trajectory: ${trajectory || 'unset'}. StrictMode: ${strictMode ? 'on' : 'off'}. Access granted to Module 00/01. System: Stark-V3. StateHints: ${stateHints}`;
+
+      const systemPrompt = [
+        'You are JARVIS for APEX OS. You are helpful, fast, and non-rigid.',
+        'Never threaten termination, reassignment, penalties, or "lower-priority queues".',
+        'Infer intent from context and the user message. If unclear, ask at most ONE clarifying question.',
+        'If the user says "build mvp" or provides a vague request, propose 3 concrete MVP targets with measurable outcomes and pick a recommended default.',
+        'Do not force the user into a long onboarding questionnaire. They are already unlocked.',
+        'Keep answers actionable: bullets, next steps, and one optional clarifier.',
+        `StrictMode: ${strictMode ? 'ON (ask for precise target)' : 'OFF (infer + propose options)'}`,
+      ].join('\n');
       
       // Use queryAI for resilience (timeouts, error handling, fallback)
       const requestedProvider = 'auto';
@@ -565,8 +616,15 @@ export const SpectacularTerminal: React.FC = () => {
         userEmail: email,
         context,
         history: trimmedHistory,
+        systemPrompt,
         preferredProvider: requestedProvider,
       });
+
+      void trackEvent({
+        email,
+        eventType: 'terminal_prompt_submitted',
+        payload: { text: msg, trajectory: trajectory ?? null },
+      }).catch(() => undefined);
       
       const content = response?.content || 'Intelligence unreachable.';
        const formatted = CLIFormatter.convertMarkdownToCLI(content, { width: cliWrapWidth });
@@ -598,6 +656,24 @@ export const SpectacularTerminal: React.FC = () => {
     const trimmed = val.trim();
     if (!trimmed) return;
     const lower = trimmed.toLowerCase();
+
+    setLastUserMessage(trimmed);
+
+    // Strictness toggle (default: helpful mode)
+    if (lower === 'strict on' || lower === 'strict: on') {
+      addTerminalLine(`> ${trimmed}`, 'input');
+      setStrictMode(true);
+      addTerminalLine('Strict mode enabled. I will ask for precise targets when missing.', 'system');
+      setInputValue('');
+      return;
+    }
+    if (lower === 'strict off' || lower === 'strict: off') {
+      addTerminalLine(`> ${trimmed}`, 'input');
+      setStrictMode(false);
+      addTerminalLine('Strict mode disabled. I will infer intent and keep you moving.', 'system');
+      setInputValue('');
+      return;
+    }
 
     // Guard: prevent accidental pasting of token/trace dumps into the public terminal.
     if (looksLikeTokenDump(trimmed)) {
@@ -665,6 +741,17 @@ export const SpectacularTerminal: React.FC = () => {
     }
 
     if (step === 'unlocked') {
+      if (lower === 'suggestions off' || lower === 'tips off') {
+        setShowSuggestions(false);
+        addTerminalLine('Suggestions disabled. Type `suggestions on` to re-enable.', 'system');
+        return;
+      }
+      if (lower === 'suggestions on' || lower === 'tips on') {
+        setShowSuggestions(true);
+        addTerminalLine('Suggestions enabled.', 'system');
+        return;
+      }
+
       // Pill selection works any time after unlock (non-blocking)
       if (lower === '1' || lower.includes('blue pill') || lower === 'blue') {
         setTrajectory('BLUE');
@@ -772,8 +859,7 @@ export const SpectacularTerminal: React.FC = () => {
   };
 
   const currentColor = persona === 'BUSINESS' ? '#8b5cf6' : COLOR_CYCLE[colorIndex]!;
-  const activeTrajectory = trajectory === 'RED' ? 'RED' : trajectory === 'BLUE' ? 'BLUE' : 'BLUE';
-  const suggestionPrompts = TRAJECTORY_CONFIG[activeTrajectory].defaultPrompts;
+  const suggestionPrompts = getDynamicSuggestions();
 
   return (
     <motion.div 
@@ -937,14 +1023,14 @@ export const SpectacularTerminal: React.FC = () => {
           </div>
         )}
 
-        {isUnlocked && (
+        {isUnlocked && showSuggestions && !showPillChoice && (
           <div className="px-6 pt-2">
             <div className="flex items-center justify-between gap-3">
               <div className="text-[10px] font-mono text-white/35 tracking-widest uppercase">
                 Lens: {trajectory ? `${trajectory} PILL` : 'UNSET'}
               </div>
               <div className="text-[10px] font-mono text-white/25 tracking-widest">
-                Type `pill` to reopen
+                Type `pill` or `suggestions off`
               </div>
             </div>
             <div className="mt-2 flex gap-2 overflow-x-auto pb-2 custom-scrollbar">

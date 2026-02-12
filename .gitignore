@@ -7,3 +7,9 @@ dist/
 .DS_Store
 *.log
 .env*.local
+
+# Local debug artifacts (do not deploy)
+logs/
+
+# Local Supabase artifacts (not wired in deploy yet)
+supabase/

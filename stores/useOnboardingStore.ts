@@ -53,6 +53,8 @@ interface OnboardingState {
   persona: Persona;
   trajectory: Trajectory;
   pillPromptedAt: string | null;
+  strictMode: boolean;
+  showSuggestions: boolean;
   name: string;
   phone: string;
   discovery: string;
@@ -76,6 +78,8 @@ interface OnboardingState {
   setPersona: (persona: Persona) => void;
   setTrajectory: (trajectory: Trajectory) => void;
   setPillPromptedAt: (iso: string | null) => void;
+  setStrictMode: (strict: boolean) => void;
+  setShowSuggestions: (show: boolean) => void;
   setName: (name: string) => void;
   setPhone: (phone: string) => void;
   setDiscovery: (discovery: string) => void;
@@ -111,6 +115,8 @@ export const useOnboardingStore = create<OnboardingState>()(
       persona: null,
       trajectory: null,
       pillPromptedAt: null,
+      strictMode: false,
+      showSuggestions: true,
       name: '',
       phone: '',
       discovery: '',
@@ -157,6 +163,8 @@ export const useOnboardingStore = create<OnboardingState>()(
       setPersona: (persona) => set({ persona }),
       setTrajectory: (trajectory) => set({ trajectory }),
       setPillPromptedAt: (iso) => set({ pillPromptedAt: iso }),
+      setStrictMode: (strict) => set({ strictMode: strict }),
+      setShowSuggestions: (show) => set({ showSuggestions: show }),
       setName: (name) => set({ name }),
       setPhone: (phone) => set({ phone }),
       setDiscovery: (discovery) => set({ discovery }),
@@ -228,6 +236,8 @@ export const useOnboardingStore = create<OnboardingState>()(
         persona: null,
         trajectory: null,
         pillPromptedAt: null,
+        strictMode: false,
+        showSuggestions: true,
         name: '',
         phone: '',
         discovery: '',
@@ -251,6 +261,8 @@ export const useOnboardingStore = create<OnboardingState>()(
         persona: state.persona,
         trajectory: state.trajectory,
         pillPromptedAt: state.pillPromptedAt,
+        strictMode: state.strictMode,
+        showSuggestions: state.showSuggestions,
         name: state.name,
         phone: state.phone,
         discovery: state.discovery,

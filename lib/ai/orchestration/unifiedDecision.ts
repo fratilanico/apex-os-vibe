@@ -37,6 +37,7 @@ export interface StateSnapshot {
   mode: 'GEEK' | 'STANDARD';
   clientSessionId?: string;
   clientSyncHint?: 'TIER_0' | 'TIER_1' | 'UNKNOWN';
+  strictMode: boolean;
   currentStep: OnboardingStep;
   unlocked: boolean;
   tier: number;
@@ -145,6 +146,14 @@ function extractClientSyncHint(context?: string): 'TIER_0' | 'TIER_1' | 'UNKNOWN
   if (n === 'TIER0') return 'TIER_0';
   if (n === 'TIER1') return 'TIER_1';
   return 'UNKNOWN';
+}
+
+function extractStrictMode(context?: string): boolean {
+  if (!context) return false;
+  const m = context.match(/\bStrictMode\s*:\s*(on|off|true|false)\b/i);
+  if (!m?.[1]) return false;
+  const v = m[1].toLowerCase();
+  return v === 'on' || v === 'true';
 }
 
 function extractMode(context?: string): 'GEEK' | 'STANDARD' {
@@ -316,6 +325,7 @@ export function buildStateSnapshot(
   const mode = extractMode(req.context);
   const clientSessionId = extractClientSessionId(req.context);
   const clientSyncHint = extractClientSyncHint(req.context);
+  const strictMode = extractStrictMode(req.context);
   const inferred = inferKnownFields(req);
   const known = {
     email: inferred.email || seed?.email,
@@ -335,12 +345,86 @@ export function buildStateSnapshot(
     mode,
     clientSessionId,
     clientSyncHint,
+    strictMode,
     currentStep,
     unlocked,
     tier,
     message: req.message || '',
     known,
   };
+}
+
+function looksLikeRigidGoalGate(text: string): boolean {
+  const t = (text || '').toLowerCase();
+  return (
+    t.includes('termination') ||
+    t.includes('reassignment') ||
+    t.includes('lower-priority queue') ||
+    t.includes('failure to provide') ||
+    t.includes('directive:') ||
+    (t.includes('this session') && t.includes('terminated')) ||
+    (t.includes('smart') && t.includes('objective')) ||
+    (t.includes('provide your') && t.includes('now'))
+  );
+}
+
+function buildHelpfulObjectiveAssist(snapshot: StateSnapshot): string {
+  const persona = snapshot.known.persona || 'PERSONAL';
+  const discovery = snapshot.known.discovery;
+  const base = discovery ? `Based on your context: ${discovery}` : 'Based on what you shared so far.';
+
+  const options = persona === 'BUSINESS'
+    ? [
+        {
+          id: '1',
+          title: 'Customer Support Autopilot (MVP)',
+          metric: 'Resolve 50% of inbound FAQs end-to-end with human handoff',
+        },
+        {
+          id: '2',
+          title: 'Lead Qualifier + Router (MVP)',
+          metric: 'Auto-classify leads + push to Notion/Sheets with score + next action',
+        },
+        {
+          id: '3',
+          title: 'Internal Ops Command Center (MVP)',
+          metric: 'Single command interface that runs 5 workflows reliably',
+        },
+      ]
+    : [
+        {
+          id: '1',
+          title: 'Personal AI Workflow (MVP)',
+          metric: 'Automate 1 daily workflow: capture -> summarize -> next steps',
+        },
+        {
+          id: '2',
+          title: 'Micro SaaS Launch (MVP)',
+          metric: 'Live app deployed with 1 paid feature + analytics',
+        },
+        {
+          id: '3',
+          title: 'Codebase Assistant (MVP)',
+          metric: 'Answer repo questions + generate PR-ready diffs for 3 tasks',
+        },
+      ];
+
+  return [
+    '[h2]No Blocking. We Move.[/h2]',
+    `[muted]${base}[/muted]`,
+    '',
+    '[success]✓[/success] You can start with a rough target. I will refine it as we go.',
+    '',
+    '[h3]Pick a 10-day target (or I pick #1 by default)[/h3]',
+    ...options.flatMap((o) => [
+      `[b]${o.id}. ${o.title}[/b]`,
+      `[muted]Success metric:[/muted] ${o.metric}`,
+      '',
+    ]),
+    '[info]Reply with 1/2/3, or tell me: your domain + your stack + your current users (if any).[/info]',
+    '',
+    '[muted]If you WANT hard gating, type `strict on`. Default is helpful mode.[/muted]',
+  ].join('\n').trim();
 }
 
 function wantsRecommendations(message: string): boolean {
@@ -513,6 +597,12 @@ export function applyResponsePolicy(content: string, snapshot: StateSnapshot, ac
   // Force customer-first action framing
   if (action.type === 'RETURN_RECOMMENDATIONS' && !/next\s*step|recommend/i.test(out)) {
     out = `[h2]Execution Priority[/h2]\n[success]✓[/success] Focused recommendations generated.\n\n${out}`;
+  }
+
+  // Waitlist UX: never threaten, never block, never force SMART gates unless user explicitly enables strict mode.
+  const isWaitlistRoute = snapshot.route.includes('/waitlist') || snapshot.route.includes('/waitinglist');
+  if (isWaitlistRoute && snapshot.unlocked && !snapshot.strictMode && looksLikeRigidGoalGate(out)) {
+    out = buildHelpfulObjectiveAssist(snapshot);
   }
 
   return out;
