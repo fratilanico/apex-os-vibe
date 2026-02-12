@@ -161,6 +161,13 @@ const App = (): React.ReactElement => {
           {/* Public routes - no password protection */}
           <Route path="/waitlist/*" element={<PublicRoutes />} />
           <Route path="/whitelist/*" element={<PublicRoutes />} />
+          <Route path="/fullpitch01" element={
+            <Suspense fallback={<PageLoader />}>
+              <ErrorBoundary fallback={<RouteErrorFallback error={new Error('Full Pitch 01 page error')} />}>
+                <FullPitch01Page />
+              </ErrorBoundary>
+            </Suspense>
+          } />
           <Route path="/waitinglist/*" element={
             <ErrorBoundary fallback={<RouteErrorFallback error={new Error('WaitingList page error')} />}>
               <WaitingListPage />

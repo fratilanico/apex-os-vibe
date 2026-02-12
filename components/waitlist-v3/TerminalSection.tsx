@@ -27,19 +27,8 @@ export const TerminalSection: React.FC = () => {
           </div>
 
           {/* Body - responsive height */}
-          <div className="relative">
-            <div className="h-[60dvh] sm:h-[65dvh] md:h-[70dvh] lg:h-[75dvh]">
-              <SpectacularTerminal />
-            </div>
-
-            {/* Scanline overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
-              }}
-            />
+          <div className="relative h-[75dvh] sm:h-[80dvh]">
+            <SpectacularTerminal />
           </div>
         </div>
       </motion.section>

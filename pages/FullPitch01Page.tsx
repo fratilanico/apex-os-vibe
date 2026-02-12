@@ -5,7 +5,8 @@ import {
   BarChart3, Cpu, Layers, ArrowRight, Calculator,
   MapPin, Landmark, Terminal, Workflow, Code2, Share2,
   AlertTriangle, Shield, CheckCircle2, ChevronRight,
-  Database, Lock, Play, Sparkles, Award, Briefcase, Network
+  Database, Lock, Play, Sparkles, Award, Briefcase, Network,
+  Crown, Brain, Zap as ZapIcon
 } from 'lucide-react';
 
 // Modular Component Imports

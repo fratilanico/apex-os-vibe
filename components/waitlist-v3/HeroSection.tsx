@@ -88,7 +88,7 @@ export const HeroSection: React.FC = () => {
       variants={container}
       initial="hidden"
       animate="show"
-      className="py-16 md:py-24 text-center"
+      className="min-h-[calc(100dvh-64px)] flex flex-col justify-center py-12 md:py-20 text-center"
     >
       {/* Headline */}
       <motion.h1

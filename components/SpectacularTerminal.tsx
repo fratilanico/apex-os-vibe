@@ -271,6 +271,22 @@ export const SpectacularTerminal: React.FC = () => {
     addHistory(`[ASCII] multi_color_art_block`);
   }, [addHistory]);
 
+  // Welcome back effect for returning users
+  useEffect(() => {
+    if (isUnlocked && lines.length === 0 && !logoRenderedRef.current) {
+      logoRenderedRef.current = true;
+      addMultiColorAsciiArt(
+        APEX_LOGO_ASCII_LINES,
+        `leading-none ${isMobile ? 'text-[6px]' : 'text-[12px]'} drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]`
+      );
+      addTerminalLine(`[SYSTEM] Identity verified: ${name || 'Player 1'}`, 'success');
+      addTerminalLine('━━━━━━━━━ NEURAL LINK RESTORED ━━━━━━━━━', 'success');
+      addTerminalLine('', 'system');
+      addTerminalLine('JARVIS: Welcome back, Founder. All systems operational.', 'jarvis');
+      addTerminalLine('What are we building today? Type `help` for commands.', 'jarvis');
+    }
+  }, [isUnlocked, lines.length, name, addTerminalLine, addMultiColorAsciiArt, isMobile]);
+
   // Boot Sequence
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -379,11 +395,13 @@ export const SpectacularTerminal: React.FC = () => {
     const el = terminalRef.current;
     if (!el) return;
     if (pinnedToBottomRef.current) {
-      el.scrollTop = el.scrollHeight;
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
     } else {
       setHasNewOutput(true);
     }
-  }, [lines]);
+  }, [lines, showPillChoice]);
 
   const validateEmail = (e: string) => /\S+@\S+\.\S+/.test(e);
 
@@ -558,6 +576,14 @@ export const SpectacularTerminal: React.FC = () => {
     return false;
   };
 
+  const looksLikeRigidGoalGate = (text: string): boolean => {
+    const lower = text.toLowerCase();
+    return (
+      (lower.includes('terminate') || lower.includes('session') || lower.includes('invalid')) &&
+      (lower.includes('sorry') || lower.includes('cannot') || lower.includes('unable'))
+    );
+  };
+
   const handleChat = async (msg: string) => {
     setIsProcessing(true);
     try {
@@ -627,7 +653,13 @@ export const SpectacularTerminal: React.FC = () => {
       }).catch(() => undefined);
       
       const content = response?.content || 'Intelligence unreachable.';
-       const formatted = CLIFormatter.convertMarkdownToCLI(content, { width: cliWrapWidth });
+      
+      // Auto-end session logic
+      if (looksLikeRigidGoalGate(content)) {
+        addTerminalLine('SYSTEM: Optimization detected. Bypassing rigid protocol...', 'matrix');
+      }
+
+      const formatted = CLIFormatter.convertMarkdownToCLI(content, { width: cliWrapWidth });
        formatted.split('\n').forEach(l => addTerminalLine(l, 'output'));
       addTerminalLine(
         formatProviderDebugLine(
@@ -863,7 +895,7 @@ export const SpectacularTerminal: React.FC = () => {
 
   return (
     <motion.div 
-      className={`flex-1 bg-black/90 backdrop-blur-2xl border-2 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative min-h-[400px] sm:min-h-[500px] ${glitchActive ? 'animate-glitch' : ''}`}
+      className={`h-full w-full bg-black/90 backdrop-blur-2xl border-2 rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl transition-all duration-1000 relative ${glitchActive ? 'animate-glitch' : ''}`}
       style={{ borderColor: `${currentColor}40`, boxShadow: `0 0 100px ${currentColor}10` }}
     >
       {/* Biometric Scan Line */}

@@ -85,19 +85,7 @@ export const RotatingPunchlines: React.FC = () => {
         </motion.div>
       </AnimatePresence>
       
-      {/* Progress indicator */}
-      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
-        {PUNCHLINES.map((_, idx) => (
-          <div
-            key={idx}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              idx === currentIndex 
-                ? 'w-6 bg-gradient-to-r from-cyan-400 to-violet-400' 
-                : 'w-1 bg-zinc-700'
-            }`}
-          />
-        ))}
-      </div>
+      {/* Progress indicator removed per Golden Standard instructions */}
     </div>
   );
 };
