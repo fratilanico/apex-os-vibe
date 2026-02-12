@@ -8,41 +8,13 @@ interface MatrixRainProps {
   speed?: number;
 }
 
-// Device type detection with Samsung Tab specific check
-const getDeviceType = () => {
-  if (typeof window === 'undefined') return { isMobile: false, isTablet: false, isSamsungTab: false, dpr: 1 };
-  
-  const userAgent = navigator.userAgent.toLowerCase();
-  const isMobile = /android(?!.*tab|.*tablet)|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
-  const isTablet = /ipad|android.*tablet|android.*tab|samsung.*tab|galaxy.*tab/i.test(userAgent) || 
-                   (window.innerWidth >= 600 && window.innerWidth <= 1400 && 'ontouchstart' in window);
-  const isSamsungTab = /samsung.*tab|sm-t|galaxy.*tab/i.test(userAgent);
-  const dpr = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
-  
-  return { isMobile, isTablet, isSamsungTab, dpr };
-};
-
-// GPU-accelerated device detection
-const getGPUSettings = () => {
-  const { isMobile, isTablet, isSamsungTab, dpr } = getDeviceType();
-  
-  // Aggressive settings for Samsung tablets and all tablets
-  const isHighLoadDevice = isTablet || isSamsungTab;
-  
-  return {
-    isMobile,
-    isTablet: isTablet || isSamsungTab,
-    isSamsungTab,
-    dpr,
-    // Frame skipping: 2 for desktop (30fps), 3 for tablets (20fps)
-    frameSkip: isHighLoadDevice ? 3 : 2,
-    // Max columns to render
-    maxColumns: isHighLoadDevice ? 40 : 80,
-    // Canvas scale: render at lower res, scale up with CSS
-    canvasScale: isHighLoadDevice ? 0.5 : 0.75,
-    // Opacity
-    opacity: isHighLoadDevice ? 0.15 : 0.20,
-  };
+// Detect if device is low-powered (tablet, mobile, older devices)
+const isLowPoweredDevice = () => {
+  if (typeof window === 'undefined') return false;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent) || (window.innerWidth >= 768 && window.innerWidth <= 1366);
+  const isLowMemory = (navigator as any).deviceMemory && (navigator as any).deviceMemory < 4;
+  return isMobile || isTablet || isLowMemory;
 };
 
 export const MatrixRain: React.FC<MatrixRainProps> = ({ 
@@ -50,9 +22,8 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
   speed = 1 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const { mode } = useOnboardingStore();
-  const [gpuSettings] = useState(() => getGPUSettings());
+  const [isLowPower] = useState(() => isLowPoweredDevice());
   const frameCountRef = useRef(0);
 
   useEffect(() => {
@@ -64,51 +35,47 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // GPU optimization: Set canvas to lower resolution and scale with CSS
-    const displayWidth = Math.min(window.innerWidth, 1920);
-    const displayHeight = Math.min(window.innerHeight, 1080);
-    const renderWidth = Math.floor(displayWidth * gpuSettings.canvasScale);
-    const renderHeight = Math.floor(displayHeight * gpuSettings.canvasScale);
-    
-    canvas.width = renderWidth;
-    canvas.height = renderHeight;
-    // Scale canvas via CSS to display size
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
+    // Limit canvas size for performance
+    const maxWidth = Math.min(window.innerWidth, 1920);
+    const maxHeight = Math.min(window.innerHeight, 1080);
+    canvas.width = maxWidth;
+    canvas.height = maxHeight;
 
-    // Wider columns = fewer elements to render
-    const columnWidth = gpuSettings.isTablet ? 40 : 30;
-    const columns = Math.floor(renderWidth / columnWidth);
+    // Reduce columns for low-power devices
+    const columnWidth = isLowPower ? 40 : 20;
+    const columns = Math.floor(maxWidth / columnWidth);
     const drops: number[] = new Array(columns).fill(1);
     
-    // Binary only on high-load devices for performance
-    const chars = gpuSettings.isTablet 
+    // Simpler charset for better performance
+    const chars = isLowPower 
       ? '01'
-      : '0123456789ABCDEF';
+      : '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
 
     let animationId: number;
-    const frameSkip = gpuSettings.frameSkip;
+    // Skip frames on low-power devices (30fps instead of 60fps)
+    const frameSkip = isLowPower ? 2 : 1;
 
     const draw = () => {
       frameCountRef.current++;
       
-      // Frame skipping for consistent FPS
+      // Skip frames for performance
       if (frameCountRef.current % frameSkip !== 0) {
         animationId = requestAnimationFrame(draw);
         return;
       }
 
-      // Clear with fade effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Use lighter clearing on low-power devices
+      if (isLowPower) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
 
       ctx.fillStyle = '#0F0';
-      ctx.font = `${gpuSettings.isTablet ? 12 : 14}px monospace`;
+      ctx.font = isLowPower ? '12px monospace' : '15px monospace';
 
-      // Limit iterations to maxColumns
-      const maxIterations = Math.min(drops.length, gpuSettings.maxColumns);
-
-      for (let i = 0; i < maxIterations; i++) {
+      for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)] ?? '0';
         const dropPos = drops[i] ?? 0;
         ctx.fillText(text, i * columnWidth, dropPos * 20);
@@ -125,15 +92,8 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
     draw();
 
     const handleResize = () => {
-      const newDisplayWidth = Math.min(window.innerWidth, 1920);
-      const newDisplayHeight = Math.min(window.innerHeight, 1080);
-      const newRenderWidth = Math.floor(newDisplayWidth * gpuSettings.canvasScale);
-      const newRenderHeight = Math.floor(newDisplayHeight * gpuSettings.canvasScale);
-      
-      canvas.width = newRenderWidth;
-      canvas.height = newRenderHeight;
-      canvas.style.width = `${newDisplayWidth}px`;
-      canvas.style.height = `${newDisplayHeight}px`;
+      canvas.width = Math.min(window.innerWidth, 1920);
+      canvas.height = Math.min(window.innerHeight, 1080);
     };
 
     window.addEventListener('resize', handleResize);
@@ -142,34 +102,20 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
     };
-  }, [enabled, mode, speed, gpuSettings]);
+  }, [enabled, mode, speed, isLowPower]);
 
   if (!enabled || mode !== 'GEEK') return null;
 
   return (
-    <div
-      ref={containerRef}
-      className="fixed inset-0 z-0 pointer-events-none"
-      style={{
-        opacity: gpuSettings.opacity,
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        isolation: 'isolate',
-        contain: 'layout style paint',
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0"
-        style={{
-          imageRendering: 'pixelated', // Sharper scaling
-        }}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none opacity-20"
+      style={{ mixBlendMode: 'screen' }}
+    />
   );
 };
 
-// Enhanced scanlines with GPU acceleration
+// Enhanced scanlines that respond to intensity
 export const Scanlines: React.FC = () => {
   const { geekEffects } = useOnboardingStore();
   const intensity = geekEffects.scanlineIntensity;
@@ -188,22 +134,15 @@ export const Scanlines: React.FC = () => {
           rgba(0, 0, 0, ${intensity / 200}) 4px
         )`,
         opacity: intensity / 100,
-        willChange: 'opacity',
-        transform: 'translateZ(0)',
-        isolation: 'isolate',
-        contain: 'layout style paint',
       }}
     />
   );
 };
 
-// Glitch overlay with GPU isolation
+// Glitch overlay effect - optimized for performance
 export const GlitchOverlay: React.FC = () => {
   const { geekEffects } = useOnboardingStore();
-  const [isLowPower] = useState(() => {
-    const { isMobile, isTablet } = getDeviceType();
-    return isMobile || isTablet;
-  });
+  const [isLowPower] = useState(() => isLowPoweredDevice());
 
   if (!geekEffects.enableGlitchEffects) return null;
   
@@ -212,58 +151,48 @@ export const GlitchOverlay: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-40 pointer-events-none"
+      className="fixed inset-0 z-40 pointer-events-none glitch-effect"
       style={{
-        background: 'rgba(6, 182, 212, 0.08)',
-        opacity: 0.5,
-        willChange: 'opacity',
-        transform: 'translateZ(0)',
-        isolation: 'isolate',
-        contain: 'layout style paint',
+        background: 'rgba(6, 182, 212, 0.1)',
+        mixBlendMode: 'overlay',
+        animation: 'glitch 5s infinite',
       }}
     />
   );
 };
 
-// Floating ASCII particles with GPU acceleration
+// Floating ASCII particles - optimized
 export const AsciiParticles: React.FC = () => {
   const { geekEffects, mode } = useOnboardingStore();
-  const [gpuSettings] = useState(() => getGPUSettings());
+  const [isLowPower] = useState(() => isLowPoweredDevice());
 
   if (!geekEffects.enableAsciiArt || mode !== 'GEEK') return null;
 
-  // Reduce particles on high-load devices
-  const particleCount = gpuSettings.isTablet ? 2 : 5;
+  // Reduce particles on low-power devices
+  const particleCount = isLowPower ? 3 : 10;
   const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
-    char: ['λ', '▓', '█', '◢', '◣'][i % 5],
+    char: ['λ', '▓', '█', '◢', '◣', '◤', '◥', '╱', '╲', '╳'][i % 10],
     x: Math.random() * 100,
     y: Math.random() * 100,
-    duration: Math.random() * 10 + 15,
+    duration: Math.random() * 10 + 10,
   }));
 
   return (
-    <div 
-      className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-      style={{
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        isolation: 'isolate',
-        contain: 'layout style paint',
-      }}
-    >
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute text-cyan-500/15 font-mono text-sm"
+          className="absolute text-cyan-500/20 font-mono text-sm"
           style={{ 
             left: `${p.x}%`, 
             top: `${p.y}%`,
             willChange: 'transform, opacity',
           }}
           animate={{
-            y: [0, -50, 0],
-            opacity: [0.15, 0.3, 0.15],
+            y: [0, -100, 0],
+            opacity: [0.2, 0.5, 0.2],
+            rotate: isLowPower ? 0 : [0, 360], // Disable rotation on low-power
           }}
           transition={{
             duration: p.duration,
@@ -285,13 +214,7 @@ export const GeekModeIndicator: React.FC = () => {
   if (mode !== 'GEEK') return null;
 
   return (
-    <div 
-      className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2"
-      style={{
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-      }}
-    >
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}

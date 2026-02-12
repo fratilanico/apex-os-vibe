@@ -6,27 +6,6 @@ export interface AIRequest {
   preferredProvider?: 'auto' | 'vertex' | 'vertex-ai' | 'gemini' | 'perplexity' | 'groq' | 'cohere';
   preferredModel?: 'auto' | 'fast' | 'pro';
   userEmail?: string;
-  userId?: string;
-  sessionId?: string;
-  stateHints?: {
-    name?: string;
-    email?: string;
-    phone?: string;
-    persona?: 'PERSONAL' | 'BUSINESS' | null;
-    goal?: string;
-    currentStep?:
-      | 'boot'
-      | 'email_guard'
-      | 'onboarding_name'
-      | 'onboarding_phone'
-      | 'handshake'
-      | 'dynamic_discovery'
-      | 'validation'
-      | 'processing'
-      | 'unlocked';
-    unlocked?: boolean;
-    mode?: 'STANDARD' | 'GEEK';
-  };
   /** Optional base URL override for server-side calls */
   baseUrl?: string;
 }
@@ -54,10 +33,74 @@ export interface AIResponse {
       durationMs?: number;
     }>;
   };
-  decisionTrace?: Record<string, unknown>;
-  nextBestAction?: Record<string, unknown>;
-  recommendations?: Record<string, unknown>;
-  stateSnapshot?: Record<string, unknown>;
+}
+
+function looksLikeTokenDump(input: string): boolean {
+  const t = (input || '').trim();
+  if (t.length < 80) return false;
+  if (/^[0-9-]+$/.test(t) && t.replace(/-/g, '').length >= 80) return true;
+  const compact = t.replace(/\s+/g, '');
+  if (compact.length >= 120 && /^[A-Za-z0-9+/_=-]+$/.test(compact)) return true;
+  if (compact.length >= 96 && /^[a-f0-9]+$/i.test(compact)) return true;
+  const letters = (t.match(/[A-Za-z]/g) || []).length;
+  if (t.length >= 120 && letters / t.length < 0.05) return true;
+  return false;
+}
+
+function getCookieValue(name: string): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  const parts = document.cookie.split(';').map(p => p.trim());
+  const prefix = `${name}=`;
+  for (const p of parts) {
+    if (p.startsWith(prefix)) return decodeURIComponent(p.slice(prefix.length));
+  }
+  return undefined;
+}
+
+function setCookie(name: string, value: string, maxAgeSeconds: number): void {
+  if (typeof document === 'undefined') return;
+  const isHttps = typeof location !== 'undefined' && location.protocol === 'https:';
+  const attrs = [
+    `Path=/`,
+    `Max-Age=${maxAgeSeconds}`,
+    `SameSite=Lax`,
+  ];
+  if (isHttps) attrs.push('Secure');
+  document.cookie = `${name}=${encodeURIComponent(value)}; ${attrs.join('; ')}`;
+}
+
+function generateSessionId(): string {
+  // Browser-first, no dependency on Node crypto.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const c: any = (globalThis as any).crypto;
+    if (c?.randomUUID) return String(c.randomUUID());
+  } catch {}
+  return `sid_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export function getOrCreateClientSessionId(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const storageKey = 'apex_client_session_id';
+  const cookieKey = 'apex_sid';
+  try {
+    const fromStorage = window.localStorage?.getItem(storageKey) || undefined;
+    if (fromStorage) {
+      if (!getCookieValue(cookieKey)) setCookie(cookieKey, fromStorage, 60 * 60 * 24 * 30);
+      return fromStorage;
+    }
+  } catch {}
+
+  const fromCookie = getCookieValue(cookieKey);
+  if (fromCookie) {
+    try { window.localStorage?.setItem('apex_client_session_id', fromCookie); } catch {}
+    return fromCookie;
+  }
+
+  const created = generateSessionId();
+  try { window.localStorage?.setItem(storageKey, created); } catch {}
+  setCookie(cookieKey, created, 60 * 60 * 24 * 30);
+  return created;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -73,10 +116,6 @@ export interface UnifiedAIResponse {
   error?: string;
   requestId?: string;
   debug?: AIResponse['debug'];
-  decisionTrace?: AIResponse['decisionTrace'];
-  nextBestAction?: AIResponse['nextBestAction'];
-  recommendations?: AIResponse['recommendations'];
-  stateSnapshot?: AIResponse['stateSnapshot'];
 }
 
 /**
@@ -85,6 +124,20 @@ export interface UnifiedAIResponse {
  */
 export async function queryAI(request: AIRequest): Promise<AIResponse> {
   const startTime = Date.now();
+
+  // Guardrail: avoid accidentally sending token/id dumps to the AI endpoint.
+  // This also prevents poisoning history-based inference on the server.
+  if (looksLikeTokenDump(request.message)) {
+    return {
+      content: 'Input rejected: looks like a token/id dump. Paste your actual goal/question (human text).',
+      provider: 'offline',
+      model: 'client-guard',
+      latency: Date.now() - startTime,
+      tier: 0,
+      cached: false,
+    };
+  }
+
   const isServer = typeof window === 'undefined';
   const baseUrl = request.baseUrl
     || (isServer
@@ -96,6 +149,12 @@ export async function queryAI(request: AIRequest): Promise<AIResponse> {
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   
   try {
+    const clientSessionId = getOrCreateClientSessionId();
+    const enrichedContext = [
+      request.context,
+      clientSessionId ? `ClientSessionId: ${clientSessionId}` : undefined,
+    ].filter(Boolean).join(' ');
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -105,14 +164,11 @@ export async function queryAI(request: AIRequest): Promise<AIResponse> {
       body: JSON.stringify({
         message: request.message,
         history: request.history || [],
-        context: request.context,
+        context: enrichedContext,
         systemPrompt: request.systemPrompt,
         preferredProvider: request.preferredProvider,
         preferredModel: request.preferredModel,
         userEmail: request.userEmail,
-        userId: request.userId,
-        sessionId: request.sessionId,
-        stateHints: request.stateHints,
         debug: true,
       }),
     });
@@ -136,10 +192,6 @@ export async function queryAI(request: AIRequest): Promise<AIResponse> {
       cached: false,
       requestId: data.requestId,
       debug: data.debug,
-      decisionTrace: data.decisionTrace,
-      nextBestAction: data.nextBestAction,
-      recommendations: data.recommendations,
-      stateSnapshot: data.stateSnapshot,
     };
   } catch (error) {
     console.error('[Unified AI] Request failed:', error);

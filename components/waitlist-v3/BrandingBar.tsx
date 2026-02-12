@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useColorCycle } from '../../hooks/useColorCycle';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import { Terminal } from 'lucide-react';
@@ -18,43 +19,26 @@ export const BrandingBar: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-md md:backdrop-blur-xl border-b border-white/5 transition-all duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
-        {/* LEFT: LOGO + GEEK MODE (Mobile) / LOGO ONLY (Desktop) */}
-        <div className="flex items-center gap-3 z-20">
-          {/* Full Multi-Color Logo - scaled to fit navbar */}
-          <div className="relative overflow-hidden flex items-center" style={{ width: '320px', height: '64px' }}>
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.22] origin-left" />
-          </div>
-          
-          {/* GEEK MODE TOGGLE - Mobile only (left side) */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
-              className={`flex items-center gap-1 px-2 py-1 rounded-full border transition-all duration-300 ${
-                mode === 'GEEK' 
-                  ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.2)]' 
-                  : 'bg-white/5 border-white/10 text-white/40'
-              }`}
-            >
-              <Terminal className="w-3 h-3" />
-              <span className="text-[8px] font-mono font-bold tracking-wider uppercase">
-                {mode === 'GEEK' ? 'ON' : 'OFF'}
-              </span>
-            </button>
+        {/* LEFT: LOGO ONLY - Far left corner */}
+        <div className="flex items-center">
+          {/* Chromatic ASCII Logo (Scaled for Navbar) */}
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity -ml-4 md:-ml-6">
+            <ChromaticLogo type="apex" size="sm" className="scale-[0.55] md:scale-[0.6] origin-left" />
           </div>
         </div>
 
-        {/* CENTER: GEEK MODE TOGGLE - Desktop only */}
-        <div className="hidden md:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+        {/* CENTER: GEEK MODE TOGGLE */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <button
             onClick={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full border transition-all duration-300 group whitespace-nowrap ${
+            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded-full border transition-all duration-300 group whitespace-nowrap ${
               mode === 'GEEK' 
-                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
+                ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.15)] md:shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
                 : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white/60'
             }`}
           >
-            <Terminal className={`w-3.5 h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
-            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+            <Terminal className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
+            <span className="text-[9px] md:text-[10px] sm:text-xs font-mono font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
               {mode === 'GEEK' ? 'Geek: ON' : 'Geek: OFF'}
             </span>
           </button>
@@ -73,18 +57,19 @@ export const BrandingBar: React.FC = () => {
             </span>
           </div>
           <div className="hidden md:flex items-end gap-2 lg:gap-3 bg-white/5 px-2 lg:px-3 py-1.5 rounded-lg border border-white/5">
-            {/* Signal Bars - Static to prevent layout shifts */}
+            {/* Signal Bars */}
             <div className="flex gap-[2px] lg:gap-0.5 items-end h-4 pb-[2px]">
               {[0.3, 0.5, 0.7, 0.85, 1].map((h, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="w-[3px] lg:w-1 rounded-[1px] origin-bottom"
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ delay: 0.5 + i * 0.1, duration: 0.3 }}
+                  className="w-[3px] lg:w-1 rounded-[1px] origin-bottom transition-colors duration-500"
                   style={{
                     height: `${h * 100}%`,
                     backgroundColor: accentHex,
-                    boxShadow: i === 4 ? `0 0 8px ${accentHex}` : 'none',
-                    transform: 'scaleY(1)',
-                    willChange: 'auto'
+                    boxShadow: i === 4 ? `0 0 8px ${accentHex}` : 'none'
                   }}
                 />
               ))}

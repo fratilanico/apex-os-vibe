@@ -17,12 +17,12 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-const WEBINAR_DATE = new Date('2026-02-27T18:00:00Z');
-
 // Calculate initial time left to avoid showing 0 0 0 0 on load
 const calculateTimeLeft = () => {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 18);
   const now = new Date();
-  const diff = WEBINAR_DATE.getTime() - now.getTime();
+  const diff = targetDate.getTime() - now.getTime();
   
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
@@ -37,9 +37,12 @@ const CountdownTimer: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   
   useEffect(() => {
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 18);
+    
     const updateTimer = () => {
       const now = new Date();
-      const diff = WEBINAR_DATE.getTime() - now.getTime();
+      const diff = targetDate.getTime() - now.getTime();
       
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -97,7 +100,7 @@ export const HeroSection: React.FC = () => {
         </GradientText>
       </motion.h1>
 
-      {/* Rotating production subheading */}
+      {/* Rotating Punchlines */}
       <motion.div variants={item} className="mb-12">
         <RotatingPunchlines />
         <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">

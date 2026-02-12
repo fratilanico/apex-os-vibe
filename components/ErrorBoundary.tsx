@@ -32,14 +32,12 @@ export class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       ts: new Date().toISOString(),
     };
-
     if (typeof window !== 'undefined') {
       const key = '__APEX_WAITLIST_DEBUG__';
       const w = window as unknown as Record<string, unknown>;
       const existing = (w[key] as Array<Record<string, unknown>> | undefined) || [];
       w[key] = [...existing, payload].slice(-100);
     }
-
     console.error('ErrorBoundary caught an error:', payload);
   }
 

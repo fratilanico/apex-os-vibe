@@ -121,9 +121,6 @@ interface DirectorRequest {
   };
   terminalLog?: string;
   userGoal?: string;
-  userEmail?: string;
-  userId?: string;
-  sessionId?: string;
 }
 
 interface DirectorResponse {
@@ -152,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } as DirectorResponse);
   }
 
-  const { query, currentGraph, terminalLog, userGoal, userEmail, userId, sessionId }: DirectorRequest = req.body;
+  const { query, currentGraph, terminalLog, userGoal }: DirectorRequest = req.body;
 
   if (!query && !terminalLog) {
     return res.status(400).json({
@@ -210,15 +207,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message: userMessage,
         systemPrompt: MATRIX_SYSTEM_PROMPT,
         baseUrl,
-        userEmail,
-        userId,
-        sessionId,
-        stateHints: {
-          goal: userGoal,
-          mode: 'GEEK',
-          unlocked: true,
-          currentStep: 'unlocked',
-        },
       });
     } catch (aiErr: any) {
       console.error('AI Query failed in Director:', aiErr);

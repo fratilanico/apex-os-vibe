@@ -257,7 +257,7 @@ export const CTASection: React.FC<CTASectionProps> = ({ onJoinClick }) => {
               { icon: Rocket, text: 'Build real projects, not tutorials' },
               { icon: Shield, text: 'Lifetime access to community & updates' },
             ]}
-              ctaText="Join the Next Webinar"
+            ctaText="Join the Next Cohort"
             ctaAction={onJoinClick}
           />
 

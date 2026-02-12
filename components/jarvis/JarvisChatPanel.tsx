@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Bot, Mic, Activity, Terminal } from 'lucide-react';
+import { X, Send, Bot, Mic, Globe, Activity, Terminal, Maximize2, Minimize2 } from 'lucide-react';
 import { queryAI } from '../../lib/ai/globalAIService';
 import { useLocation } from 'react-router-dom';
 import { AgentHierarchyVisualization } from '../../src/jarvis/components/AgentHierarchyVisualization';
@@ -31,12 +31,12 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
   onClose,
   onNavigate
 }) => {
-  const { mode, setMode, email, isUnlocked, persona, goal, step, currentSessionId, startJarvisSession, endJarvisSession, addJarvisMessage } = useOnboardingStore();
+  const { mode, setMode, email, isUnlocked } = useOnboardingStore();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [language] = useState<'en-US' | 'ro-RO'>('en-US');
+  const [language, setLanguage] = useState<'en-US' | 'ro-RO'>('en-US');
   const [view, setView] = useState<'chat' | 'agents'>('chat');
   const [isSpeaking, setIsSpeaking] = useState(false);
   
@@ -127,21 +127,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Analytics: Track session start/end
-  useEffect(() => {
-    if (isOpen) {
-      startJarvisSession();
-    } else {
-      endJarvisSession();
-    }
-    
-    return () => {
-      if (isOpen) {
-        endJarvisSession();
-      }
-    };
-  }, [isOpen]);
-
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const greeting = language === 'ro-RO' 
@@ -159,9 +144,6 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
       text,
       timestamp: new Date()
     }]);
-    
-    // Analytics: Track message
-    addJarvisMessage(type, text);
   };
 
   const processQuery = useCallback(async (query: string) => {
@@ -175,17 +157,7 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           content: m.text
         })),
         userEmail: email || undefined,
-        sessionId: currentSessionId || undefined,
         context: `The user is on the "${location.pathname}" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}.`
-        ,
-        stateHints: {
-          email: email || undefined,
-          persona,
-          goal: goal || undefined,
-          currentStep: step as any,
-          unlocked: isUnlocked,
-          mode,
-        },
       });
 
       const formattedResponse = convertMarkdownToCLI(aiResponse.content);
@@ -222,13 +194,12 @@ export const JarvisChatPanel: React.FC<JarvisChatPanelProps> = ({
           animate={{ 
             opacity: 1, 
             y: 0, 
-            scale: 1
+            scale: 1,
+            width: isGeek ? 500 : 384,
+            height: isGeek ? 700 : 500
           }}
           exit={{ opacity: 0, y: 100, scale: 0.95 }}
-          className={`fixed bottom-24 left-4 right-4 sm:left-6 sm:right-auto sm:w-96 md:w-[28rem] lg:w-[32rem] h-[60vh] sm:h-[500px] md:h-[600px] max-h-[80vh] bg-slate-900/95 backdrop-blur-2xl rounded-2xl border transition-all duration-500 shadow-2xl z-50 flex flex-col overflow-hidden ${isGeek ? 'border-cyan-500/50' : 'border-white/10'}`}
-          style={{ 
-            maxWidth: isGeek ? '600px' : '500px',
-          }}
+          className={`fixed bottom-24 left-6 bg-slate-900/95 backdrop-blur-2xl rounded-2xl border transition-all duration-500 shadow-2xl z-50 flex flex-col overflow-hidden ${isGeek ? 'border-cyan-500/50' : 'border-white/10'}`}
         >
           {/* Header */}
           <div className={`flex items-center justify-between p-4 border-b transition-colors duration-500 ${isGeek ? 'border-cyan-500/30 bg-cyan-500/10' : 'border-white/10 bg-white/5'}`}>
