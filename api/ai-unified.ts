@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
-import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
 import { createClient } from '@supabase/supabase-js';
 import { modules as curriculumModules } from '../data/curriculumData.js';
 import { ACADEMY_SYSTEM_PROMPT } from '../lib/ai/prompts/academy.js';
@@ -9,6 +8,13 @@ import { getOnboardingPrompt } from '../lib/ai/prompts/onboarding.js';
 import { TERMINAL_SYSTEM_PROMPT } from '../lib/ai/prompts/terminal.js';
 import { normalizeProviderOutput, createAuthoritarianSystemPrompt } from '../lib/ai/normalization.js';
 import { enforceAndFix } from '../lib/ai/goldenEnforcer.js';
+import {
+  applyResponsePolicy,
+  buildRecommendationPayload,
+  buildStateSnapshot,
+  decideNextAction,
+} from '../lib/ai/orchestration/unifiedDecision.js';
+import { buildSessionKey, loadKnownProfile, recordInteractionEvent } from '../lib/ai/orchestration/interactionStore.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UNIFIED AI API v2.1.0 - AUTHORITARIAN GOLDEN STANDARD
@@ -73,6 +79,54 @@ interface UnifiedAIRequest {
   preferredProvider?: string;
   preferredModel?: string;
   userEmail?: string;
+  debug?: boolean;
+}
+
+interface ProviderAttemptDebug {
+  provider: string;
+  enabled: boolean;
+  healthy?: boolean;
+  success: boolean;
+  error?: string;
+  durationMs?: number;
+}
+
+function sanitizeErrorMessage(input: unknown): string {
+  const msg = input instanceof Error ? input.message : String(input || 'unknown_error');
+  return msg
+    .replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]')
+    .replace(/AIza[0-9A-Za-z\-_]{20,}/g, '[REDACTED_KEY]')
+    .replace(/sk-[A-Za-z0-9\-_]{20,}/g, '[REDACTED_KEY]')
+    .slice(0, 240);
+}
+
+function buildRecommendationContent(recommendations: ReturnType<typeof buildRecommendationPayload>): string {
+  if (!recommendations || !recommendations.top3?.length) {
+    return '[warn]No recommendations available yet. Provide more context to personalize next steps.[/warn]';
+  }
+
+  const lines: string[] = [];
+  lines.push('[h2]Execution Priority[/h2]');
+  if (recommendations.quickWin) {
+    lines.push(`[success]✓[/success] [b]Quick Win:[/b] ${recommendations.quickWin}`);
+    lines.push('');
+  }
+  lines.push('[h3]Top 3 Recommendations[/h3]');
+  recommendations.top3.forEach((item, idx) => {
+    lines.push(`[b]${idx + 1}. ${item.title}[/b]`);
+    lines.push(`[muted]Why:[/muted] ${item.why}`);
+    lines.push(`[muted]Next:[/muted] ${item.nextStep}`);
+    lines.push(`[muted]Effort:[/muted] ${item.effort} | [muted]Impact:[/muted] ${item.impact} | [muted]Score:[/muted] ${item.score}`);
+    lines.push('');
+  });
+  return lines.join('\n').trim();
+}
+
+function buildDecisionContent(action: { type: string; prompt: string }, recommendations: ReturnType<typeof buildRecommendationPayload>): string {
+  if (action.type === 'RETURN_RECOMMENDATIONS') {
+    return buildRecommendationContent(recommendations);
+  }
+  return `[h2]Next Action[/h2]\n[info]${action.prompt}[/info]`;
 }
 
 async function getUserTier(email?: string): Promise<number> {
@@ -173,23 +227,6 @@ function normalizePreferredProvider(value?: string): string {
   if (normalized === 'groq') return 'groq';
   if (normalized === 'cohere') return 'cohere';
   return 'auto';
-}
-
-function normalizePreferredModel(value?: string): 'auto' | 'fast' | 'pro' {
-  if (!value) return 'auto';
-  const normalized = value.toLowerCase();
-  if (normalized === 'fast') return 'fast';
-  if (normalized === 'pro') return 'pro';
-  return 'auto';
-}
-
-const COMPLEXITY_HINTS = [/\\b(analyze|analysis|strategy|architecture|root cause|optimi|debug|plan|design|deep dive|spec)\\b/i, /```/];
-
-function isComplexRequest(message: string, history: Array<{ role: string; content: string }>): boolean {
-  if (message.length > 240) return true;
-  if (message.split('\\n').length > 3) return true;
-  if (COMPLEXITY_HINTS.some((re) => re.test(message))) return true;
-  return history.length > 6;
 }
 
 interface AIProvider {
@@ -307,16 +344,103 @@ function getIdentityProbeResponse(): string {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const startTime = Date.now();
+  const requestId = `ai_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  let includeDebug = false;
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel, userEmail }: UnifiedAIRequest = req.body;
+    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel, userEmail, debug = false }: UnifiedAIRequest = req.body;
+    includeDebug = debug || process.env.AI_DEBUG === 'true';
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message is required' });
 
     const tier = await getUserTier(userEmail);
-    const resolvedSystemPrompt = buildSystemPrompt(TONY_STARK_SYSTEM_PROMPT, getTierContext(tier), extractModeFromContext(context), extractPathnameFromContext(context), systemPrompt, context);
+    const preRoute = extractPathnameFromContext(context);
+    const preSessionKey = buildSessionKey(userEmail, preRoute, requestId);
+    const knownProfile = await loadKnownProfile(preSessionKey);
+    const stateSnapshot = buildStateSnapshot(requestId, { message, context, history, userEmail }, tier, knownProfile);
+    const decision = decideNextAction(stateSnapshot);
+    const recommendations = buildRecommendationPayload(stateSnapshot);
+    const sessionKey = buildSessionKey(userEmail, stateSnapshot.route, requestId);
+    const resolvedSystemPrompt = buildSystemPrompt(
+      TONY_STARK_SYSTEM_PROMPT,
+      getTierContext(tier),
+      stateSnapshot.mode,
+      stateSnapshot.route,
+      systemPrompt,
+      context,
+    );
     
     if (isIdentityProbe(message)) {
-      return res.status(200).json({ content: getIdentityProbeResponse(), provider: 'policy-guard', model: 'identity-probe-v1', latency: Date.now() - startTime, tier: 0 });
+      const payload = {
+        content: getIdentityProbeResponse(),
+        provider: 'policy-guard',
+        model: 'identity-probe-v1',
+        latency: Date.now() - startTime,
+        tier: 0,
+        requestId,
+      };
+      await recordInteractionEvent({
+        requestId,
+        sessionKey,
+        userEmail,
+        route: stateSnapshot.route,
+        mode: stateSnapshot.mode,
+        stepBefore: stateSnapshot.currentStep,
+        stepAfter: stateSnapshot.currentStep,
+        actionType: 'IDENTITY_PROBE',
+        message,
+        provider: payload.provider,
+        model: payload.model,
+        latencyMs: payload.latency,
+        success: true,
+        createdAt: new Date().toISOString(),
+        debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace } : undefined,
+      });
+      return res.status(200).json(payload);
+    }
+
+    if (decision.action.type !== 'ANSWER_QUERY') {
+      const deterministic = buildDecisionContent(decision.action, recommendations);
+      const normalized = normalizeOutputForRenderer(deterministic, 'policy-guard');
+      const enforced = enforceAndFix(normalized, 'policy-guard', 'decision-engine-v1');
+
+      const payload = {
+        content: enforced.content,
+        provider: 'policy-guard',
+        model: 'decision-engine-v1',
+        latency: Date.now() - startTime,
+        tier,
+        requestId,
+        stateSnapshot,
+        decisionTrace: decision.trace,
+        nextBestAction: decision.action,
+        recommendations,
+        debug: includeDebug ? {
+          requestedProvider: preferredProvider || 'auto',
+          preferredModel: preferredModel || 'auto',
+          mode: stateSnapshot.mode,
+          pathname: stateSnapshot.route,
+          attempts: [],
+        } : undefined,
+      };
+
+      await recordInteractionEvent({
+        requestId,
+        sessionKey,
+        userEmail,
+        route: stateSnapshot.route,
+        mode: stateSnapshot.mode,
+        stepBefore: decision.trace.stateBefore,
+        stepAfter: decision.trace.stateAfter,
+        actionType: decision.action.type,
+        message,
+        provider: payload.provider,
+        model: payload.model,
+        latencyMs: payload.latency,
+        success: true,
+        createdAt: new Date().toISOString(),
+        debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace, recommendations } : undefined,
+      });
+      return res.status(200).json(payload);
     }
 
     const preferred = normalizePreferredProvider(preferredProvider);
@@ -332,9 +456,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ];
 
     let lastError: Error | null = null;
+    const attempts: ProviderAttemptDebug[] = [];
     for (const provider of orderedProviders) {
-      if (!provider.enabled) continue;
+      if (!provider.enabled) {
+        attempts.push({ provider: provider.name, enabled: false, success: false, error: 'disabled_by_config' });
+        continue;
+      }
       try {
+        const providerStart = Date.now();
         const healthy = provider.name === 'perplexity' ? await checkPerplexityHealth() : true;
         if (!healthy) throw new Error(`${provider.name} unhealthy`);
         
@@ -342,18 +471,83 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         
         // AUTHORITARIAN NORMALIZATION + GOLDEN WRAPPER
         let finalContent = normalizeOutputForRenderer(result.content, result.provider);
+        finalContent = applyResponsePolicy(finalContent, stateSnapshot, decision.action);
         const goldenResult = enforceAndFix(finalContent, result.provider, result.model);
         finalContent = goldenResult.content;
+
+        attempts.push({
+          provider: provider.name,
+          enabled: true,
+          healthy,
+          success: true,
+          durationMs: Date.now() - providerStart,
+        });
         
-        return res.status(200).json({ content: finalContent, provider: result.provider, model: result.model, latency: Date.now() - startTime });
+        const payload = {
+          content: finalContent,
+          provider: result.provider,
+          model: result.model,
+          latency: Date.now() - startTime,
+          requestId,
+          stateSnapshot,
+          decisionTrace: decision.trace,
+          nextBestAction: decision.action,
+          recommendations,
+          debug: includeDebug ? {
+            requestedProvider: preferredProvider || 'auto',
+            preferredModel: preferredModel || 'auto',
+            mode: stateSnapshot.mode,
+            pathname: stateSnapshot.route,
+            attempts,
+          } : undefined,
+        };
+
+        await recordInteractionEvent({
+          requestId,
+          sessionKey,
+          userEmail,
+          route: stateSnapshot.route,
+          mode: stateSnapshot.mode,
+          stepBefore: decision.trace.stateBefore,
+          stepAfter: decision.trace.stateAfter,
+          actionType: decision.action.type,
+          message,
+          provider: payload.provider,
+          model: payload.model,
+          latencyMs: payload.latency,
+          success: true,
+          createdAt: new Date().toISOString(),
+          debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace, attempts } : undefined,
+        });
+
+        return res.status(200).json(payload);
       } catch (error) {
         lastError = error as Error;
-        console.error(`[Unified AI] ${provider.name} failed:`, lastError.message);
+        attempts.push({
+          provider: provider.name,
+          enabled: true,
+          success: false,
+          error: sanitizeErrorMessage(lastError),
+        });
+        console.error(`[Unified AI] ${requestId} ${provider.name} failed:`, sanitizeErrorMessage(lastError));
       }
     }
 
     throw lastError || new Error('All providers failed');
   } catch (err: any) {
-    return res.status(500).json({ error: 'OS_INTEL_OFFLINE', content: `⚠️ NEURAL_LINK_SEVERED: ${err?.message || 'Cascade Failure'}.`, provider: 'offline', model: 'fallback', latency: Date.now() - startTime });
+    return res.status(500).json({
+      error: 'OS_INTEL_OFFLINE',
+      content: `⚠️ NEURAL_LINK_SEVERED: ${sanitizeErrorMessage(err) || 'Cascade Failure'}.`,
+      provider: 'offline',
+      model: 'fallback',
+      latency: Date.now() - startTime,
+      requestId,
+      debug: includeDebug ? {
+        requestedProvider: req.body?.preferredProvider || 'auto',
+        preferredModel: req.body?.preferredModel || 'auto',
+        mode: extractModeFromContext(req.body?.context),
+        pathname: extractPathnameFromContext(req.body?.context),
+      } : undefined,
+    });
   }
 }

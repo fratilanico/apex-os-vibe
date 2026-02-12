@@ -48,10 +48,14 @@ async function enrichEntry(entry: any) {
     LinkedIn: ${entry.linkedin || 'N/A'}
     Goal: ${entry.goal || 'N/A'}`;
     
-    const jsonStr = await callPerplexity(systemPrompt, userPrompt, { temperature: 0.1 });
-    
+    const jsonResp = await callPerplexity({
+      systemPrompt,
+      message: userPrompt,
+      model: 'sonar-reasoning-pro',
+    });
+     
     // Parse JSON safely (Perplexity reasoning models sometimes wrap in markdown)
-    const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+    const cleanJson = (jsonResp.content || '').replace(/```json/g, '').replace(/```/g, '').trim();
     let data;
     try {
       data = JSON.parse(cleanJson);

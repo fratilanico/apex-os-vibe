@@ -2,6 +2,16 @@ module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  // Jarvis model tests are authored for Vitest (vi.* APIs).
+  // Keep Jest focused on app/unit tests and run Jarvis tests via `npm run test:vitest`.
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/vibe-portfolio/',
+    '/src/jarvis/__tests__/',
+  ],
+  // Prevent haste-map from scanning nested project mocks.
+  modulePathIgnorePatterns: ['<rootDir>/vibe-portfolio/'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',

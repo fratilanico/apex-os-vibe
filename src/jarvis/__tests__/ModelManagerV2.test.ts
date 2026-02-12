@@ -7,7 +7,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
 import { ModelManagerV2, getModelManagerV2 } from '../models/ModelManagerV2';
 import * as OllamaClient from '../models/OllamaClient';
-import { JARVIS_MODELS } from '../models/ModelRegistry';
 
 // Mock OllamaClient
 vi.mock('../models/OllamaClient', () => ({
@@ -22,16 +21,19 @@ vi.mock('../models/OllamaClient', () => ({
   ),
 }));
 
-// Mock console methods
-const mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
-const mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+let mockConsoleLog: ReturnType<typeof vi.spyOn>;
+let mockConsoleWarn: ReturnType<typeof vi.spyOn>;
+let mockConsoleError: ReturnType<typeof vi.spyOn>;
 
 describe('ModelManagerV2', () => {
   let manager: ModelManagerV2;
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {});
+    mockConsoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     
     // Reset singleton
     (getModelManagerV2 as any).modelManagerV2 = null;
@@ -57,7 +59,9 @@ describe('ModelManagerV2', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    mockConsoleLog.mockRestore();
+    mockConsoleWarn.mockRestore();
+    mockConsoleError.mockRestore();
   });
 
   describe('Initialization', () => {
@@ -273,22 +277,22 @@ describe('ModelManagerV2', () => {
     it('should route code queries to code model', async () => {
       await manager.query('Write a function to calculate fibonacci');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
-      expect(call.model).toBe('deepseek-coder-v2:6.7b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
+      expect(call?.model).toBe('deepseek-coder-v2:6.7b');
     });
 
     it('should route chat queries to chat model', async () => {
       await manager.query('Tell me a story');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
-      expect(call.model).toBe('llama3.1:8b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
+      expect(call?.model).toBe('llama3.1:8b');
     });
 
     it('should use default orchestrator for general queries', async () => {
       await manager.query('Hello');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
-      expect(call.model).toBe('qwen2.5:7b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
+      expect(call?.model).toBe('qwen2.5:7b');
     });
 
     it('should pass personality and context options', async () => {
@@ -303,8 +307,8 @@ describe('ModelManagerV2', () => {
         'Business meeting'
       );
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
-      expect(call.options.temperature).toBe(0.8);
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
+      expect(call?.options?.temperature).toBe(0.8);
     });
 
     it('should store context from response', async () => {
@@ -346,13 +350,12 @@ describe('ModelManagerV2', () => {
       // Consume generator
       for await (const _ of generator) {}
       
-      const call = (OllamaClient.streamGenerateWithOllama as Mock).mock.calls[0][0];
-      expect(call.model).toBe('deepseek-coder-v2:6.7b');
+      const call = (OllamaClient.streamGenerateWithOllama as Mock).mock.calls[0]?.[0] as any;
+      expect(call?.model).toBe('deepseek-coder-v2:6.7b');
     });
 
     it('should update last accessed after streaming', async () => {
       await manager.loadModel('orchestrator');
-      const beforeAccess = manager.getStatus().loadedModels[0];
       
       for await (const _ of manager.streamQuery('Test')) {}
       

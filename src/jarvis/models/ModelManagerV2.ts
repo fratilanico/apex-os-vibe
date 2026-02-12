@@ -10,7 +10,6 @@ import {
   pullOllamaModel,
   generateWithOllama,
   streamGenerateWithOllama,
-  isModelAvailable,
   createJarvisSystemPrompt,
   OllamaGenerateRequest,
 } from './OllamaClient';
@@ -42,6 +41,7 @@ interface ModelManagerState {
 class ModelManagerV2 {
   private state: ModelManagerState;
   private maxMemoryUsage: number;
+  private inFlightLoads: Map<string, Promise<ModelInstance>>;
 
   constructor() {
     this.state = {
@@ -55,6 +55,7 @@ class ModelManagerV2 {
     };
 
     this.maxMemoryUsage = this.state.availableRAM * 0.75;
+    this.inFlightLoads = new Map();
 
     console.log('[ModelManagerV2] Initialized:', {
       ram: this.state.availableRAM + 'GB',
@@ -72,15 +73,24 @@ class ModelManagerV2 {
 
     if (connected) {
       console.log('[ModelManagerV2] ✅ Ollama connected');
-      this.state.availableOllamaModels = await listOllamaModels();
+      await this.refreshAvailableModels();
       console.log('[ModelManagerV2] Available models:', this.state.availableOllamaModels);
     } else {
       console.warn('[ModelManagerV2] ⚠️ Ollama not running. Start with: ollama serve');
     }
   }
 
+  private async refreshAvailableModels(): Promise<void> {
+    try {
+      this.state.availableOllamaModels = await listOllamaModels();
+    } catch {
+      // Best-effort cache refresh.
+    }
+  }
+
   private detectRAM(): number {
-    if (typeof process !== 'undefined' && process.memoryUsage) {
+    const p = (globalThis as any)?.process;
+    if (p && typeof p.memoryUsage === 'function') {
       try {
         const os = require('os');
         const totalMemory = os.totalmem();
@@ -125,6 +135,11 @@ class ModelManagerV2 {
   }
 
   async loadModel(modelId: string): Promise<ModelInstance> {
+    // Deduplicate concurrent loads (same instance semantics).
+    const inFlight = this.inFlightLoads.get(modelId);
+    if (inFlight) return await inFlight;
+
+    const run = (async (): Promise<ModelInstance> => {
     const config = JARVIS_MODELS[modelId];
     if (!config) {
       throw new Error(`Unknown model: ${modelId}`);
@@ -134,7 +149,13 @@ class ModelManagerV2 {
     if (this.state.loadedModels.has(modelId)) {
       const instance = this.state.loadedModels.get(modelId)!;
       instance.lastAccessed = new Date();
+      this.state.activeModel = modelId;
       return instance;
+    }
+
+    // Refresh cache (runtime list can drift; tests intentionally override this).
+    if (this.state.ollamaConnected) {
+      await this.refreshAvailableModels();
     }
 
     // Check if available in Ollama
@@ -144,11 +165,20 @@ class ModelManagerV2 {
     }
 
     // Check memory
-    const currentUsage = this.calculateMemoryUsage();
     const requiredMemory = parseFloat(config.size);
 
-    if (currentUsage + requiredMemory > this.maxMemoryUsage) {
-      await this.unloadLRU();
+    if (requiredMemory > this.maxMemoryUsage) {
+      throw new Error(
+        `[ModelManagerV2] Model ${config.name} (${requiredMemory}GB) exceeds max memory (${this.maxMemoryUsage}GB)`
+      );
+    }
+
+    while (this.calculateMemoryUsage() + requiredMemory > this.maxMemoryUsage) {
+      const unloaded = await this.unloadLRU();
+      if (!unloaded) {
+        console.warn('[ModelManagerV2] Unable to free memory for model load');
+        break;
+      }
     }
 
     console.log(`[ModelManagerV2] Loading ${config.name}...`);
@@ -164,16 +194,26 @@ class ModelManagerV2 {
 
     console.log(`[ModelManagerV2] ✅ Loaded ${config.name}`);
     return instance;
+    })();
+
+    this.inFlightLoads.set(modelId, run);
+    try {
+      return await run;
+    } finally {
+      // Always clear so future loads can proceed (even on error).
+      this.inFlightLoads.delete(modelId);
+    }
   }
 
-  private async unloadLRU(): Promise<void> {
+  private async unloadLRU(): Promise<boolean> {
     let lru: string | null = null;
-    let oldestTime = Date.now();
+    let oldestTime = Number.POSITIVE_INFINITY;
 
     for (const [id, instance] of this.state.loadedModels) {
       if (id === 'orchestrator') continue;
-      if (instance.lastAccessed.getTime() < oldestTime) {
-        oldestTime = instance.lastAccessed.getTime();
+      const t = instance.lastAccessed.getTime();
+      if (t < oldestTime) {
+        oldestTime = t;
         lru = id;
       }
     }
@@ -184,20 +224,25 @@ class ModelManagerV2 {
         this.state.activeModel = null;
       }
       console.log(`[ModelManagerV2] Unloaded ${JARVIS_MODELS[lru]?.name}`);
+      return true;
     }
+
+    return false;
   }
 
   async switchModel(modelId: string): Promise<ModelInstance> {
     const instance = await this.loadModel(modelId);
 
     // Unload non-priority models if needed
-    const currentUsage = this.calculateMemoryUsage();
-    if (currentUsage > this.maxMemoryUsage * 0.9) {
+    while (this.calculateMemoryUsage() > this.maxMemoryUsage * 0.9) {
+      let removedAny = false;
       for (const [id, inst] of this.state.loadedModels) {
         if (id !== modelId && id !== 'orchestrator' && inst.config.loadPriority === 0) {
           this.state.loadedModels.delete(id);
+          removedAny = true;
         }
       }
+      if (!removedAny) break;
     }
 
     return instance;
@@ -317,11 +362,13 @@ class ModelManagerV2 {
       return;
     }
 
+    await this.refreshAvailableModels();
+
     const tier = this.state.currentTier;
     console.log(`[ModelManagerV2] Auto-downloading models for ${tier} tier...`);
 
-    const modelsToDownload = Object.values(JARVIS_MODELS).filter(
-      m => m.tier === tier || m.loadPriority === 1
+    const modelsToDownload = Object.values(JARVIS_MODELS).filter((m) =>
+      m.loadPriority === 1 || m.tier === tier || m.id === 'fallback'
     );
 
     for (const model of modelsToDownload) {

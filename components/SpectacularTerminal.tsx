@@ -12,6 +12,10 @@ import {
 } from '../lib/terminal/constants';
 import { RotatingCTA } from './ui/Terminal/RotatingCTA';
 import { queryAI } from '../lib/ai/globalAIService';
+import { PillChoiceSystem } from './PillChoiceSystem';
+import { PILL_CONFIG } from '../config/pillConfig';
+import { TRAJECTORY_CONFIG } from '../config/trajectoryConfig';
+import { getProfile, markPillPrompted, upsertTrajectory, trackEvent } from '../lib/analytics/client';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SPECTACULAR TERMINAL WAITLIST - STARK-V3 ORCHESTRATOR
@@ -89,12 +93,24 @@ const BOOT_SEQUENCE = [
   { text: '', delay: 1400, type: 'system' as const },
 ];
 
+const PILL_SEQUENCE = [
+  { text: '', type: 'system' as const },
+  { text: 'Wake up, Operator.', type: 'jarvis' as const },
+  { text: 'Red pill or blue pill comes AFTER handshake. First: secure identity.', type: 'system' as const },
+  { text: '', type: 'system' as const },
+];
+
 export const SpectacularTerminal: React.FC = () => {
   const { 
     step, setStep, 
     persona, setPersona, 
+    trajectory, setTrajectory,
+    pillPromptedAt, setPillPromptedAt,
+    name, setName,
+    phone, setPhone,
+    discovery,
     email, setEmail,
-    setGoal,
+    goal,
     isUnlocked, unlock,
     setVaultOpen,
     secretTreatFound, setSecretTreatFound,
@@ -109,11 +125,16 @@ export const SpectacularTerminal: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
   const [glitchActive, setGlitchActive] = useState(false);
   const [scanActive, setScanActive] = useState(false);
+  const [showPillChoice, setShowPillChoice] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [cliWrapWidth, setCliWrapWidth] = useState<number>(42);
 
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logoRenderedRef = useRef(false);
+  const pillPromptedRef = useRef(false);
+  const pinnedToBottomRef = useRef(true);
+  const [hasNewOutput, setHasNewOutput] = useState(false);
   
   // Detect mobile
   useEffect(() => {
@@ -130,14 +151,65 @@ export const SpectacularTerminal: React.FC = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Responsive CLI wrap width (42..96) based on terminal pane
+  useEffect(() => {
+    const el = terminalRef.current;
+    if (!el) return;
+
+    const compute = () => {
+      try {
+        const style = window.getComputedStyle(el);
+        const padL = parseFloat(style.paddingLeft || '0') || 0;
+        const padR = parseFloat(style.paddingRight || '0') || 0;
+        const innerWidthPx = Math.max(0, el.clientWidth - padL - padR);
+        if (innerWidthPx <= 0) return;
+
+        const fontWeight = style.fontWeight || '400';
+        const fontSize = style.fontSize || '14px';
+        const fontFamily = style.fontFamily || 'monospace';
+        const font = `${fontWeight} ${fontSize} ${fontFamily}`;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.font = font;
+
+        const sample = 'M'.repeat(80);
+        const sampleWidth = ctx.measureText(sample).width;
+        const charWidth = sampleWidth / 80;
+        if (!charWidth || !Number.isFinite(charWidth)) return;
+
+        const cols = Math.floor(innerWidthPx / charWidth);
+        const clamped = Math.max(42, Math.min(96, cols));
+        setCliWrapWidth(clamped);
+      } catch {
+        // Keep default width.
+      }
+    };
+
+    compute();
+    // ResizeObserver keeps wrap width synced with responsive layout
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const RO: any = (window as any).ResizeObserver;
+    if (!RO) return;
+    const ro = new RO(() => compute());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   
   // Always use full ASCII - scaling handles mobile
   const playerOneLogo = PLAYER_ONE_ASCII;
 
-  const addTerminalLine = useCallback((text: string, type: TerminalLine['type'] = 'output', className?: string) => {
+  const addTerminalLine = useCallback((
+    text: string,
+    type: TerminalLine['type'] = 'output',
+    className?: string,
+    recordHistory: boolean = true,
+  ) => {
     const id = Math.random().toString(36).substr(2, 9);
     setLines(prev => [...prev, { id, text, type, className }].slice(-200));
-    addHistory(`[${type.toUpperCase()}] ${text}`);
+    if (recordHistory) addHistory(`[${type.toUpperCase()}] ${text}`);
   }, [addHistory]);
 
   const addAsciiArt = useCallback((art: string, className: string) => {
@@ -179,7 +251,7 @@ export const SpectacularTerminal: React.FC = () => {
           setBootLine(p => p + 1);
           if (bootLine === BOOT_SEQUENCE.length - 1) {
             addTerminalLine('Traditional forms are for the legacy world. Switching to Direct Neural Uplink...', 'jarvis');
-            addTerminalLine('', 'system');
+            PILL_SEQUENCE.forEach((l) => addTerminalLine(l.text, l.type));
             addTerminalLine('# 01 Provide your primary email for secure handshake:', 'system');
             setStep('email_guard');
           }
@@ -189,6 +261,63 @@ export const SpectacularTerminal: React.FC = () => {
     return () => { if (timer) clearTimeout(timer); };
   }, [bootLine, step, addTerminalLine, addAsciiArt, addMultiColorAsciiArt, setStep, isMobile]);
 
+  // Recovery: if persisted step is from an old/long flow, keep users moving.
+  useEffect(() => {
+    if (step === 'handshake' || step === 'dynamic_discovery' || step === 'validation') {
+      if (isUnlocked) {
+        setStep('unlocked');
+      } else {
+        setStep('email_guard');
+      }
+    }
+  }, [step, isUnlocked, setStep]);
+
+  // After handshake, show pill choice ONCE per user (DB-backed when available).
+  useEffect(() => {
+    if (!isUnlocked) return;
+    if (pillPromptedRef.current) return;
+    pillPromptedRef.current = true;
+
+    const run = async () => {
+      // If already chosen locally, do not re-prompt.
+      if (trajectory) {
+        setShowPillChoice(false);
+        return;
+      }
+
+      // If we've already shown the pill UI once on this device, don't auto-show again.
+      if (pillPromptedAt) {
+        setShowPillChoice(false);
+        return;
+      }
+
+      try {
+        const profile = await getProfile({ email });
+        if (profile.trajectory === 'BLUE' || profile.trajectory === 'RED') {
+          setTrajectory(profile.trajectory);
+          setPersona(profile.trajectory === 'BLUE' ? 'PERSONAL' : 'BUSINESS');
+          setShowPillChoice(false);
+          return;
+        }
+
+        if (profile.trajectoryPromptedAt) {
+          setPillPromptedAt(profile.trajectoryPromptedAt);
+          setShowPillChoice(false);
+          return;
+        }
+      } catch {
+        // Supabase not configured or profile lookup failed — allow local-only experience.
+      }
+
+      const nowIso = new Date().toISOString();
+      setPillPromptedAt(nowIso);
+      void markPillPrompted({ email }).catch(() => undefined);
+      setShowPillChoice(true);
+    };
+
+    void run();
+  }, [isUnlocked, trajectory, pillPromptedAt, email, setPersona, setTrajectory, setPillPromptedAt]);
+
   // Color Cycle
   useEffect(() => {
     const interval = setInterval(() => setColorIndex(p => (p + 1) % COLOR_CYCLE.length), 5000);
@@ -196,8 +325,24 @@ export const SpectacularTerminal: React.FC = () => {
   }, []);
 
   // Auto-scroll
+  const handleOutputScroll = useCallback(() => {
+    const el = terminalRef.current;
+    if (!el) return;
+    const thresholdPx = 96;
+    const distanceFromBottom = el.scrollHeight - (el.scrollTop + el.clientHeight);
+    const nearBottom = distanceFromBottom <= thresholdPx;
+    pinnedToBottomRef.current = nearBottom;
+    if (nearBottom) setHasNewOutput(false);
+  }, []);
+
   useEffect(() => {
-    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    const el = terminalRef.current;
+    if (!el) return;
+    if (pinnedToBottomRef.current) {
+      el.scrollTop = el.scrollHeight;
+    } else {
+      setHasNewOutput(true);
+    }
   }, [lines]);
 
   const validateEmail = (e: string) => /\S+@\S+\.\S+/.test(e);
@@ -205,23 +350,9 @@ export const SpectacularTerminal: React.FC = () => {
   const performHandshake = useCallback(async (data: any) => {
     setStep('processing');
     setIsProcessing(true);
-    addTerminalLine('TRANSMITTING TO APEX SWARM...', 'matrix');
-    addTerminalLine('ORCHESTRATING AI READINESS SCORE...', 'matrix');
+    addTerminalLine('ESTABLISHING SECURE HANDSHAKE...', 'matrix');
     
     try {
-      const syncAgents = [
-        '👑 Infrastructure-Architect SYNCING...',
-        '🔒 Security-Monitor VALIDATING...',
-        '📋 Compliance-Guardian AUDITING...',
-        '💰 Cost-Optimizer PROJECTING...',
-        '🧠 Intel-Architect SYNTHESIZING...'
-      ];
-      
-      for (const agent of syncAgents) {
-        await new Promise(r => setTimeout(r, 400));
-        addTerminalLine(agent, 'matrix');
-      }
-
       const res = await fetch('/api/waitlist/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -309,31 +440,24 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine(`✓ STATUS: ${result.status?.toUpperCase() || 'ACTIVE'}`, 'success');
       await wait(300);
 
-      if (data.persona === 'BUSINESS') {
-        addTerminalLine('', 'system');
-        addTerminalLine('┌─── BUSINESS_ARCHITECT MODULES ───┐', 'matrix');
-        addTerminalLine('│ ⚡ MARKET_TAM         — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 🤖 SWARM_MATRIX       — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 📊 INVESTOR_RADAR     — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 🔒 REVENUE_ENGINE     — TIER 2   │', 'matrix');
-        addTerminalLine('│ 🔒 SCALE_PROTOCOL     — TIER 3   │', 'matrix');
-        addTerminalLine('└──────────────────────────────────┘', 'matrix');
-      } else {
-        addTerminalLine('', 'system');
-        addTerminalLine('┌─── PERSONAL_BUILDER MODULES ─────┐', 'matrix');
-        addTerminalLine('│ ⚡ VIBE_VELOCITY      — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 🧠 SKILL_TREE         — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 🎮 NPC_FEED           — UNLOCKED │', 'matrix');
-        addTerminalLine('│ 🔒 AGENT_FORGE        — TIER 2   │', 'matrix');
-        addTerminalLine('│ 🔒 DEPLOY_PROTOCOL    — TIER 3   │', 'matrix');
-        addTerminalLine('└──────────────────────────────────┘', 'matrix');
-      }
+      addTerminalLine('', 'system');
+      addTerminalLine('┌─── CORE MODULES (SAME FOR ALL) ─────────┐', 'matrix');
+      addTerminalLine('│ ⚡ Module 00: The Shift     — UNLOCKED  │', 'matrix');
+      addTerminalLine('│ ⚡ Module 01: Environment   — UNLOCKED  │', 'matrix');
+      addTerminalLine('│ 🔒 Module 02: Specifying   — LOCKED    │', 'matrix');
+      addTerminalLine('│ 🔒 Module 03: Orchestration— LOCKED    │', 'matrix');
+      addTerminalLine('│ 🔒 Module 04: Synthesis    — LOCKED    │', 'matrix');
+      addTerminalLine('│ 🔒 Module 05: Practicum    — LOCKED    │', 'matrix');
+      addTerminalLine('└────────────────────────────────────────┘', 'matrix');
       await wait(400);
 
       addTerminalLine('', 'system');
       addTerminalLine(`You're in the swarm now, ${data.name || 'Player One'}. Standard protocols are offline.`, 'jarvis');
       addTerminalLine('I\'m all yours. What are we building today?', 'jarvis');
       addTerminalLine('Tip: Ask about Module 00: The Shift or type "help" for intel.', 'system');
+
+      void trackEvent({ email, eventType: 'handshake_success', payload: { persona: data.persona || null } })
+        .catch(() => undefined);
 
       unlock();
       setStep('unlocked');
@@ -345,6 +469,55 @@ export const SpectacularTerminal: React.FC = () => {
     }
   }, [addTerminalLine, addAsciiArt, setStep, unlock, playerOneLogo, isMobile]);
 
+  const handlePillChoice = useCallback((choice: 'personal' | 'business') => {
+    const next = choice === 'personal' ? 'BLUE' : 'RED';
+    setTrajectory(next);
+    setPersona(next === 'BLUE' ? 'PERSONAL' : 'BUSINESS');
+    setShowPillChoice(false);
+
+    addTerminalLine(
+      next === 'BLUE'
+        ? '✓ BLUE PILL selected. Builder-to-Founder lens engaged.'
+        : '✓ RED PILL selected. Operator-to-Founder lens engaged.',
+      'success'
+    );
+
+    // Persist choice (best-effort). If Supabase is missing, local store still keeps it.
+    void upsertTrajectory({ email, trajectory: next })
+      .catch(() => undefined);
+    void trackEvent({ email, eventType: 'trajectory_selected', payload: { trajectory: next } })
+      .catch(() => undefined);
+  }, [addTerminalLine, email, setPersona, setTrajectory]);
+
+  const formatProviderDebugLine = (
+    requested: string,
+    used: string,
+    model: string,
+    latency: number,
+    requestId?: string,
+  ) => {
+    return `[muted]debug requestId=${requestId || 'n/a'} requested=${requested} used=${used} model=${model} latency=${latency}ms[/muted]`;
+  };
+
+  const looksLikeTokenDump = (input: string): boolean => {
+    const t = (input || '').trim();
+    if (t.length < 80) return false;
+
+    // Numeric / hyphen blobs (often accidental paste of IDs, traces, or internal tokens)
+    if (/^[0-9-]+$/.test(t) && t.replace(/-/g, '').length >= 80) return true;
+
+    // High entropy / mostly non-words (base64/hex-ish)
+    const compact = t.replace(/\s+/g, '');
+    if (compact.length >= 120 && /^[A-Za-z0-9+/_=-]+$/.test(compact)) return true;
+    if (compact.length >= 96 && /^[a-f0-9]+$/i.test(compact)) return true;
+
+    // Very low letter ratio
+    const letters = (t.match(/[A-Za-z]/g) || []).length;
+    if (t.length >= 120 && letters / t.length < 0.05) return true;
+
+    return false;
+  };
+
   const handleChat = async (msg: string) => {
     setIsProcessing(true);
     try {
@@ -352,39 +525,68 @@ export const SpectacularTerminal: React.FC = () => {
       const recentLines = lines.slice(-20); // Last 20 lines for context
       const history: { role: 'user' | 'assistant'; content: string }[] = [];
       
-      for (const line of recentLines) {
-        if (line.type === 'input') {
-          // Strip the "> " prefix from input lines
-          const content = line.text.replace(/^>\s*/, '');
-          if (content && content !== msg) { // Don't include current message
-            history.push({ role: 'user', content });
-          }
-        } else if (line.type === 'output' || line.type === 'jarvis') {
-          // Only include substantial responses (not empty lines)
-          if (line.text && line.text.length > 10) {
-            history.push({ role: 'assistant', content: line.text });
+        for (const line of recentLines) {
+          if (line.type === 'input') {
+            // Strip the "> " prefix from input lines
+            const content = line.text.replace(/^>\s*/, '');
+            if (content && content !== msg && !looksLikeTokenDump(content)) { // Don't include current message
+              history.push({ role: 'user', content });
+            }
+          } else if (line.type === 'output' || line.type === 'jarvis') {
+            // Only include substantial responses (not empty lines)
+            if (line.text && line.text.length > 10) {
+              history.push({ role: 'assistant', content: line.text });
+            }
           }
         }
-      }
       
       // Keep only last 8-10 conversational turns to stay within token limits
       const trimmedHistory = history.slice(-10);
       
       // Parser-compatible context with Mode and pathname
       const mode = persona === 'PERSONAL' ? 'GEEK' : 'STANDARD';
-      const context = `The user is on the "/waitlist" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}. User persona: ${persona || 'undetermined'}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist.`;
+      const stateHints = [
+        email ? `Email: ${email}` : undefined,
+        name ? `Name: ${name}` : undefined,
+        phone ? `Phone: ${phone}` : undefined,
+        persona ? `Persona: ${persona}` : undefined,
+        discovery ? `Discovery: ${discovery}` : undefined,
+        goal ? `Goal: ${goal}` : undefined,
+        `Unlocked: ${isUnlocked ? 'true' : 'false'}`,
+        `Step: ${step}`,
+      ].filter(Boolean).join(' | ');
+
+      const context = `The user is on the "/waitlist" page. Mode: ${mode}. Sync Level: ${isUnlocked ? 'TIER 1' : 'TIER 0'}. User persona: ${persona || 'undetermined'}. Access granted to Module 00/01. System: Stark-V3. User has joined waitlist. StateHints: ${stateHints}`;
       
       // Use queryAI for resilience (timeouts, error handling, fallback)
+      const requestedProvider = 'auto';
       const response = await queryAI({
         message: msg,
         userEmail: email,
         context,
         history: trimmedHistory,
+        preferredProvider: requestedProvider,
       });
       
       const content = response?.content || 'Intelligence unreachable.';
-      const formatted = CLIFormatter.convertMarkdownToCLI(content);
-      formatted.split('\n').forEach(l => addTerminalLine(l, 'output'));
+       const formatted = CLIFormatter.convertMarkdownToCLI(content, { width: cliWrapWidth });
+       formatted.split('\n').forEach(l => addTerminalLine(l, 'output'));
+      addTerminalLine(
+        formatProviderDebugLine(
+          requestedProvider,
+          response?.provider || 'offline',
+          response?.model || 'unknown',
+          response?.latency || 0,
+          response?.requestId,
+        ),
+        'system'
+      );
+      if (response?.debug?.attempts?.length) {
+        const chain = response.debug.attempts
+          .map((a) => `${a.provider}:${a.success ? 'ok' : a.error || 'fail'}`)
+          .join(' -> ');
+        addTerminalLine(`[muted]debug chain ${chain}[/muted]`, 'system');
+      }
     } catch (e) {
       addTerminalLine('Neural link lost. Try again.', 'error');
     } finally {
@@ -396,6 +598,14 @@ export const SpectacularTerminal: React.FC = () => {
     const trimmed = val.trim();
     if (!trimmed) return;
     const lower = trimmed.toLowerCase();
+
+    // Guard: prevent accidental pasting of token/trace dumps into the public terminal.
+    if (looksLikeTokenDump(trimmed)) {
+      addTerminalLine('> [input redacted: looks like token/id dump]', 'input', undefined, false);
+      addTerminalLine('Input rejected. Paste your actual goal/question (human text).', 'error');
+      setInputValue('');
+      return;
+    }
 
     if (JOKES[lower]) {
       addTerminalLine(`> ${trimmed}`, 'input');
@@ -423,74 +633,54 @@ export const SpectacularTerminal: React.FC = () => {
       addTerminalLine('✓ Handshake confirmed.', 'success');
       addTerminalLine('', 'system');
       addTerminalLine('Identify yourself, Founder. I don\'t talk to ghosts. Enter your full name:', 'jarvis');
-      setStep('onboarding_name' as any);
+      setStep('onboarding_name');
       return;
     }
 
-    if (step === 'onboarding_name' as any) {
+    if (step === 'onboarding_name') {
+      setName(trimmed);
       setFormData((p: any) => ({ ...p, name: trimmed }));
       addTerminalLine(`✓ Identity logged: ${trimmed}`, 'success');
       addTerminalLine('', 'system');
       addTerminalLine('Provide a direct line for secure comms. Enter your phone number:', 'jarvis');
-      setStep('onboarding_phone' as any);
+      setStep('onboarding_phone');
       return;
     }
 
-    if (step === 'onboarding_phone' as any) {
+    if (step === 'onboarding_phone') {
+      setPhone(trimmed);
       setFormData((p: any) => ({ ...p, phone: trimmed }));
       addTerminalLine(`✓ Signal channel set.`, 'success');
       addTerminalLine('', 'system');
-      addTerminalLine('Now, tell me who I\'m talking to. Are you here to master the stack yourself, or are we architecting a fleet for your company?', 'jarvis');
-      addTerminalLine('[ 1: PERSONAL_BUILDER ]', 'choice');
-      addTerminalLine('[ 2: BUSINESS_ARCHITECT ]', 'choice');
-      setStep('handshake');
-      return;
-    }
-
-    if (step === 'handshake') {
-      const isPersonal = lower === '1' || lower.includes('personal') || lower.includes('myself') || lower.includes('me') || lower.includes('just me');
-      const isBusiness = lower === '2' || lower.includes('business') || lower.includes('company') || lower.includes('team') || lower.includes('fleet');
-
-      if (isPersonal) {
-        setPersona('PERSONAL');
-        addTerminalLine('✓ Profile: PERSONAL_BUILDER. Initializing individual arbitrage metrics.', 'success');
-        addTerminalLine('Right. Let\'s turn you into a one-man production powerhouse. Standard dev cycles are for hobbyists.', 'jarvis');
-        addTerminalLine('# 03 What is your Dream Stack? (e.g., Next.js, Python, Rust):', 'system');
-        setStep('dynamic_discovery');
-      } else if (isBusiness) {
-        setPersona('BUSINESS');
-        addTerminalLine('✓ Profile: BUSINESS_ARCHITECT. Allocating market sovereignty resources.', 'success');
-        addTerminalLine('Director. Let\'s talk about orchestrating outcomes and dominating the market.', 'jarvis');
-        addTerminalLine('# 03 Current Tech Debt or Bottleneck? (e.g., slow dev cycles, high burn):', 'system');
-        setStep('dynamic_discovery');
-      } else {
-        addTerminalLine('I need to categorize your intent, Sir. Are we building for [1] YOU or [2] THE COMPANY?', 'jarvis');
-      }
-      return;
-    }
-
-    if (step === 'dynamic_discovery') {
-      setFormData((p: any) => ({ ...p, discovery: trimmed }));
-      addTerminalLine('✓ Intel captured.', 'success');
-      addTerminalLine('', 'system');
-      addTerminalLine('Now, the most important part. What is your primary 10-day build goal?', 'jarvis');
-      addTerminalLine('Note: Be specific. Ambition requires depth (Min 50 characters).', 'system');
-      setStep('validation');
-      return;
-    }
-
-    if (step === 'validation') {
-      if (trimmed.length < 50) {
-        addTerminalLine(`I can't build a fleet based on a single word, Sir. Give me some depth so I can allocate the right agents. (${trimmed.length}/50 chars).`, 'jarvis');
-        return;
-      }
-      setGoal(trimmed);
-      addTerminalLine('✓ Visionary intent recognized. Processing mission profile...', 'success');
-      void performHandshake({ ...formData, email, goal: trimmed, persona });
+      addTerminalLine('All right. Establishing secure handshake now...', 'jarvis');
+      const inferredPersona = persona || 'PERSONAL';
+      void performHandshake({
+        ...formData,
+        name,
+        phone: trimmed,
+        email,
+        persona: inferredPersona,
+      });
       return;
     }
 
     if (step === 'unlocked') {
+      // Pill selection works any time after unlock (non-blocking)
+      if (lower === '1' || lower.includes('blue pill') || lower === 'blue') {
+        setTrajectory('BLUE');
+        setPersona('PERSONAL');
+        setShowPillChoice(false);
+        addTerminalLine('✓ BLUE PILL selected. Builder-to-Founder lens engaged.', 'success');
+        return;
+      }
+      if (lower === '2' || lower.includes('red pill') || lower === 'red') {
+        setTrajectory('RED');
+        setPersona('BUSINESS');
+        setShowPillChoice(false);
+        addTerminalLine('✓ RED PILL selected. Operator-to-Founder lens engaged.', 'success');
+        return;
+      }
+
       // GREUCEANU PROTOCOL - The Vault
       if (lower === 'greuceanu') {
         addTerminalLine('SECRET PROTOCOL: GREUCEANU ACTIVATED', 'matrix');
@@ -565,6 +755,12 @@ export const SpectacularTerminal: React.FC = () => {
         return;
       }
 
+      if (lower === 'pill') {
+        setShowPillChoice(true);
+        addTerminalLine('PILL UI reopened. Choose BLUE or RED (or ignore and keep typing).', 'system');
+        return;
+      }
+
       if (lower === 'status') {
         addTerminalLine('[SYSTEM] 17 Agents Synchronized. All systems nominal.', 'success');
         return;
@@ -576,6 +772,8 @@ export const SpectacularTerminal: React.FC = () => {
   };
 
   const currentColor = persona === 'BUSINESS' ? '#8b5cf6' : COLOR_CYCLE[colorIndex]!;
+  const activeTrajectory = trajectory === 'RED' ? 'RED' : trajectory === 'BLUE' ? 'BLUE' : 'BLUE';
+  const suggestionPrompts = TRAJECTORY_CONFIG[activeTrajectory].defaultPrompts;
 
   return (
     <motion.div 
@@ -614,7 +812,11 @@ export const SpectacularTerminal: React.FC = () => {
       </div>
 
       {/* Output */}
-      <div ref={terminalRef} className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
+      <div
+        ref={terminalRef}
+        onScroll={handleOutputScroll}
+        className="flex-1 overflow-y-auto p-4 sm:p-8 font-mono space-y-2 sm:space-y-3 custom-scrollbar bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"
+      >
         
         <AnimatePresence>
           {lines.map((line) => (
@@ -688,6 +890,41 @@ export const SpectacularTerminal: React.FC = () => {
             <Loader2 className="w-4 h-4 animate-spin" /> EXECUTING...
           </div>
         )}
+
+        {showPillChoice && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="mt-8"
+          >
+            <PillChoiceSystem
+              activeOption={PILL_CONFIG.activeOption}
+              onSelect={handlePillChoice}
+            />
+            <div className="mt-3 text-center text-[10px] font-mono text-white/40 tracking-widest">
+              OPTIONAL: You can ignore this and start typing. Change later via command: [blue] / [red]
+            </div>
+          </motion.div>
+        )}
+
+        {hasNewOutput && (
+          <div className="sticky bottom-2 w-full flex justify-center">
+            <button
+              type="button"
+              onClick={() => {
+                const el = terminalRef.current;
+                if (!el) return;
+                pinnedToBottomRef.current = true;
+                setHasNewOutput(false);
+                el.scrollTop = el.scrollHeight;
+              }}
+              className="px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 text-[10px] font-mono tracking-widest hover:bg-cyan-500/15 transition-colors"
+            >
+              NEW OUTPUT · JUMP TO BOTTOM
+            </button>
+          </div>
+        )}
       </div>
 
 
@@ -697,6 +934,36 @@ export const SpectacularTerminal: React.FC = () => {
         {!isProcessing && step !== 'boot' && (
           <div className="px-6 pt-2 pb-0">
             <RotatingCTA />
+          </div>
+        )}
+
+        {isUnlocked && (
+          <div className="px-6 pt-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-[10px] font-mono text-white/35 tracking-widest uppercase">
+                Lens: {trajectory ? `${trajectory} PILL` : 'UNSET'}
+              </div>
+              <div className="text-[10px] font-mono text-white/25 tracking-widest">
+                Type `pill` to reopen
+              </div>
+            </div>
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+              {suggestionPrompts.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => {
+                    setInputValue(p);
+                    setTimeout(() => inputRef.current?.focus(), 0);
+                    void trackEvent({ email, eventType: 'suggestion_clicked', payload: { prompt: p.slice(0, 80), trajectory: trajectory ?? null } })
+                      .catch(() => undefined);
+                  }}
+                  className="shrink-0 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-[11px] font-mono hover:bg-white/10 hover:border-white/20 transition-colors"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         

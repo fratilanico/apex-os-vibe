@@ -1,24 +1,27 @@
 {
   "verification": {
-    "agent": "@apex-os-monster",
-    "timestamp": "2026-02-08T13:10:00Z",
-    "status": "COMPLETE",
-    "current_task": "Fix APEX OS ASCII logo rendering glitch in terminal components - COMPLETE",
+    "agent": "@opencode-agent",
+    "timestamp": "2026-02-12T12:25:00Z",
+    "status": "ACTIVE",
+    "current_task": "Waitlist hardening: persist identity fields + StateHints + token-dump guardrails",
     "progress": "100%",
     "blockers": "None",
-    "next_action": "Ready for next task",
+    "next_action": "Stage waitlist-related changes; commit; deploy Vercel preview",
     "alignment_verified": true,
-    "last_check": "2026-02-08T13:10:00Z",
+    "last_check": "2026-02-12T12:25:00Z",
     "deliverables": {
       "files_modified": [
-        "components/TerminalBranding.tsx"
+        "components/SpectacularTerminal.tsx",
+        "stores/useOnboardingStore.ts",
+        "lib/ai/globalAIService.ts",
+        "lib/ai/orchestration/unifiedDecision.ts",
+        "api/ai-unified.ts"
       ],
       "changes": [
-        "Simplified ASCII_LOGO constant with cleaner array-based syntax",
-        "Removed problematic escape sequences (\\\\\\) causing rendering glitches",
-        "Improved CSS: Added whitespace-pre to prevent layout issues",
-        "Increased font sizes from 6px/8px to 7px/9px for better readability",
-        "Adjusted line-height from 1.1 to 1.2 for consistent spacing"
+        "Blocked token/id dump inputs client-side and prevented them from entering history",
+        "Persisted waitlist onboarding identity fields (name/phone/discovery) so new tabs/refresh don't regress",
+        "Injected StateHints into unified AI context for deterministic post-handshake continuity",
+        "Server-side decisioning now trusts StateHints and ignores token dumps during extraction"
       ]
     }
   }

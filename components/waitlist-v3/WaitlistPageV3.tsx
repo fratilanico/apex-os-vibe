@@ -39,6 +39,7 @@ const WaitlistPageV3: React.FC = () => {
   const setVaultOpen = useOnboardingStore((s) => s.setVaultOpen);
   const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
+  const trajectory = useOnboardingStore((s) => s.trajectory);
 
   // Auto-activate GEEK mode on mount (Operator Default)
   useEffect(() => { setMode('GEEK'); }, [setMode]);
@@ -55,6 +56,46 @@ const WaitlistPageV3: React.FC = () => {
     }
   }, [setVaultOpen]);
 
+  useEffect(() => {
+    const pushDebugEvent = (payload: Record<string, unknown>) => {
+      const key = '__APEX_WAITLIST_DEBUG__';
+      const w = window as unknown as Record<string, unknown>;
+      const existing = (w[key] as Array<Record<string, unknown>> | undefined) || [];
+      const next = [...existing, { ts: new Date().toISOString(), ...payload }].slice(-100);
+      w[key] = next;
+    };
+
+    const onError = (event: ErrorEvent) => {
+      const payload = {
+        type: 'window.error',
+        message: event.message,
+        source: event.filename,
+        line: event.lineno,
+        column: event.colno,
+      };
+      pushDebugEvent(payload);
+      console.error('[WaitlistDebug]', payload, event.error);
+    };
+
+    const onUnhandled = (event: PromiseRejectionEvent) => {
+      const payload = {
+        type: 'unhandledrejection',
+        reason: String(event.reason),
+      };
+      pushDebugEvent(payload);
+      console.error('[WaitlistDebug]', payload);
+    };
+
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandled);
+    pushDebugEvent({ type: 'waitlist.mount', route: window.location.pathname });
+
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onUnhandled);
+    };
+  }, []);
+
   const handleSuccess = useCallback((data: SubmitResult) => {
     setResult(data);
     setSubmitted(true);
@@ -65,7 +106,7 @@ const WaitlistPageV3: React.FC = () => {
 
   // Persona-driven aura colors - RESTORED to rich visible gradients
   const getAuraColors = () => {
-    if (persona === 'PERSONAL') {
+    if (trajectory === 'BLUE' || persona === 'PERSONAL') {
       return [
         { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
         { color: 'cyan' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
@@ -73,7 +114,7 @@ const WaitlistPageV3: React.FC = () => {
         { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
       ];
     }
-    if (persona === 'BUSINESS') {
+    if (trajectory === 'RED' || persona === 'BUSINESS') {
       return [
         { color: 'violet' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
         { color: 'violet' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
