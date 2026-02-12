@@ -5,9 +5,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    // Only run Jarvis tests under Vitest to avoid duplicating Jest runs.
     include: ['src/jarvis/__tests__/**/*.test.ts'],
-    exclude: ['node_modules', 'dist', 'coverage'],
+    exclude: ['node_modules', 'dist'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

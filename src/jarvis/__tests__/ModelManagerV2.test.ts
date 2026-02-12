@@ -277,22 +277,22 @@ describe('ModelManagerV2', () => {
     it('should route code queries to code model', async () => {
       await manager.query('Write a function to calculate fibonacci');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
-      expect(call?.model).toBe('deepseek-coder-v2:6.7b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
+      expect(call.model).toBe('deepseek-coder-v2:6.7b');
     });
 
     it('should route chat queries to chat model', async () => {
       await manager.query('Tell me a story');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
-      expect(call?.model).toBe('llama3.1:8b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
+      expect(call.model).toBe('llama3.1:8b');
     });
 
     it('should use default orchestrator for general queries', async () => {
       await manager.query('Hello');
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
-      expect(call?.model).toBe('qwen2.5:7b');
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
+      expect(call.model).toBe('qwen2.5:7b');
     });
 
     it('should pass personality and context options', async () => {
@@ -307,8 +307,8 @@ describe('ModelManagerV2', () => {
         'Business meeting'
       );
       
-      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0]?.[0] as any;
-      expect(call?.options?.temperature).toBe(0.8);
+      const call = (OllamaClient.generateWithOllama as Mock).mock.calls[0][0];
+      expect(call.options.temperature).toBe(0.8);
     });
 
     it('should store context from response', async () => {
@@ -350,8 +350,8 @@ describe('ModelManagerV2', () => {
       // Consume generator
       for await (const _ of generator) {}
       
-      const call = (OllamaClient.streamGenerateWithOllama as Mock).mock.calls[0]?.[0] as any;
-      expect(call?.model).toBe('deepseek-coder-v2:6.7b');
+      const call = (OllamaClient.streamGenerateWithOllama as Mock).mock.calls[0][0];
+      expect(call.model).toBe('deepseek-coder-v2:6.7b');
     });
 
     it('should update last accessed after streaming', async () => {

@@ -10,6 +10,10 @@ interface ChatMessage {
 interface RequestBody {
   message: string;
   history?: ChatMessage[];
+  userEmail?: string;
+  userId?: string;
+  sessionId?: string;
+  stateHints?: Record<string, unknown>;
 }
 
 // System prompt for APEX Terminal - elite coding assistant
@@ -90,6 +94,10 @@ export default async function handler(
       history: normalizedHistory,
       systemPrompt: TERMINAL_SYSTEM_PROMPT,
       baseUrl,
+      userEmail: body.userEmail,
+      userId: body.userId,
+      sessionId: body.sessionId,
+      stateHints: body.stateHints as any,
     });
 
     res.status(200).json({
@@ -98,6 +106,8 @@ export default async function handler(
       provider: aiResponse.provider,
       latency: aiResponse.latency,
       tier: aiResponse.tier,
+      requestId: aiResponse.requestId,
+      debug: aiResponse.debug,
     });
     return;
   } catch (error: unknown) {

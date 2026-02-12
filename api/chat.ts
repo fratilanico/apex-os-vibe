@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const { message, history = [] } = req.body;
+  const { message, history = [], userEmail, userId, sessionId, stateHints } = req.body;
 
   if (!message || typeof message !== 'string') {
     res.status(400).json({ error: 'Message is required' });
@@ -48,6 +48,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       history: normalizedHistory,
       systemPrompt: SYSTEM_PROMPT,
       baseUrl,
+      userEmail,
+      userId,
+      sessionId,
+      stateHints,
     });
 
     res.status(200).json({
@@ -56,6 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       model: aiResponse.model,
       latency: aiResponse.latency,
       tier: aiResponse.tier,
+      requestId: aiResponse.requestId,
+      debug: aiResponse.debug,
     });
   } catch (error: any) {
     console.error('Chat API Error:', error);

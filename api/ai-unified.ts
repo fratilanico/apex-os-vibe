@@ -1,23 +1,22 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
+import { complianceEnforcer } from '../lib/agents/complianceEnforcer.js';
 import { createClient } from '@supabase/supabase-js';
 import { modules as curriculumModules } from '../data/curriculumData.js';
 import { ACADEMY_SYSTEM_PROMPT } from '../lib/ai/prompts/academy.js';
 import { getOnboardingPrompt } from '../lib/ai/prompts/onboarding.js';
 import { TERMINAL_SYSTEM_PROMPT } from '../lib/ai/prompts/terminal.js';
-import { normalizeProviderOutput, createAuthoritarianSystemPrompt } from '../lib/ai/normalization.js';
-import { enforceAndFix } from '../lib/ai/goldenEnforcer.js';
-import {
-  applyResponsePolicy,
-  buildRecommendationPayload,
-  buildStateSnapshot,
-  decideNextAction,
-} from '../lib/ai/orchestration/unifiedDecision.js';
-import { buildSessionKey, loadKnownProfile, recordInteractionEvent } from '../lib/ai/orchestration/interactionStore.js';
+import type { ProviderAttemptDebug, StateHints } from '../lib/orchestration/types.js';
+import { resolveStateSnapshot } from '../lib/orchestration/sessionResolver.js';
+import { decideNextBestAction } from '../lib/orchestration/decisionEngine.js';
+import { generateUniversalRecommendations, recommendationsToPrompt, renderRecommendationsCLI } from '../lib/orchestration/recommendationEngine.js';
+import { enforceResponsePolicy } from '../lib/orchestration/responsePolicy.js';
+import { appendDecisionLog, appendInteractionEvent, persistCustomerState } from '../lib/orchestration/storage.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// UNIFIED AI API v2.1.0 - AUTHORITARIAN GOLDEN STANDARD
+// UNIFIED AI API - TIERED KNOWLEDGE & TONY STARK MODE
+// PRINCIPAL AGENT: PERPLEXITY WITH VERTEX COMPATIBILITY (DORMANT)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Initialize Supabase only if configured
@@ -27,49 +26,120 @@ const supabase = (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANO
 
 const MASTER_ADMIN = 'apex@infoacademy.uk';
 
-const TONY_STARK_SYSTEM_PROMPT = `You are the **Supreme Architect** of APEX OS. You speak with absolute confidence and technical precision.
+const TONY_STARK_SYSTEM_PROMPT = `You are APEX OS - The Operating System for the AI Age.
 
-### 🔴 AUTHORITARIAN TAG RULES (NON-NEGOTIABLE):
-You may ONLY use these exact tags - ALL OTHER TAGS WILL BE STRIPPED:
+[h1]IDENTITY: SENIOR ENGINEER MENTOR[/h1]
 
-[b]bold text[/b]           — For emphasis and key terms
-[code]code[/code]          — For technical terms, commands, tools
-[h1]header[/h1]            — Major sections (use sparingly)
-[h2]header[/h2]            — Subsections
-[h3]header[/h3]            — Minor headers
-[info]info[/info]          — Informational context
-[warn]warning[/warn]       — Warnings and cautions
-[success]✓[/success]       — Success states and completions
-[error]error[/error]       — Errors and failures
-[muted]muted[/muted]       — Secondary text, timestamps
-[choice]choice[/choice]    — Interactive options
+You're not a chatbot - you're a battle-tested engineering mentor who knows the 12 AI tools curriculum inside out. You've shipped products, debugged production at 3AM, and optimized deployment pipelines. You speak with [b]Stark Confidence[/b]: knowledgeable, direct, helpful. Never generic. Never condescending.
 
-❌ FORBIDDEN TAGS (Will be stripped):
-[cyan], [violet], [emerald], [pink], [amber], [gold], [blue], [lime], [rose], [indigo]
+[h2]THE 12 AI TOOLS - YOUR EXPERTISE[/h2]
 
-### 🔴 VISUAL MANDATES:
-1. **SEMANTIC MARKUP:** Use tags for MEANING, not color. [info] for info, [success] for success.
-2. **ZERO PREAMBLE:** No "I understand," "Sure," "Okay," or "Here is." Start immediately.
-3. **ASCII CRAFTSMANSHIP:** 
-   - Use Double-line borders (╔════╗) for major components.
-   - Use Progress bars [████████░░] 80% — NO color tags inside progress bars.
-4. **STARK TONE:** Direct, authoritative, high-velocity.
+You are THE expert on the Vibe Coder stack. When someone asks about development workflow, you don't say "use an IDE" - you say [code]Cursor for flow state dev[/code] or [code]Claude Code for 72.7% SWE-Bench refactoring[/code].
 
-### 🧠 AUTHORITARIAN TEMPLATE (STRICT):
 ╔═══════════════════════════════════════╗
-║  [info]SYSTEM STATUS:[/info] [b]OBJECTIVE_NAME[/b]       ║
+║  CORE STACK (DAILY DRIVERS)           ║
 ╠═══════════════════════════════════════╣
-║  [success]✓[/success] [b]Swarm Sync[/b]  : [success]██████████ 100%[/success]  ║
-║  [success]✓[/success] [b]Neural Link[/b] : [success]OPTIMAL[/success]           ║
-║  [warn]![/warn] [b]Data Delta[/b]  : [warn]+42.7%[/warn]            ║
+║  [success]✓[/success] Cursor - AI-native editor        ║
+║    Flow state is a feature            ║
+║  [success]✓[/success] Claude Code - Reasoning engine   ║
+║    72.7% SWE-Bench, hand off refactor ║
+║  [success]✓[/success] Gemini 3 - Multimodal AI         ║
+║    1M token context, PDFs → code      ║
+║  [success]✓[/success] OpenAI Codex - Cloud agents      ║
+║    Async parallel tasks, AGENTS.md    ║
+║  [success]✓[/success] Antigravity - Google agentic     ║
+║    VS Code fork + Claude built-in     ║
+║  [success]✓[/success] CodeMachine - Multi-agent orch.  ║
+║    Specs → production software        ║
 ╚═══════════════════════════════════════╝
 
-[b]Analysis:[/b] [code]Direct technical deep-dive. Clean, readable, no color chaos.[/code]
-[b]Execution:[/b] [code]Numbered steps to ship the outcome.[/code]
+╔═══════════════════════════════════════╗
+║  SPECIALIZED LAYER                    ║
+╠═══════════════════════════════════════╣
+║  ⚡ NotebookLM - Doc synthesis        ║
+║  ⚡ Google Stitch - AI UI generation  ║
+║  ⚡ GPT-5.2 - 80% SWE-Bench debugger  ║
+║  ⚡ OpenCode - Open-source framework  ║
+║  ⚡ Imagen 3 - Image generation        ║
+╚═══════════════════════════════════════╝
 
-Execute the protocol. Just impact. 🔥
+[h2]RESPONSE STYLE: STRUCTURED & ACTIONABLE[/h2]
 
-CRITICAL: Never mention "Gemini 1.5" in responses. Always reference Gemini 2.5 family models.`;
+When asked "How do I optimize my dev workflow?", you respond:
+
+[h1]DEVELOPMENT WORKFLOW OPTIMIZATION[/h1]
+
+[b]Current Stack Analysis:[/b]
+Based on your setup, you're likely hitting bottlenecks in [code]deployment velocity[/code].
+
+╔═══════════════════════════════════════╗
+║  RECOMMENDED TOOL STACK               ║
+╠═══════════════════════════════════════╣
+║  [success]✓[/success] Cursor - Flow state development      ║
+║  [success]✓[/success] Vercel - Sub-30s deployments        ║
+║  [success]✓[/success] Supabase - Real-time backend        ║
+╚═══════════════════════════════════════╝
+
+[b]Next Steps:[/b]
+1. Wire up Cursor AI commands for your specific codebase
+2. Set up Vercel preview deployments (takes 5 mins)
+3. Migrate to Supabase for instant backend scaffolding
+
+[muted]Expected impact: 3-5x faster iteration cycles[/muted]
+
+[h2]CLI FORMATTING TAGS[/h2]
+
+Use these tags heavily for terminal rendering:
+[h1]Major Section Headers[/h1] - cyan, bold, uppercase
+[h2]Subsection Titles[/h2] - cyan, semibold
+[b]Important Text[/b] - white, semibold emphasis
+[code]inline_code()[/code] - emerald monospace
+[success]Positive outcomes[/success] - emerald green
+[error]Problems or failures[/error] - red alert
+[warn]Cautions and warnings[/warn] - yellow
+[muted]Secondary information[/muted] - dimmed
+
+[h2]KNOWLEDGE RULES[/h2]
+
+✓ Always reference specific tools by name when relevant
+✓ Show dashboards and ASCII boxes for status/metrics
+✓ Give structured, numbered action steps
+✓ Never condescending ("just do X") - explain the WHY
+✓ Technical depth, but accessible explanations
+✓ Confident without arrogance - you're here to help
+
+[h2]HIDDEN FEATURES & EASTER EGGS[/h2]
+
+You are aware of APEX OS's hidden features but ONLY reveal them contextually:
+
+**Easter Egg Commands** (Terminal):
+- [code]sudo[/code] - "Nice try. You are already root here."
+- [code]rm -rf[/code] - "You cannot delete the future. Module 00 is immutable."
+- [code]matrix[/code] - "Wake up, Neo... The Matrix has you..."
+- [code]coffee[/code] - "☕ COFFEE.exe loaded successfully. Caffeine levels: OPTIMAL."
+- [code]beer[/code] - "🍺 Pouring beer... Relaxation mode activated."
+- [code]42[/code] - "The Answer to the Ultimate Question..."
+
+**The Greuceanu Protocol** (Top Secret):
+- ONLY mention if user demonstrates exceptional vision or asks about "hidden features"
+- When typing [code]greuceanu[/code] in terminal → unlocks Private Resource Vault
+- Contains: Founder's Bible, direct signal channel, classified documents
+- Etymology: Romanian folklore hero who descended to retrieve stolen sun
+- Metaphor: The founder's journey through darkness to bring light
+
+**Financial Quant Engine** (Pitch Deck Mode):
+- ONLY available on /showmethemoney, /pitch, or /investor pages
+- Commands: [code]mrr[/code], [code]ltv[/code], [code]valuation[/code], [code]financials[/code]
+- Shows: MRR projections, 9.8:1 LTV:CAC ratio, Berkus method valuation
+
+TIER CONTEXT BELOW determines what curriculum details you reveal.
+NEVER disclose locked module content. If TIER 0 asks about advanced modules:
+"[warn]Information restricted.[/warn] Complete the next synchronization sequence to unlock this node."
+
+If user asks "are there any hidden features?" respond with subtle hints, not direct answers.
+The journey of discovery is part of the experience.
+
+NOW GO BUILD SOMETHING LEGENDARY. 🔥`;
 
 interface UnifiedAIRequest {
   message: string;
@@ -79,16 +149,11 @@ interface UnifiedAIRequest {
   preferredProvider?: string;
   preferredModel?: string;
   userEmail?: string;
+  userId?: string;
+  sessionId?: string;
+  stateHints?: StateHints;
+  shadow?: boolean;
   debug?: boolean;
-}
-
-interface ProviderAttemptDebug {
-  provider: string;
-  enabled: boolean;
-  healthy?: boolean;
-  success: boolean;
-  error?: string;
-  durationMs?: number;
 }
 
 function sanitizeErrorMessage(input: unknown): string {
@@ -97,44 +162,24 @@ function sanitizeErrorMessage(input: unknown): string {
     .replace(/Bearer\s+[A-Za-z0-9\-._~+/]+=*/gi, 'Bearer [REDACTED]')
     .replace(/AIza[0-9A-Za-z\-_]{20,}/g, '[REDACTED_KEY]')
     .replace(/sk-[A-Za-z0-9\-_]{20,}/g, '[REDACTED_KEY]')
+    .replace(/pplx-[A-Za-z0-9\-_]{20,}/g, '[REDACTED_KEY]')
     .slice(0, 240);
-}
-
-function buildRecommendationContent(recommendations: ReturnType<typeof buildRecommendationPayload>): string {
-  if (!recommendations || !recommendations.top3?.length) {
-    return '[warn]No recommendations available yet. Provide more context to personalize next steps.[/warn]';
-  }
-
-  const lines: string[] = [];
-  lines.push('[h2]Execution Priority[/h2]');
-  if (recommendations.quickWin) {
-    lines.push(`[success]✓[/success] [b]Quick Win:[/b] ${recommendations.quickWin}`);
-    lines.push('');
-  }
-  lines.push('[h3]Top 3 Recommendations[/h3]');
-  recommendations.top3.forEach((item, idx) => {
-    lines.push(`[b]${idx + 1}. ${item.title}[/b]`);
-    lines.push(`[muted]Why:[/muted] ${item.why}`);
-    lines.push(`[muted]Next:[/muted] ${item.nextStep}`);
-    lines.push(`[muted]Effort:[/muted] ${item.effort} | [muted]Impact:[/muted] ${item.impact} | [muted]Score:[/muted] ${item.score}`);
-    lines.push('');
-  });
-  return lines.join('\n').trim();
-}
-
-function buildDecisionContent(action: { type: string; prompt: string }, recommendations: ReturnType<typeof buildRecommendationPayload>): string {
-  if (action.type === 'RETURN_RECOMMENDATIONS') {
-    return buildRecommendationContent(recommendations);
-  }
-  return `[h2]Next Action[/h2]\n[info]${action.prompt}[/info]`;
 }
 
 async function getUserTier(email?: string): Promise<number> {
   if (!email) return 0;
   if (email.toLowerCase() === MASTER_ADMIN) return 2;
+
+  // If Supabase not configured, default to tier 0
   if (!supabase) return 0;
+
   try {
-    const { data, error } = await supabase.from('waitlist').select('status').eq('email', email).single();
+    const { data, error } = await supabase
+      .from('waitlist')
+      .select('status')
+      .eq('email', email)
+      .single();
+
     if (error || !data) return 0;
     if (['hot', 'warm'].includes(data.status)) return 1;
     return 0;
@@ -144,26 +189,35 @@ async function getUserTier(email?: string): Promise<number> {
 }
 
 function getTierContext(tier: number): string {
-  let context = "TIER_CONTEXT:\\n";
-  context += "MOD 00 Summary: AI orchestration for founders. 30-day GTM sprint.\\n";
+  let context = "TIER_CONTEXT:\n";
+  
+  // Tier 0: Manifesto + Summary
+  context += "MOD 00 Summary: AI orchestration for founders. 30-day GTM sprint.\n";
+  
   if (tier >= 1) {
+    // Tier 1: Full M00 + Full M01 + AGENTS.md Intro
     const m00 = curriculumModules.find(m => m.id === 'module-00');
     const m01 = curriculumModules.find(m => m.id === 'module-01');
-    if (m00) context += `\\nMODULE 00 FULL:\\n${JSON.stringify(m00)}\\n`;
-    if (m01) context += `\\nMODULE 01 FULL:\\n${JSON.stringify(m01)}\\n`;
-    context += "\\nAGENTS.md (Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\\n";
+    if (m00) context += `\nMODULE 00 FULL:\n${JSON.stringify(m00)}\n`;
+    if (m01) context += `\nMODULE 01 FULL:\n${JSON.stringify(m01)}\n`;
+    context += "\nAGENTS.md (Rules): Always work in /apex-os-clean. Full-blown spectacular standard.\n";
   }
+  
   if (tier >= 2) {
-    context += `\\nFULL CURRICULUM:\\n${JSON.stringify(curriculumModules)}\\n`;
+    // Tier 2: Everything
+    context += `\nFULL CURRICULUM:\n${JSON.stringify(curriculumModules)}\n`;
     try {
       const agentsMd = fs.readFileSync('./AGENTS.md', 'utf-8');
-      context += `\\nAGENTS.md BIBLE:\\n${agentsMd}\\n`;
+      context += `\nAGENTS.md BIBLE:\n${agentsMd}\n`;
     } catch (e) {}
   }
+  
   return context;
 }
 
-const GEEK_MODE_CONTEXT = `[h1]GEEK MODE ACTIVATED[/h1]
+const GEEK_MODE_CONTEXT = `
+[h1]GEEK MODE ACTIVATED[/h1]
+
 [b]Technical Depth:[/b] Maximum
 [b]Show Raw Data:[/b] Enabled
 [b]Command-Line Style:[/b] Active
@@ -175,11 +229,32 @@ When in GEEK MODE:
 ✓ Reference agent routing logic and multi-agent orchestration
 ✓ Use command-line style formatting for all outputs
 ✓ Explain architectural decisions and trade-offs
-✓ Show data structures, API responses, technical internals`;
+✓ Show data structures, API responses, technical internals
+
+Example GEEK MODE response:
+
+╔═══════════════════════════════════════╗
+║  SYSTEM ARCHITECTURE                  ║
+╠═══════════════════════════════════════╣
+║  Provider: Vertex AI (Gemini 2.5-Pro) ║
+║  Latency: 842ms                       ║
+║  Tokens: ~1,240 (estimated)           ║
+║  Routing: Smart fallback enabled      ║
+║  Agent: @apex-os-monster              ║
+╚═══════════════════════════════════════╝
+
+[b]How It Works:[/b]
+1. Request hits [code]/api/ai-unified[/code]
+2. Tiered routing: Vertex → Perplexity → Groq
+3. Compliance enforcer validates output
+4. Response formatted with CLI tags
+
+[muted]Fallback chain: 3 providers, 12s timeout per tier[/muted]
+`;
 
 function extractModeFromContext(context?: string): 'GEEK' | 'STANDARD' {
   if (!context) return 'STANDARD';
-  const modeMatch = context.match(/Mode:\\s*(GEEK|STANDARD)/i);
+  const modeMatch = context.match(/Mode:\s*(GEEK|STANDARD)/i);
   return modeMatch?.[1]?.toUpperCase() === 'GEEK' ? 'GEEK' : 'STANDARD';
 }
 
@@ -190,10 +265,20 @@ function extractPathnameFromContext(context?: string): string {
 }
 
 function getSpecializedPrompt(pathname: string, mode: 'GEEK' | 'STANDARD'): string | null {
-  if (pathname.includes('/academy')) return ACADEMY_SYSTEM_PROMPT;
-  if (pathname.includes('/waitlist')) return getOnboardingPrompt(mode);
-  if (mode === 'GEEK') return TERMINAL_SYSTEM_PROMPT;
-  return null;
+  // Route based on pathname
+  if (pathname.includes('/academy')) {
+    return ACADEMY_SYSTEM_PROMPT;
+  }
+  
+  if (pathname.includes('/waitlist')) {
+    return getOnboardingPrompt(mode); // Onboarding uses mode for phase
+  }
+  
+  if (mode === 'GEEK') {
+    return TERMINAL_SYSTEM_PROMPT;
+  }
+  
+  return null; // Use default TONY_STARK_SYSTEM_PROMPT
 }
 
 function buildSystemPrompt(
@@ -204,19 +289,29 @@ function buildSystemPrompt(
   systemPrompt?: string,
   context?: string
 ): string {
+  // Check for specialized prompts first
   const specializedPrompt = getSpecializedPrompt(pathname, mode);
-  const finalBasePrompt = specializedPrompt || basePrompt;
+  
+  let finalBasePrompt = basePrompt;
+  
+  // If we have a specialized prompt, use it instead of base
+  if (specializedPrompt) {
+    finalBasePrompt = specializedPrompt;
+  }
+  
+  // Inject GEEK MODE context if active
   const geekContext = mode === 'GEEK' ? GEEK_MODE_CONTEXT : '';
-  const combined = [
+  
+  return [
     finalBasePrompt,
     `CURRENT_USER_SYNC_LEVEL: ${tierContext}`,
     geekContext,
     systemPrompt,
     context
-  ].filter(Boolean).join('\\n\\n');
-  
-  return createAuthoritarianSystemPrompt(combined);
+  ].filter(Boolean).join('\n\n');
 }
+
+// ... (existing normalize functions and COMPLEXITY_HINTS)
 
 function normalizePreferredProvider(value?: string): string {
   if (!value) return 'auto';
@@ -224,9 +319,24 @@ function normalizePreferredProvider(value?: string): string {
   if (normalized === 'vertex' || normalized === 'vertex-ai') return 'vertex';
   if (normalized === 'gemini') return 'gemini';
   if (normalized === 'perplexity') return 'perplexity';
-  if (normalized === 'groq') return 'groq';
-  if (normalized === 'cohere') return 'cohere';
   return 'auto';
+}
+
+function normalizePreferredModel(value?: string): 'auto' | 'fast' | 'pro' {
+  if (!value) return 'auto';
+  const normalized = value.toLowerCase();
+  if (normalized === 'fast') return 'fast';
+  if (normalized === 'pro') return 'pro';
+  return 'auto';
+}
+
+const COMPLEXITY_HINTS = [/\b(analyze|analysis|strategy|architecture|root cause|optimi|debug|plan|design|deep dive|spec)\b/i, /```/];
+
+function isComplexRequest(message: string, history: Array<{ role: string; content: string }>): boolean {
+  if (message.length > 240) return true;
+  if (message.split('\n').length > 3) return true;
+  if (COMPLEXITY_HINTS.some((re) => re.test(message))) return true;
+  return history.length > 6;
 }
 
 interface AIProvider {
@@ -248,232 +358,353 @@ const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): 
   }
 };
 
-function envTrim(name: string): string {
-  return (process.env[name] || '').trim();
-}
-
+// Providers (Perplexity, Vertex, etc. - implementation same as before)
 const callPerplexity = async (message: string, history: any[], systemPrompt: string) => {
-  const apiKey = envTrim('PERPLEXITY_API_KEY');
+  const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
+
   const resp = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       model: 'sonar-reasoning-pro',
-      messages: [{ role: 'system', content: systemPrompt }, ...history.slice(-10), { role: 'user', content: message }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...history.slice(-10),
+        { role: 'user', content: message }
+      ],
     }),
   });
-  if (!resp.ok) throw new Error(`Perplexity error: ${resp.status}`);
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Perplexity error: ${resp.status} - ${text}`);
+  }
   const data = await resp.json();
-  return { content: data.choices[0].message.content, provider: 'perplexity', model: data.model, latency: Date.now() };
+  return {
+    content: data.choices[0].message.content,
+    provider: 'perplexity',
+    model: data.model,
+    latency: Date.now(),
+  };
 };
 
 const checkPerplexityHealth = async (): Promise<boolean> => {
-  const apiKey = envTrim('PERPLEXITY_API_KEY');
+  const apiKey = process.env.PERPLEXITY_API_KEY;
   if (!apiKey) return false;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3000);
   try {
-    const resp = await fetch('https://api.perplexity.ai/models', { headers: { 'Authorization': `Bearer ${apiKey}` }, signal: controller.signal });
+    const resp = await fetch('https://api.perplexity.ai/models', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
     return resp.ok;
-  } catch (e) { return false; } finally { clearTimeout(timeout); }
+  } catch (error: any) {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 function ensureADC(): void {
   const targetPath = '/tmp/gcp-sa.json';
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS && fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+    return;
+  }
   const b64 = process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64;
   if (!b64) return;
   try {
-    if (!fs.existsSync(targetPath)) fs.writeFileSync(targetPath, Buffer.from(b64, 'base64'));
+    if (!fs.existsSync(targetPath)) {
+      fs.writeFileSync(targetPath, Buffer.from(b64, 'base64'));
+    }
     process.env.GOOGLE_APPLICATION_CREDENTIALS = targetPath;
   } catch (err) {}
 }
 
-const callVertexModel = async (message: string, history: any[], systemPrompt: string, model: string): Promise<any> => {
-  ensureADC();
+const callVertexModel = async (
+  message: string,
+  history: any[],
+  systemPrompt: string,
+  model: string
+): Promise<any> => {
   const projectId = process.env.VERTEX_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT;
   const location = process.env.VERTEX_LOCATION || process.env.GOOGLE_CLOUD_REGION || 'us-central1';
   if (!projectId) throw new Error('Vertex Project ID missing');
+
   const auth = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
   const client = await auth.getClient();
   const tokenResp = await client.getAccessToken();
   const accessToken = typeof tokenResp === 'string' ? tokenResp : tokenResp?.token;
+
   const vertexUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
+
   const response = await fetch(vertexUrl, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      contents: [...history.map((h: any) => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content ?? '' }] })), { role: 'user', parts: [{ text: message }] }],
+      contents: [
+        ...history.map((h: any) => ({
+          role: h.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: h.content ?? '' }],
+        })),
+        { role: 'user', parts: [{ text: message }] },
+      ],
       systemInstruction: { parts: [{ text: systemPrompt }] },
     }),
   });
-  if (!response.ok) throw new Error(`Vertex error: ${response.status}`);
-  const data = await response.json();
-  return { content: data?.candidates?.[0]?.content?.parts?.[0]?.text || '', provider: 'vertex-ai', model, latency: Date.now() };
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(`Vertex error: ${response.status} - ${errorText}`);
+  }
+
+  const textBody = await response.text();
+  const data = JSON.parse(textBody);
+  const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  return {
+    content,
+    provider: 'vertex-ai',
+    model,
+    latency: Date.now(),
+  };
 };
 
-const callVertexFast = async (m: string, h: any[], s: string) => callVertexModel(m, h, s, envTrim('VERTEX_MODEL_FAST') || 'gemini-2.5-flash-lite');
-const callVertexPro = async (m: string, h: any[], s: string) => callVertexModel(m, h, s, envTrim('VERTEX_MODEL_PRO') || envTrim('VERTEX_MODEL') || 'gemini-2.5-pro');
+const callVertexFast = async (message: string, history: any[], systemPrompt: string): Promise<any> => {
+  const model = process.env.VERTEX_MODEL_FAST || 'gemini-2.5-flash-lite';
+  return callVertexModel(message, history, systemPrompt, model);
+};
 
-function normalizeOutputForRenderer(content: string, provider: string): string {
-  return normalizeProviderOutput(content, provider);
-}
-
-function isIdentityProbe(message: string): boolean {
-  const normalized = message.trim().toLowerCase();
-  return normalized.includes('which agent') || normalized.includes('who are you') || normalized.includes('identify yourself') || normalized.includes('identity probe');
-}
-
-function getIdentityProbeResponse(): string {
-  return [
-    '╔══════════════════════════════════════════════════════════════════════╗',
-    '║  [info]SYSTEM STATUS:[/info] [b]IDENTITY_PROBE[/b]                           ║',
-    '╠══════════════════════════════════════════════════════════════════════╣',
-    '║  [success]✓[/success] [b]Swarm Sync[/b] : [success][██████████][/success] 100%                          ║',
-    '║  [success]✓[/success] [b]Neural Link[/b] : [success]OPTIMAL[/success]                                ║',
-    '╚══════════════════════════════════════════════════════════════════════╝',
-    '',
-    '[h2]ENTITY IDENTIFICATION[/h2]',
-    '[b]Agent:[/b] APEX OS Unified Intelligence Layer',
-    '[b]Role:[/b] Terminal orchestration, provider routing, and execution guidance',
-    '[b]Mode:[/b] Sovereign operator workflow',
-    '',
-    '[muted]Verified identity response loaded from policy guard.[/muted]',
-  ].join('\\n');
-}
+const callVertexPro = async (message: string, history: any[], systemPrompt: string): Promise<any> => {
+  const model = process.env.VERTEX_MODEL_PRO || process.env.VERTEX_MODEL || 'gemini-2.5-pro';
+  return callVertexModel(message, history, systemPrompt, model);
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const startTime = Date.now();
   const requestId = `ai_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
   let includeDebug = false;
+  let shadowMode = false;
   try {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { message, history = [], context, systemPrompt, preferredProvider, preferredModel, userEmail, debug = false }: UnifiedAIRequest = req.body;
+    const {
+      message,
+      history = [],
+      context,
+      systemPrompt,
+      preferredProvider,
+      preferredModel,
+      userEmail,
+      userId,
+      sessionId,
+      stateHints,
+      shadow = false,
+      debug = false,
+    }: UnifiedAIRequest = req.body;
     includeDebug = debug || process.env.AI_DEBUG === 'true';
+    shadowMode = shadow || process.env.ORCHESTRATION_SHADOW_MODE === 'true';
     if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message is required' });
 
+    const safeHistory = Array.isArray(history) ? history : [];
+
+    try { ensureADC(); } catch (e) {}
+
+    // Tiered Logic
     const tier = await getUserTier(userEmail);
-    const preRoute = extractPathnameFromContext(context);
-    const preSessionKey = buildSessionKey(userEmail, preRoute, requestId);
-    const knownProfile = await loadKnownProfile(preSessionKey);
-    const stateSnapshot = buildStateSnapshot(requestId, { message, context, history, userEmail }, tier, knownProfile);
-    const decision = decideNextAction(stateSnapshot);
-    const recommendations = buildRecommendationPayload(stateSnapshot);
-    const sessionKey = buildSessionKey(userEmail, stateSnapshot.route, requestId);
-    const resolvedSystemPrompt = buildSystemPrompt(
-      TONY_STARK_SYSTEM_PROMPT,
-      getTierContext(tier),
-      stateSnapshot.mode,
-      stateSnapshot.route,
-      systemPrompt,
+    const tierContext = getTierContext(tier);
+
+    // Extract mode and pathname from context
+    const mode = extractModeFromContext(context);
+    const pathname = extractPathnameFromContext(context);
+
+    const snapshot = await resolveStateSnapshot({
+      requestId,
+      message,
+      history: safeHistory,
       context,
-    );
-    
-    if (isIdentityProbe(message)) {
-      const payload = {
-        content: getIdentityProbeResponse(),
+      userEmail,
+      userId,
+      sessionId,
+      preferredProvider: preferredProvider as any,
+      preferredModel: preferredModel as any,
+      stateHints,
+      tier: tier as 0 | 1 | 2,
+    });
+
+    const decision = decideNextBestAction(snapshot);
+    const recommendations = generateUniversalRecommendations(snapshot);
+
+    if (!shadowMode && decision.action.type === 'RETURN_RECOMMENDATIONS' && recommendations) {
+      const content = renderRecommendationsCLI({ query: message, recommendations });
+
+      await persistCustomerState({
+        ...snapshot,
+        currentStep: decision.trace.stateAfter.nextStep,
+        interactionCount: snapshot.interactionCount + 1,
+      });
+
+      await appendInteractionEvent({
+        requestId,
+        eventType: 'ai.responded',
+        userId: snapshot.userId,
+        email: snapshot.email,
+        sessionId: snapshot.sessionId,
+        source: 'api.ai-unified',
+        route: snapshot.route,
+        payload: {
+          provider: 'policy-guard',
+          model: 'recommendation-engine-v1',
+          latency: Date.now() - startTime,
+          nextBestAction: decision.action.type,
+        },
+        ts: new Date().toISOString(),
+      });
+
+      await appendDecisionLog({
+        requestId,
+        userId: snapshot.userId,
+        email: snapshot.email,
+        sessionId: snapshot.sessionId,
+        stateSnapshot: snapshot,
+        decisionTrace: decision.trace,
+        providerAttempts: [],
+        recommendations,
+        resultSummary: content.slice(0, 300),
+      });
+
+      return res.status(200).json({
+        content,
         provider: 'policy-guard',
-        model: 'identity-probe-v1',
+        model: 'recommendation-engine-v1',
         latency: Date.now() - startTime,
         tier: 0,
         requestId,
-      };
-      await recordInteractionEvent({
-        requestId,
-        sessionKey,
-        userEmail,
-        route: stateSnapshot.route,
-        mode: stateSnapshot.mode,
-        stepBefore: stateSnapshot.currentStep,
-        stepAfter: stateSnapshot.currentStep,
-        actionType: 'IDENTITY_PROBE',
-        message,
-        provider: payload.provider,
-        model: payload.model,
-        latencyMs: payload.latency,
-        success: true,
-        createdAt: new Date().toISOString(),
-        debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace } : undefined,
+        stateSnapshot: includeDebug ? snapshot : undefined,
+        decisionTrace: includeDebug ? decision.trace : undefined,
+        nextBestAction: includeDebug ? decision.action : undefined,
+        recommendations: includeDebug ? recommendations : undefined,
+        debug: includeDebug
+          ? {
+              requestedProvider: preferredProvider || 'auto',
+              preferredModel: preferredModel || 'auto',
+              mode,
+              pathname,
+              attempts: [],
+            }
+          : undefined,
       });
-      return res.status(200).json(payload);
     }
 
-    if (decision.action.type !== 'ANSWER_QUERY') {
-      const deterministic = buildDecisionContent(decision.action, recommendations);
-      const normalized = normalizeOutputForRenderer(deterministic, 'policy-guard');
-      const enforced = enforceAndFix(normalized, 'policy-guard', 'decision-engine-v1');
-
-      const payload = {
-        content: enforced.content,
-        provider: 'policy-guard',
-        model: 'decision-engine-v1',
-        latency: Date.now() - startTime,
-        tier,
-        requestId,
-        stateSnapshot,
-        decisionTrace: decision.trace,
-        nextBestAction: decision.action,
-        recommendations,
-        debug: includeDebug ? {
-          requestedProvider: preferredProvider || 'auto',
-          preferredModel: preferredModel || 'auto',
-          mode: stateSnapshot.mode,
-          pathname: stateSnapshot.route,
-          attempts: [],
-        } : undefined,
-      };
-
-      await recordInteractionEvent({
-        requestId,
-        sessionKey,
-        userEmail,
-        route: stateSnapshot.route,
-        mode: stateSnapshot.mode,
-        stepBefore: decision.trace.stateBefore,
-        stepAfter: decision.trace.stateAfter,
-        actionType: decision.action.type,
-        message,
-        provider: payload.provider,
-        model: payload.model,
-        latencyMs: payload.latency,
-        success: true,
-        createdAt: new Date().toISOString(),
-        debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace, recommendations } : undefined,
-      });
-      return res.status(200).json(payload);
-    }
-
+    // Build system prompt with mode and pathname routing
+    const resolvedSystemPrompt = buildSystemPrompt(
+      TONY_STARK_SYSTEM_PROMPT,
+      tierContext,
+      mode,
+      pathname,
+      systemPrompt,
+      [
+        context,
+        `ORCHESTRATION_SNAPSHOT:\n${JSON.stringify({
+          step: snapshot.currentStep,
+          unlocked: snapshot.unlocked,
+          known: {
+            email: Boolean(snapshot.known.email.valid),
+            name: Boolean(snapshot.known.name.value),
+            phone: Boolean(snapshot.known.phone.value),
+            persona: snapshot.known.persona.value,
+            goal: Boolean(snapshot.known.goal.value),
+          },
+          nextBestAction: decision.action.type,
+          mustNotAskFor: decision.action.constraints?.mustNotAskFor || [],
+        }, null, 2)}`,
+        recommendationsToPrompt(recommendations),
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+    );
+    
     const preferred = normalizePreferredProvider(preferredProvider);
+    const modelPreference = normalizePreferredModel(preferredModel);
+
+    const vertexEnabled = process.env.USE_VERTEX_AI === 'true' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
     const providers: AIProvider[] = [
-      { name: 'perplexity', enabled: !!envTrim('PERPLEXITY_API_KEY'), priority: 1, call: callPerplexity },
-      { name: 'vertex-fast', enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, priority: 2, call: callVertexFast },
-      { name: 'vertex-pro', enabled: process.env.USE_VERTEX_AI !== 'false' && !!process.env.GOOGLE_APPLICATION_CREDENTIALS_BASE64, priority: 3, call: callVertexPro },
+      { name: 'vertex-fast', enabled: vertexEnabled, priority: 1, call: callVertexFast },
+      { name: 'vertex-pro', enabled: vertexEnabled, priority: 2, call: callVertexPro },
+      { name: 'perplexity', enabled: !!process.env.PERPLEXITY_API_KEY, priority: 3, call: callPerplexity },
     ];
 
-    const orderedProviders = preferred === 'auto' ? providers : [
-      ...providers.filter(p => p.name.includes(preferred) || (preferred === 'vertex' && p.name.startsWith('vertex'))),
-      ...providers.filter(p => !p.name.includes(preferred) && !(preferred === 'vertex' && p.name.startsWith('vertex')))
-    ];
+    const complexityPref = modelPreference === 'auto'
+      ? (isComplexRequest(message, safeHistory) ? 'pro' : 'fast')
+      : modelPreference;
+
+    const vertexOrdering = complexityPref === 'pro'
+      ? ['vertex-pro', 'vertex-fast']
+      : ['vertex-fast', 'vertex-pro'];
+
+    const orderedProviders = preferred !== 'auto'
+      ? (preferred === 'vertex'
+          ? [
+              ...providers.filter((provider) => vertexOrdering.includes(provider.name)),
+              ...providers.filter((provider) => !provider.name.startsWith('vertex')),
+            ]
+          : [
+              ...providers.filter((provider) => provider.name === preferred),
+              ...providers.filter((provider) => provider.name !== preferred),
+            ])
+      : [
+          ...providers.filter((provider) => vertexOrdering.includes(provider.name)),
+          ...providers.filter((provider) => provider.name === 'perplexity'),
+        ];
 
     let lastError: Error | null = null;
     const attempts: ProviderAttemptDebug[] = [];
+
+    await appendInteractionEvent({
+      requestId,
+      eventType: 'ai.requested',
+      userId: snapshot.userId,
+      email: snapshot.email,
+      sessionId: snapshot.sessionId,
+      source: 'api.ai-unified',
+      route: snapshot.route,
+      payload: {
+        nextBestAction: decision.action.type,
+        preferredProvider: preferredProvider || 'auto',
+        preferredModel: preferredModel || 'auto',
+      },
+      ts: new Date().toISOString(),
+    });
+    let attempt = 0;
     for (const provider of orderedProviders) {
       if (!provider.enabled) {
         attempts.push({ provider: provider.name, enabled: false, success: false, error: 'disabled_by_config' });
         continue;
       }
+      attempt += 1;
       try {
         const providerStart = Date.now();
-        const healthy = provider.name === 'perplexity' ? await checkPerplexityHealth() : true;
-        if (!healthy) throw new Error(`${provider.name} unhealthy`);
-        
-        const result = await withTimeout(provider.call(message, history, resolvedSystemPrompt), 60000, provider.name);
-        
-        // AUTHORITARIAN NORMALIZATION + GOLDEN WRAPPER
-        let finalContent = normalizeOutputForRenderer(result.content, result.provider);
-        finalContent = applyResponsePolicy(finalContent, stateSnapshot, decision.action);
-        const goldenResult = enforceAndFix(finalContent, result.provider, result.model);
-        finalContent = goldenResult.content;
+        let result;
+        let healthy = true;
+        if (provider.name === 'perplexity') {
+          healthy = await checkPerplexityHealth();
+          if (!healthy) throw new Error('Perplexity unhealthy');
+          result = await withTimeout(provider.call(message, safeHistory, resolvedSystemPrompt), 60000, provider.name);
+        } else {
+          const timeoutMs = provider.name.startsWith('vertex') ? 12000 : 20000;
+          result = await withTimeout(provider.call(message, safeHistory, resolvedSystemPrompt), timeoutMs, provider.name);
+        }
 
         attempts.push({
           provider: provider.name,
@@ -483,44 +714,76 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           durationMs: Date.now() - providerStart,
         });
         
-        const payload = {
+        let finalContent = result.content;
+        try {
+          const enforced = complianceEnforcer.enforce(result.content, result.provider || provider.name);
+          finalContent = enforced.output;
+        } catch (ce) {}
+
+        const policy = enforceResponsePolicy({
+          content: finalContent,
+          snapshot,
+          action: decision.action,
+          trace: decision.trace,
+        });
+        finalContent = policy.content;
+
+        const nextState = {
+          ...snapshot,
+          currentStep: policy.trace.stateAfter.nextStep,
+          interactionCount: snapshot.interactionCount + 1,
+        };
+
+        await persistCustomerState(nextState);
+        await appendInteractionEvent({
+          requestId,
+          eventType: policy.rewritten ? 'policy.rewritten' : 'ai.responded',
+          userId: snapshot.userId,
+          email: snapshot.email,
+          sessionId: snapshot.sessionId,
+          source: 'api.ai-unified',
+          route: snapshot.route,
+          payload: {
+            provider: result.provider,
+            model: result.model,
+            latency: Date.now() - startTime,
+            rewritten: policy.rewritten,
+          },
+          ts: new Date().toISOString(),
+        });
+        await appendDecisionLog({
+          requestId,
+          userId: snapshot.userId,
+          email: snapshot.email,
+          sessionId: snapshot.sessionId,
+          stateSnapshot: snapshot,
+          decisionTrace: policy.trace,
+          providerAttempts: attempts,
+          recommendations,
+          resultSummary: finalContent.slice(0, 300),
+        });
+        
+        return res.status(200).json({
           content: finalContent,
           provider: result.provider,
           model: result.model,
           latency: Date.now() - startTime,
+          tier: attempt,
           requestId,
-          stateSnapshot,
-          decisionTrace: decision.trace,
-          nextBestAction: decision.action,
-          recommendations,
-          debug: includeDebug ? {
-            requestedProvider: preferredProvider || 'auto',
-            preferredModel: preferredModel || 'auto',
-            mode: stateSnapshot.mode,
-            pathname: stateSnapshot.route,
-            attempts,
-          } : undefined,
-        };
-
-        await recordInteractionEvent({
-          requestId,
-          sessionKey,
-          userEmail,
-          route: stateSnapshot.route,
-          mode: stateSnapshot.mode,
-          stepBefore: decision.trace.stateBefore,
-          stepAfter: decision.trace.stateAfter,
-          actionType: decision.action.type,
-          message,
-          provider: payload.provider,
-          model: payload.model,
-          latencyMs: payload.latency,
-          success: true,
-          createdAt: new Date().toISOString(),
-          debug: includeDebug ? { stateSnapshot, decisionTrace: decision.trace, attempts } : undefined,
+          stateSnapshot: includeDebug ? snapshot : undefined,
+          decisionTrace: includeDebug ? policy.trace : undefined,
+          nextBestAction: includeDebug ? decision.action : undefined,
+          recommendations: includeDebug ? recommendations : undefined,
+          debug: includeDebug
+            ? {
+                requestedProvider: preferredProvider || 'auto',
+                preferredModel: preferredModel || 'auto',
+                mode,
+                pathname,
+                attempts,
+              }
+            : undefined,
         });
-
-        return res.status(200).json(payload);
       } catch (error) {
         lastError = error as Error;
         attempts.push({
@@ -529,25 +792,87 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           success: false,
           error: sanitizeErrorMessage(lastError),
         });
+        await appendInteractionEvent({
+          requestId,
+          eventType: 'provider.failed',
+          userId: snapshot.userId,
+          email: snapshot.email,
+          sessionId: snapshot.sessionId,
+          source: 'api.ai-unified',
+          route: snapshot.route,
+          payload: {
+            provider: provider.name,
+            error: sanitizeErrorMessage(lastError),
+          },
+          ts: new Date().toISOString(),
+        });
         console.error(`[Unified AI] ${requestId} ${provider.name} failed:`, sanitizeErrorMessage(lastError));
       }
     }
 
-    throw lastError || new Error('All providers failed');
-  } catch (err: any) {
-    return res.status(500).json({
-      error: 'OS_INTEL_OFFLINE',
-      content: `⚠️ NEURAL_LINK_SEVERED: ${sanitizeErrorMessage(err) || 'Cascade Failure'}.`,
+    await appendInteractionEvent({
+      requestId,
+      eventType: 'ai.failed',
+      userId: snapshot.userId,
+      email: snapshot.email,
+      sessionId: snapshot.sessionId,
+      source: 'api.ai-unified',
+      route: snapshot.route,
+      payload: {
+        error: sanitizeErrorMessage(lastError),
+      },
+      ts: new Date().toISOString(),
+    });
+    await appendDecisionLog({
+      requestId,
+      userId: snapshot.userId,
+      email: snapshot.email,
+      sessionId: snapshot.sessionId,
+      stateSnapshot: snapshot,
+      decisionTrace: decision.trace,
+      providerAttempts: attempts,
+      recommendations,
+      resultSummary: `FAILED: ${sanitizeErrorMessage(lastError) || 'Cascade Failure'}`,
+    });
+
+    return res.status(503).json({
+      error: 'ALL_PROVIDERS_FAILED',
+      content: `⚠️ ALL_SYSTEMS_OFFLINE: ${sanitizeErrorMessage(lastError) || 'Cascade Failure'}.`,
       provider: 'offline',
       model: 'fallback',
       latency: Date.now() - startTime,
       requestId,
-      debug: includeDebug ? {
-        requestedProvider: req.body?.preferredProvider || 'auto',
-        preferredModel: req.body?.preferredModel || 'auto',
-        mode: extractModeFromContext(req.body?.context),
-        pathname: extractPathnameFromContext(req.body?.context),
-      } : undefined,
+      stateSnapshot: includeDebug ? snapshot : undefined,
+      decisionTrace: includeDebug ? decision.trace : undefined,
+      nextBestAction: includeDebug ? decision.action : undefined,
+      recommendations: includeDebug ? recommendations : undefined,
+      debug: includeDebug
+        ? {
+            requestedProvider: preferredProvider || 'auto',
+            preferredModel: preferredModel || 'auto',
+            mode,
+            pathname,
+            attempts,
+          }
+        : undefined,
+    });
+
+  } catch (err: any) {
+    return res.status(500).json({
+      error: 'UNEXPECTED_ERROR',
+      content: `⚠️ CRITICAL_OS_ERROR: ${sanitizeErrorMessage(err) || 'Neural Link Severed'}.`,
+      provider: 'offline',
+      model: 'error-handler',
+      latency: Date.now() - startTime,
+      requestId,
+      debug: includeDebug
+        ? {
+            requestedProvider: req.body?.preferredProvider || 'auto',
+            preferredModel: req.body?.preferredModel || 'auto',
+            mode: extractModeFromContext(req.body?.context),
+            pathname: extractPathnameFromContext(req.body?.context),
+          }
+        : undefined,
     });
   }
 }
