@@ -790,17 +790,4 @@ export const FullPitch01Page: React.FC = () => {
   );
 };
 
-// Additional Icons Needed for Team Tree
-const Crown = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
-);
-
-const Brain = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/></svg>
-);
-
-const ZapIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.71V21l5.19-2.81a2 2 0 0 1 1.81 0L16.19 21 20 17.71a2 2 0 0 0 .81-1.62v-9.01a2 2 0 0 0-1.19-1.83L12 2.35 4.38 5.25A2 2 0 0 0 3.19 7.08v7.63a2 2 0 0 0 .81 1.62Z"/><path d="M12 7v10"/><path d="M8 12h8"/></svg>
-);
-
 export default FullPitch01Page;
