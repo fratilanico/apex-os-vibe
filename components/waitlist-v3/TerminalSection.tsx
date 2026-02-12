@@ -28,7 +28,7 @@ export const TerminalSection: React.FC = () => {
 
           {/* Body - responsive height */}
           <div className="relative">
-            <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] overflow-y-auto">
+            <div className="h-[60dvh] sm:h-[65dvh] md:h-[70dvh] lg:h-[75dvh]">
               <SpectacularTerminal />
             </div>
 

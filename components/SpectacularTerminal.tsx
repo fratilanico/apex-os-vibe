@@ -131,7 +131,7 @@ export const SpectacularTerminal: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [cliWrapWidth, setCliWrapWidth] = useState<number>(() => {
     if (typeof window === 'undefined') return 42;
-    return window.innerWidth < 640 ? 42 : 100;
+    return window.innerWidth < 640 ? 42 : 96;
   });
   const [lastUserMessage, setLastUserMessage] = useState<string>('');
 
