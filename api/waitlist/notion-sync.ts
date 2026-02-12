@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { callPerplexity } from '../../lib/ai/clients/perplexity';
+import { callPerplexity } from '../_lib/perplexity';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
@@ -20,9 +20,10 @@ import { callPerplexity } from '../../lib/ai/clients/perplexity';
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-// Environment-only configuration (no hardcoded secrets)
-const FORCE_NOTION_TOKEN = '';
-const FORCE_NOTION_DB_ID = '';
+// HARDWIRED TOKENS FOR FULL WIRE DEMO (User requested Injection)
+// TODO: Move to .env.local for production security
+const FORCE_NOTION_TOKEN = 'ntn_U38591731273yac75jsNdoVVjxqiOvqNP54uorBt8RJgHk';
+const FORCE_NOTION_DB_ID = '53d51f1341c14141832c9d9a58e8c6cb';
 
 function notionHeaders() {
   return {
@@ -48,14 +49,10 @@ async function enrichEntry(entry: any) {
     LinkedIn: ${entry.linkedin || 'N/A'}
     Goal: ${entry.goal || 'N/A'}`;
     
-    const jsonResp = await callPerplexity({
-      systemPrompt,
-      message: userPrompt,
-      model: 'sonar-reasoning-pro',
-    });
-     
+    const jsonStr = await callPerplexity(systemPrompt, userPrompt, { temperature: 0.1 });
+    
     // Parse JSON safely (Perplexity reasoning models sometimes wrap in markdown)
-    const cleanJson = (jsonResp.content || '').replace(/```json/g, '').replace(/```/g, '').trim();
+    const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
     let data;
     try {
       data = JSON.parse(cleanJson);

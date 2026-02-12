@@ -3,7 +3,7 @@ import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
 /* ── Background ── */
 import { AmbientGlow } from '../ui/AmbientGlow';
-import { MatrixRain, Scanlines, GlitchOverlay, AsciiParticles, GeekModeIndicator } from '../effects/GeekModeEffects';
+import { MatrixRain, Scanlines, GlitchOverlay, AsciiParticles } from '../effects/GeekModeEffects';
 
 /* ── Page sections (SECTION 5 ALIGNMENT) ── */
 import { BrandingBar } from './BrandingBar';
@@ -39,10 +39,9 @@ const WaitlistPageV3: React.FC = () => {
   const setVaultOpen = useOnboardingStore((s) => s.setVaultOpen);
   const setMode = useOnboardingStore((s) => s.setMode);
   const persona = useOnboardingStore((s) => s.persona);
-  const trajectory = useOnboardingStore((s) => s.trajectory);
 
-  // Auto-activate GEEK mode on mount (Operator Default)
-  useEffect(() => { setMode('GEEK'); }, [setMode]);
+  // Default to STANDARD mode to match production baseline
+  useEffect(() => { setMode('STANDARD'); }, [setMode]);
 
   // Content Lock / Vault Access Check
   useEffect(() => {
@@ -61,8 +60,7 @@ const WaitlistPageV3: React.FC = () => {
       const key = '__APEX_WAITLIST_DEBUG__';
       const w = window as unknown as Record<string, unknown>;
       const existing = (w[key] as Array<Record<string, unknown>> | undefined) || [];
-      const next = [...existing, { ts: new Date().toISOString(), ...payload }].slice(-100);
-      w[key] = next;
+      w[key] = [...existing, { ts: new Date().toISOString(), ...payload }].slice(-100);
     };
 
     const onError = (event: ErrorEvent) => {
@@ -106,7 +104,7 @@ const WaitlistPageV3: React.FC = () => {
 
   // Persona-driven aura colors - RESTORED to rich visible gradients
   const getAuraColors = () => {
-    if (trajectory === 'BLUE' || persona === 'PERSONAL') {
+    if (persona === 'PERSONAL') {
       return [
         { color: 'cyan' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
         { color: 'cyan' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
@@ -114,7 +112,7 @@ const WaitlistPageV3: React.FC = () => {
         { color: 'cyan' as const, bottom: '-5%', right: '20%', size: 500, opacity: 0.35 },
       ];
     }
-    if (trajectory === 'RED' || persona === 'BUSINESS') {
+    if (persona === 'BUSINESS') {
       return [
         { color: 'violet' as const, top: '-10%', left: '10%', size: 800, opacity: 0.55 },
         { color: 'violet' as const, top: '40%', right: '-5%', size: 700, opacity: 0.45 },
@@ -188,7 +186,7 @@ const WaitlistPageV3: React.FC = () => {
         {/* 6. Legacy Form (Fallback) */}
         <div className="py-16 text-center opacity-60 hover:opacity-100 transition-opacity">
           <p className="text-sm text-white/40 mb-8 font-mono tracking-wider">
-            // OR USE LEGACY PROTOCOL
+            // LEGACY PROTOCOL READY - SCROLL WHEN YOU ARE READY
           </p>
           <div id="apply">
             {submitted && result ? (
@@ -217,8 +215,6 @@ const WaitlistPageV3: React.FC = () => {
       {/* Notion Vault */}
       <NotionVaultOverlay isOpen={isVaultOpen} onClose={() => setVaultOpen(false)} vaultUrl={VAULT_URL} />
 
-      {/* Geek Mode Status Indicator */}
-      <GeekModeIndicator />
     </div>
   );
 };

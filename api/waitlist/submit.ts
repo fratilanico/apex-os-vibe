@@ -8,17 +8,32 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 // Simple AI score calculation (mirrors lib/waitlist/calculateAiScore.ts)
 function calculateAiScore(payload: any): number {
   let score = 50;
+  
+  // Role / Persona Checks
+  const role = (payload.role || '').toLowerCase();
+  // const bio = (payload.bio || '').toLowerCase(); // Kept for future use
+  const goal = (payload.goal || '').toLowerCase();
+
+  if (role.includes('founder') || role.includes('cto') || role.includes('engineer')) score += 15;
+  if (role.includes('product') || role.includes('designer')) score += 10;
+  
   if (payload.experience) score += 10;
   if (payload.company) score += 10;
   if (payload.linkedin) score += 15;
   if (payload.phone) score += 5;
-  if (payload.email && !payload.email.match(/@(gmail|yahoo|hotmail|outlook)\./i)) score += 20;
-  if (payload.goal && payload.goal.length > 100) score += 15;
-  else if (payload.goal && payload.goal.length > 50) score += 10;
+  if (payload.email && !payload.email.match(/@(gmail|yahoo|hotmail|outlook)\./i)) score += 20; // Corp email bonus
+  
+  // Engagement Checks
+  if (goal.length > 100) score += 15;
+  else if (goal.length > 20) score += 10;
+  
   if (payload.biggestChallenge) score += 10;
   if (payload.fundingStatus && payload.fundingStatus !== 'bootstrapped') score += 10;
+  
+  // Random variance for "organic" feel
   score += Math.floor(Math.random() * 5);
-  return Math.min(score, 100);
+  
+  return Math.min(score, 99); // Cap at 99 (100 is reserved)
 }
 
 function getStatus(score: number): 'hot' | 'warm' | 'cold' {
@@ -71,7 +86,7 @@ function buildWelcomeEmail(entry: any): string {
       <!-- Vault Access -->
       <div style="margin:24px 0;padding:20px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;text-align:center;">
         <div style="color:#10b981;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:12px;">Early Access Reward Unlocked</div>
-        <a href="https://infoacademy.uk/waitlist" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#10b981,#06b6d4);color:#000;text-decoration:none;border-radius:10px;font-weight:800;font-size:14px;letter-spacing:0.05em;">ACCESS THE VAULT</a>
+        <a href="https://infoacademy.uk/waitlist?vault_access=true" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#10b981,#06b6d4);color:#000;text-decoration:none;border-radius:10px;font-weight:800;font-size:14px;letter-spacing:0.05em;">ACCESS THE VAULT</a>
       </div>
 
       <!-- What Happens Next -->
@@ -147,8 +162,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ── FROM_EMAIL CONFIG ──
-    // onboarding@resend.dev = sandbox (only delivers to Resend account owner)
-    // Set FROM_EMAIL_VERIFIED=true after verifying your domain in Resend
     const isVerifiedSender = process.env.FROM_EMAIL_VERIFIED === 'true';
     const FROM_EMAIL = isVerifiedSender
       ? (process.env.FROM_EMAIL || 'APEX OS <apex@infoacademy.uk>')
@@ -161,7 +174,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       fromEmail: FROM_EMAIL,
       isVerifiedSender,
       hasSupabase: !!(process.env.SUPABASE_URL),
-      hasResend: !!(process.env.RESEND_API_KEY),
     });
 
     // Calculate real AI score
@@ -239,92 +251,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         // Send welcome email to user
-        const userEmailResult = await resend.emails.send({
+        await resend.emails.send({
           from: FROM_EMAIL,
           to: payload.email,
           subject: `Welcome to APEX OS — You're in, ${payload.name || 'Founder'}`,
           html: buildWelcomeEmail({ ...entry, rank }),
         });
-        console.log('User email sent:', userEmailResult);
-
-        if (!isVerifiedSender && payload.email !== NOTIFY_EMAIL) {
-          console.warn(
-            `WARNING: Using sandbox sender (onboarding@resend.dev). ` +
-            `Email to ${payload.email} will likely NOT be delivered. ` +
-            `Set FROM_EMAIL_VERIFIED=true with a verified domain to fix this.`
-          );
-        }
 
         // Send admin notification
-        const adminEmailResult = await resend.emails.send({
+        await resend.emails.send({
           from: FROM_EMAIL,
           to: NOTIFY_EMAIL,
           subject: `${entry.status === 'hot' ? '🔥' : '🟡'} APEX Waitlist: ${payload.name} (${ai_score}/100)`,
           html: buildAdminEmail(payload, { ...entry, rank }),
         });
-        console.log('Admin email sent:', adminEmailResult);
       } catch (emailError: any) {
         console.error('Email error:', emailError.message);
       }
-    } else {
-      console.warn('RESEND_API_KEY not set — no emails sent');
     }
 
-    // ── Listmonk subscriber sync (fire-and-forget) ──
-    if (process.env.LISTMONK_API_URL) {
-      try {
-        const credentials = `${process.env.LISTMONK_USERNAME || 'admin'}:${process.env.LISTMONK_PASSWORD || ''}`;
-        const listmonkAuth = 'Basic ' + Buffer.from(credentials).toString('base64');
-
-        fetch(`${process.env.LISTMONK_API_URL}/subscribers`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': listmonkAuth },
-          body: JSON.stringify({
-            email: payload.email,
-            name: payload.name || '',
-            status: 'enabled',
-            lists: [1],
-            attribs: { ai_score, status, referral_code: referralCode, persona: payload.persona },
-          }),
-        }).then(r => r.json())
-          .then(d => console.log('Listmonk subscriber synced:', d))
-          .catch(e => console.warn('Listmonk sync skipped:', e.message));
-      } catch (e: any) {
-        console.warn('Listmonk sync error:', e.message);
-      }
+    // ── Trigger Notion Sync (Perplexity Enrichment) ──
+    // Fire-and-forget call to the sync endpoint. 
+    // This allows the user request to complete fast, while the enrichment runs in the background.
+    // Note: We need the full URL for server-side fetch.
+    if (process.env.VERCEL_URL) {
+      const syncUrl = `https://${process.env.VERCEL_URL}/api/waitlist/notion-sync`;
+      fetch(syncUrl, { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: payload.email })
+      }).catch(err => console.error('Failed to trigger sync:', err));
     }
 
-    // ── Notion sync (fire-and-forget CRM fallback) ──
-    if (process.env.NOTION_TOKEN && process.env.NOTION_WAITLIST_DB_ID) {
-      try {
-        const statusEmoji = status === 'hot' ? '🔥' : status === 'warm' ? '🟡' : '⚪';
-        fetch('https://api.notion.com/v1/pages', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
-            'Notion-Version': '2022-06-28',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            parent: { database_id: process.env.NOTION_WAITLIST_DB_ID },
-            properties: {
-              Name: { title: [{ text: { content: payload.name || 'Unknown' } }] },
-              Email: { email: payload.email },
-              'AI Score': { number: ai_score },
-              Status: { select: { name: `${statusEmoji} ${status.toUpperCase()}` } },
-              'Referral Code': { rich_text: [{ text: { content: referralCode } }] },
-              Persona: { select: { name: payload.persona || 'PERSONAL_BUILDER' } },
-            },
-          }),
-        }).then(r => r.json())
-          .then(d => console.log('Notion page created:', d.id))
-          .catch(e => console.warn('Notion sync skipped:', e.message));
-      } catch (e: any) {
-        console.warn('Notion sync error:', e.message);
-      }
-    }
-
-    // ── Final response — always returns valid JSON ──
+    // ── Final response ──
     const finalResponse = {
       ok: true,
       ai_score,
@@ -334,7 +293,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Welcome to APEX OS!',
     };
 
-    console.log('API Response:', JSON.stringify(finalResponse));
     return res.status(200).json(finalResponse);
 
   } catch (error: any) {

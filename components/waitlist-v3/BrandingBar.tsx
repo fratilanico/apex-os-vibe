@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useColorCycle } from '../../hooks/useColorCycle';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 import { Terminal } from 'lucide-react';
-import { ChromaticLogo } from '../ui/ChromaticLogo';
 
 const COLOR_HEX: Record<string, string> = {
   cyan: '#22d3ee', emerald: '#10b981', violet: '#8b5cf6',
@@ -19,11 +18,10 @@ export const BrandingBar: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/80 backdrop-blur-md md:backdrop-blur-xl border-b border-white/5 transition-all duration-300">
       <div className="max-w-7xl mx-auto h-full px-4 md:px-6 flex items-center justify-between">
         
-        {/* LEFT: LOGO ONLY - Far left corner */}
+        {/* LEFT: production logo */}
         <div className="flex items-center">
-          {/* Chromatic ASCII Logo (Scaled for Navbar) */}
-          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity -ml-4 md:-ml-6">
-            <ChromaticLogo type="apex" size="sm" className="scale-[0.55] md:scale-[0.6] origin-left" />
+          <div className="relative group cursor-pointer hover:opacity-80 transition-opacity">
+            <img src="/logo.png" alt="APEX OS" className="h-8 md:h-9 w-auto" />
           </div>
         </div>
 
@@ -38,11 +36,14 @@ export const BrandingBar: React.FC = () => {
             }`}
           >
             <Terminal className={`w-3 h-3 md:w-3.5 md:h-3.5 transition-transform duration-300 ${mode === 'GEEK' ? 'rotate-0' : '-rotate-12 group-hover:rotate-0'}`} />
-            <span className="text-[9px] md:text-[10px] sm:text-xs font-mono font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
-              {mode === 'GEEK' ? 'Geek: ON' : 'Geek: OFF'}
-            </span>
-          </button>
-        </div>
+              <span className="hidden sm:inline text-[9px] md:text-[10px] sm:text-xs font-mono font-bold tracking-[0.15em] md:tracking-[0.2em] uppercase">
+                {mode === 'GEEK' ? 'GEEK: ON' : 'GEEK: OFF'}
+              </span>
+              <span className="sm:hidden text-[9px] font-mono font-bold tracking-[0.15em] uppercase">
+                {mode === 'GEEK' ? 'ON' : 'OFF'}
+              </span>
+            </button>
+          </div>
 
         {/* RIGHT: GOOGLE AI BADGE + SIGNAL & PLAYER 1 */}
         <div className="flex items-center gap-2 md:gap-3">

@@ -18,6 +18,7 @@ export interface CommandRecord {
 interface TerminalHeroProps {
   onSuccess?: (data: any) => void;
   onCommandRecord?: (record: CommandRecord) => void;
+  onContactRequest?: () => void;
 }
 
 type TerminalState = 'boot' | 'idle' | 'onboarding_name' | 'onboarding_email' | 'onboarding_linkedin' | 'onboarding_goal' | 'onboarding_details' | 'onboarding_consent' | 'processing' | 'success' | 'chat';
@@ -67,7 +68,7 @@ Section 3: GTM on Day 1
 Type [b]join[/b] to secure access to this curriculum.
 `;
 
-export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommandRecord }) => {
+export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommandRecord, onContactRequest }) => {
   const [state, setState] = useState<TerminalState>('boot');
   const [history, setHistory] = useState<Array<{text: string, type: string}>>([]);
   const [input, setInput] = useState('');
@@ -132,6 +133,10 @@ export const TerminalHero: React.FC<TerminalHeroProps> = ({ onSuccess, onCommand
     if (cmd === 'help') {
       addLine('Available commands: help, join, about, modules, module00, clear, status', 'system');
     } else if (cmd === 'join' || cmd === 'contact') {
+      if (onContactRequest) {
+        onContactRequest();
+        return;
+      }
       setState('onboarding_name');
       addLine('', 'system');
       addLine('╔══════════════════════════════════════════════════════════╗', 'system');
