@@ -15,13 +15,12 @@ const AcademyPage = lazy(() => import('./pages/AcademyPage').then(m => ({ defaul
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const PricingPage = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
-const GamePage = lazy(() => import('./pages/GamePage').then(m => ({ default: m.GamePage })));
 const ShowMeTheMoneyPage = lazy(() => import('./pages/ShowMeTheMoneyPage').then(m => ({ default: m.ShowMeTheMoneyPage })));
 const ShowMeTheMoneyFix2Page = lazy(() => import('./pages/ShowMeTheMoneyFix2Page').then(m => ({ default: m.ShowMeTheMoneyPage })));
 const ShowMeTheMoneyFix4Page = lazy(() => import('./pages/ShowMeTheMoneyFix4Page').then(m => ({ default: m.ShowMeTheMoneyFix4Page })));
 const ShowMeTheMoneyFix5Page = lazy(() => import('./pages/ShowMeTheMoneyFix5Page').then(m => ({ default: m.ShowMeTheMoneyFix5Page })));
-const FullPitch01Page = lazy(() => import('./pages/FullPitch01Page'));
-const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage'));
+const FullPitch01Page = lazy(() => import('./pages/FullPitch01Page').then(m => ({ default: m.FullPitch01Page || m.default })));
+const PitchDeckExecPage = lazy(() => import('./pages/PitchDeckExecPage').then(m => ({ default: m.PitchDeckExecPage || m.default })));
 
 const MatrixPage = lazy(() => import('./pages/MatrixPage').then(m => ({ default: m.default })));
 const WaitlistPage = lazy(() => import('./components/waitlist-v3/WaitlistPageV3'));
@@ -130,12 +129,7 @@ const ProtectedRoutes: React.FC = () => {
             </ErrorBoundary>
           } />
         </Route>
-        {/* Game page outside Layout - full-screen immersive experience */}
-        <Route path="/game" element={
-          <ErrorBoundary fallback={<RouteErrorFallback error={new Error('Game page error')} />}>
-            <GamePage />
-          </ErrorBoundary>
-        } />
+
       </Routes>
     </PasswordGate>
   );

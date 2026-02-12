@@ -1,1 +1,0 @@
-export { GlowMaterial } from './GlowMaterial';

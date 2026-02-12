@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Rocket, Users, Globe, Award, Briefcase,
-  AlertTriangle, Lightbulb, Zap, Shield, CheckCircle2, ChevronRight,
+  Rocket, Users, Globe, Zap, 
   BarChart3, Cpu, Layers, ArrowRight, Calculator,
-  MapPin, Landmark, Database, Lock, Play, 
-  Workflow, Code2, Terminal, Sparkles
+  MapPin, Landmark, Terminal, Workflow, Code2, Share2,
+  AlertTriangle, Shield, CheckCircle2, ChevronRight,
+  Database, Lock, Play, Sparkles, Award, Briefcase, Network
 } from 'lucide-react';
 
 // Modular Component Imports
@@ -33,7 +33,7 @@ import { Financials } from '@/components/showmethemoney/sections/Financials';
 interface Tab {
   id: string;
   label: string;
-  icon: React.ElementType;
+  icon: any;
 }
 
 // 10 CONSOLIDATED TABS
