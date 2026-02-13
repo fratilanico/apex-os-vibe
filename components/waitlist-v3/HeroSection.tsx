@@ -1,58 +1,137 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { GradientText } from '../ui/GradientText';
 import { RotatingPunchlines } from '../ui/RotatingPunchlines';
 
-const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.3 } } };
-const item = { hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0 } };
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.3 },
+  },
+};
 
+const item = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0 },
+};
+
+// Calculate initial time left to avoid showing 0 0 0 0 on load
+const calculateTimeLeft = () => {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() + 18);
+  const now = new Date();
+  const diff = targetDate.getTime() - now.getTime();
+  
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((diff % (1000 * 60)) / 1000),
+  };
+};
+
+// Countdown timer component
 const CountdownTimer: React.FC = () => {
-  // Using static values as the timer logic is secondary to layout
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  
+  useEffect(() => {
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + 18);
+    
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+      
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    
+    const interval = setInterval(updateTimer, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <div className="flex items-center justify-center gap-1 sm:gap-4 text-cyan-400 font-mono">
-      <div className="text-center min-w-[45px] sm:min-w-[60px]"><div className="text-xl sm:text-3xl font-bold">17</div><div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Days</div></div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.days}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Days</div>
+      </div>
       <div className="text-lg sm:text-xl">:</div>
-      <div className="text-center min-w-[45px] sm:min-w-[60px]"><div className="text-xl sm:text-3xl font-bold">08</div><div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Hrs</div></div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.hours}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Hrs</div>
+      </div>
       <div className="text-lg sm:text-xl">:</div>
-      <div className="text-center min-w-[45px] sm:min-w-[60px]"><div className="text-xl sm:text-3xl font-bold">42</div><div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Min</div></div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.minutes}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Min</div>
+      </div>
       <div className="text-lg sm:text-xl">:</div>
-      <div className="text-center min-w-[45px] sm:min-w-[60px]"><div className="text-xl sm:text-3xl font-bold">15</div><div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Sec</div></div>
+      <div className="text-center min-w-[45px] sm:min-w-[60px]">
+        <div className="text-xl sm:text-3xl font-bold">{timeLeft.seconds}</div>
+        <div className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">Sec</div>
+      </div>
     </div>
   );
 };
 
 export const HeroSection: React.FC = () => {
   return (
-    <motion.section variants={container} initial="hidden" animate="show" className="relative min-h-screen flex flex-col justify-center items-center text-center overflow-hidden">
-      <div className="flex-1 flex flex-col justify-center items-center w-full max-w-6xl mx-auto px-4">
-        <motion.h1 variants={item} className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-sans leading-none mb-6 whitespace-nowrap">
-          <GradientText from="cyan-400" to="emerald-400">Build at AI Speed</GradientText>
-        </motion.h1>
-        <motion.div variants={item} className="mb-8 max-w-3xl">
-          <RotatingPunchlines />
-          <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">Zero equity. Maximum velocity.</p>
-        </motion.div>
-        <motion.div variants={item} className="mb-6">
-          <p className="text-xs md:text-sm text-white/40 uppercase tracking-widest mb-4">Next Cohort Launch</p>
-          <CountdownTimer />
-        </motion.div>
-        
-        {/* Class Start Info */}
-        <motion.div variants={item} className="mb-8 space-y-2">
-          <p className="text-base md:text-lg text-cyan-300 font-medium">
-            First class starts 2nd week of March
-          </p>
-          <p className="text-sm text-white/40">
-            Secure your spot. Limited to 50 builders.
-          </p>
-        </motion.div>
-      </div>
-      
-      {/* Scroll to Explore */}
-      <motion.div variants={item} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30">
-        <span className="text-xs uppercase tracking-widest">SCROLL TO EXPLORE</span>
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+    <motion.section
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="min-h-[calc(100dvh-64px)] flex flex-col justify-center py-12 md:py-20 text-center"
+    >
+      {/* Headline */}
+      <motion.h1
+        variants={item}
+        className="text-5xl md:text-7xl lg:text-8xl font-black font-sans leading-tight mb-6"
+      >
+        <GradientText from="cyan-400" to="emerald-400">
+          Build at AI Speed
+        </GradientText>
+      </motion.h1>
+
+      {/* Rotating Punchlines */}
+      <motion.div variants={item} className="mb-12">
+        <RotatingPunchlines />
+        <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">
+          Zero equity. Maximum velocity.
+        </p>
+      </motion.div>
+
+      {/* Countdown Section */}
+      <motion.div variants={item} className="mb-12">
+        <p className="text-sm text-white/40 uppercase tracking-widest mb-4">
+          Next Webinar Launch
+        </p>
+        <CountdownTimer />
+        <p className="text-cyan-400/80 text-sm mt-4 max-w-md mx-auto font-semibold">
+          First class starts 2nd week of March
+        </p>
+        <p className="text-white/30 text-sm mt-2 max-w-md mx-auto">
+          Secure your spot. Limited bandwidth available for personalized onboarding.
+        </p>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <motion.div 
+        variants={item}
+        className="flex flex-col items-center gap-2 text-white/30"
+      >
+        <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
           <ArrowDown className="w-5 h-5" />
         </motion.div>
       </motion.div>

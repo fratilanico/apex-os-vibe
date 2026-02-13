@@ -77,7 +77,7 @@ const WaitlistPageV3: React.FC = () => {
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         {getAuraColors().map((glow, idx) => <AmbientGlow key={idx} {...glow} />)}
       </div>
-      <BrandingBar geekMode={mode === 'GEEK'} onToggleGeek={() => setMode(mode === 'GEEK' ? 'STANDARD' : 'GEEK')} />
+      <BrandingBar />
       <main className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-16 pb-12">
         <HeroSection />
         <div id="terminal-handshake" className="py-8 scroll-mt-24"><TerminalSection /></div>
