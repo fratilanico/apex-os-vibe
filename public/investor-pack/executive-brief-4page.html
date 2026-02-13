@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX OS // EXECUTIVE_BRIEF_v3.0</title>
+    <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030305;
+            --bg-secondary: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --cyan: #22d3ee;
+            --cyan-glow: rgba(34, 211, 238, 0.3);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.3);
+            --violet: #8b5cf6;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .pagedjs_page {
+            background: var(--bg-primary) !important;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 18mm;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page { page-break-after: always; }
+        .page:last-child { page-break-after: avoid; }
+
+        /* Animated Grid Background */
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .wire-net {
+            position: absolute;
+            inset: 0;
+            background-image:
+              radial-gradient(circle at 20% 30%, rgba(34,211,238,0.15) 0, transparent 35%),
+              radial-gradient(circle at 80% 70%, rgba(16,185,129,0.12) 0, transparent 40%),
+              repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 120px),
+              repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 120px);
+            opacity: 0.35;
+            z-index: 0;
+        }
+
+        .grid-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg-primary) 70%);
+        }
+
+        /* Glow Effects */
+        .glow-cyan {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        .glow-emerald {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--emerald-glow) 0%, transparent 70%);
+            filter: blur(60px);
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Typography */
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-black { font-weight: 900; }
+        .italic { font-style: italic; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-tight { letter-spacing: -0.02em; }
+        .tracking-widest { letter-spacing: 0.2em; }
+
+        h1 { 
+            font-size: 44pt; 
+            line-height: 0.95; 
+            margin-bottom: 15pt;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 { 
+            font-size: 26pt; 
+            line-height: 1.1; 
+            margin-bottom: 12pt;
+            color: var(--text-primary);
+        }
+
+        h3 { 
+            font-size: 14pt; 
+            font-weight: 800;
+            color: var(--cyan); 
+            margin-bottom: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18pt;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+            opacity: 0.5;
+        }
+
+        .glass-card.cyan { border-color: rgba(34, 211, 238, 0.2); }
+        .glass-card.emerald { border-color: rgba(16, 185, 129, 0.2); }
+        .glass-card.violet { border-color: rgba(139, 92, 246, 0.2); }
+
+        /* Stats Grid */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12pt;
+            margin: 20pt 0;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15pt 10pt;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+        }
+
+        .stat-value {
+            font-size: 22pt;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4pt;
+        }
+
+        .stat-label {
+            font-size: 7pt;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Comparison Cards */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15pt;
+            margin: 15pt 0;
+        }
+
+        .compare-card {
+            padding: 20pt;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            position: relative;
+        }
+
+        .compare-card.legacy {
+            border-top: 3px solid var(--rose);
+            opacity: 0.85;
+        }
+
+        .compare-card.apex {
+            border-top: 3px solid var(--emerald);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent);
+        }
+
+        .compare-title {
+            font-size: 10pt;
+            font-weight: 800;
+            margin-bottom: 12pt;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .compare-card.legacy .compare-title { color: var(--rose); }
+        .compare-card.apex .compare-title { color: var(--emerald); }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 6pt 0;
+            padding-left: 20pt;
+            position: relative;
+            font-size: 9pt;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .compare-card.legacy .feature-list li::before {
+            content: "✕";
+            position: absolute;
+            left: 0;
+            color: var(--rose);
+            font-weight: 700;
+        }
+
+        .compare-card.apex .feature-list li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--emerald);
+            font-weight: 700;
+        }
+
+        /* Hyperloop Diagram */
+        .hyperloop-container {
+            position: relative;
+            width: 100%;
+            height: 200pt;
+            margin: 20pt 0;
+        }
+
+        .hyperloop-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120pt;
+            height: 120pt;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--cyan);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hyperloop-center .number {
+            font-size: 28pt;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--cyan);
+        }
+
+        .hyperloop-center .label {
+            font-size: 7pt;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .hyperloop-node {
+            position: absolute;
+            width: 80pt;
+            padding: 10pt;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        .hyperloop-node .icon {
+            font-size: 16pt;
+            margin-bottom: 4pt;
+        }
+
+        .hyperloop-node .title {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2pt;
+        }
+
+        .hyperloop-node .desc {
+            font-size: 6pt;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15pt 0;
+            font-size: 9pt;
+        }
+
+        th {
+            text-align: left;
+            padding: 10pt 8pt;
+            font-size: 7pt;
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 10pt 8pt;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr.highlight {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        tr.highlight td {
+            color: var(--emerald);
+            font-weight: 700;
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8pt;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4pt;
+            overflow: hidden;
+            margin: 8pt 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+            border-radius: 4pt;
+        }
+
+        /* Footer */
+        .page-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 12pt;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt;
+            color: var(--text-muted);
+        }
+
+        /* Sensitivity Analysis Box */
+        .sensitivity-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 15pt;
+            margin: 15pt 0;
+        }
+
+        .sensitivity-box h4 {
+            color: var(--amber);
+            font-size: 9pt;
+            margin-bottom: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .scenario-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6pt 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 8pt;
+        }
+
+        .scenario-row:last-child {
+            border-bottom: none;
+        }
+
+        .scenario-label {
+            color: var(--text-secondary);
+        }
+
+        .scenario-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        .scenario-value.best { color: var(--emerald); }
+        .scenario-value.base { color: var(--cyan); }
+        .scenario-value.worst { color: var(--amber); }
+
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15pt;
+        }
+
+        /* Partner Logos */
+        .partner-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12pt;
+            margin: 15pt 0;
+        }
+
+        .partner-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15pt;
+            text-align: center;
+        }
+
+        .partner-logo {
+            width: 50pt;
+            height: 50pt;
+            margin: 0 auto 10pt;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20pt;
+        }
+
+        .partner-name {
+            font-size: 9pt;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4pt;
+        }
+
+        .partner-status {
+            font-size: 7pt;
+            padding: 3pt 8pt;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .partner-status.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--emerald);
+        }
+
+        .partner-status.talks {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--cyan);
+        }
+
+        .partner-status.serbia {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--violet);
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid var(--cyan);
+            border-radius: 16px;
+            padding: 25pt;
+            text-align: center;
+            margin-top: 20pt;
+        }
+
+        .cta-amount {
+            font-size: 48pt;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5pt;
+        }
+
+        .cta-label {
+            font-size: 10pt;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 15pt;
+        }
+
+        /* Use of Funds Bars */
+        .fund-bar {
+            display: flex;
+            align-items: center;
+            margin: 8pt 0;
+        }
+
+        .fund-label {
+            width: 100pt;
+            font-size: 8pt;
+            color: var(--text-secondary);
+        }
+
+        .fund-progress {
+            flex: 1;
+            height: 20pt;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4pt;
+            overflow: hidden;
+            margin: 0 10pt;
+        }
+
+        .fund-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8pt;
+            font-size: 8pt;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .fund-fill.rd { background: linear-gradient(90deg, var(--cyan), var(--cyan-glow)); width: 40%; color: var(--bg-primary); }
+        .fund-fill.dist { background: linear-gradient(90deg, var(--emerald), var(--emerald-glow)); width: 30%; color: var(--bg-primary); }
+        .fund-fill.ops { background: linear-gradient(90deg, var(--violet), rgba(139, 92, 246, 0.3)); width: 20%; color: white; }
+        .fund-fill.reserve { background: linear-gradient(90deg, var(--amber), rgba(245, 158, 11, 0.3)); width: 10%; color: white; }
+
+        .fund-desc {
+            width: 120pt;
+            font-size: 7pt;
+            color: var(--text-muted);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30pt;
+            margin: 15pt 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8pt;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--cyan), var(--emerald));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 15pt;
+            padding-bottom: 15pt;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26pt;
+            top: 2pt;
+            width: 10pt;
+            height: 10pt;
+            background: var(--cyan);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+            box-shadow: 0 0 0 2px var(--cyan);
+        }
+
+        .timeline-item.complete::before {
+            background: var(--emerald);
+            box-shadow: 0 0 0 2px var(--emerald);
+        }
+
+        .timeline-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2pt;
+        }
+
+        .timeline-title {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2pt;
+        }
+
+        .timeline-desc {
+            font-size: 8pt;
+            color: var(--text-muted);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- PAGE 1: VISION & PROBLEM/SOLUTION -->
+    <div class="page">
+        <div class="grid-bg"></div>
+        <div class="wire-net"></div>
+        <div class="glow-cyan" style="top: -200px; left: -200px;"></div>
+        <div class="glow-emerald" style="bottom: -200px; right: -200px;"></div>
+        
+        <div class="content">
+            <!-- Header -->
+            <div style="text-align: center; margin-bottom: 15pt;">
+                <pre style="font-family: 'JetBrains Mono', monospace; font-size: 6pt; line-height: 1; color: var(--cyan); margin-bottom: 10pt;">
+ █████╗ ██████╗ ███████╗██╗  ██╗      ██████╗ ███████╗
+██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔═══██╗██╔════╝
+███████║██████╔╝█████╗   ╚███╔╝ █████╗██║   ██║███████╗
+██╔══██║██╔═══╝ ██╔══╝   ██╔██╗ ╚════╝██║   ██║╚════██║
+██║  ██║██║     ███████╗██╔╝ ██╗      ╚██████╔╝███████║
+╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝       ╚═════╝ ╚══════╝
+                </pre>
+                
+                <h1 style="font-size: 28pt; margin-bottom: 5pt;">APEX OS</h1>
+                <p style="font-size: 9pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 15pt;">The Operating System for the AI-First Economy</p>
+            </div>
+
+            <!-- Problem/Solution Comparison -->
+            <div class="compare-grid">
+                <div class="compare-card legacy">
+                    <div class="compare-title">⚠ The Old Way</div>
+                    <ul class="feature-list">
+                        <li>6-12 months to MVP</li>
+                        <li>Expensive technical teams</li>
+                        <li>90% fail before revenue</li>
+                        <li>Founders lose equity to co-founders</li>
+                        <li>Market window closes before launch</li>
+                    </ul>
+                </div>
+                
+                <div class="compare-card apex">
+                    <div class="compare-title">▸ The APEX Protocol</div>
+                    <ul class="feature-list">
+                        <li>Ship products in 30 days</li>
+                        <li>17 AI agents as your technical team</li>
+                        <li>Iterate daily, learn faster</li>
+                        <li>Retain full equity ownership</li>
+                        <li>Validate before market shifts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin: 6pt 0 12pt;">
+                <h3 style="font-size: 9pt;">Why This Wins</h3>
+                <p style="font-size: 9pt;">We convert education into execution, and execution into equity. Builders ship in weeks, founders keep ownership, and distribution is engineered into the product through existing trust and partnerships.</p>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-value">32K</div>
+                    <div class="stat-label">Warm Leads</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">1.4%</div>
+                    <div class="stat-label">Conversion</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">18M</div>
+                    <div class="stat-label">Horizon</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">1,000</div>
+                    <div class="stat-label">Target</div>
+                </div>
+            </div>
+
+            <!-- Math Explanation -->
+            <div class="glass-card" style="margin-top: 10pt;">
+                <h3 style="font-size: 9pt; margin-bottom: 8pt;">The Math: Conservative Growth Model</h3>
+                <p style="font-size: 8pt; color: var(--text-secondary); line-height: 1.6;">
+                    <strong>Base:</strong> 32,000 InfoAcademy customers × 1.4% conversion = <span style="color: var(--cyan);">448 initial customers</span> (worst-case scenario)
+                    <br>
+                    <strong>Growth:</strong> 448 × 2.23x organic multiplier (referrals + partnerships) = <span style="color: var(--emerald);">1,000 by Month 18</span>
+                    <br>
+                    <strong>Revenue:</strong> 1,000 customers × $200 ARPU = <span style="color: var(--emerald);">$200K MRR = $2.4M ARR</span>
+                </p>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_BRIEF_v3.0</span>
+                <span>[PAGE_01/04] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: THE HYPERLOOP & TRACTION -->
+    <div class="page">
+        <div class="grid-bg"></div>
+        <div class="wire-net"></div>
+        <div class="glow-cyan" style="top: -150px; right: -150px;"></div>
+        
+        <div class="content">
+            <h2 style="font-size: 20pt; margin-bottom: 10pt;">The Self-Reinforcing Ecosystem</h2>
+            
+            <!-- Hyperloop: Horizontal Flow Diagram -->
+            <div style="margin: 20pt 0; padding: 15pt; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid var(--border);">
+                <!-- Stage 1: Academy -->
+                <div style="display: flex; align-items: center; margin-bottom: 12pt;">
+                    <div style="width: 80pt; text-align: center; padding: 12pt; background: linear-gradient(135deg, rgba(34,211,238,0.1), transparent); border-radius: 12px; border: 1px solid rgba(34,211,238,0.3);">
+                        <div style="font-size: 20pt; margin-bottom: 4pt;">🎓</div>
+                        <div style="font-size: 9pt; font-weight: 800; color: var(--cyan); margin-bottom: 2pt;">ACADEMY</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">32K Base</div>
+                    </div>
+                    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, var(--cyan), var(--emerald)); margin: 0 10pt; position: relative;">
+                        <div style="position: absolute; right: -5pt; top: -4pt; width: 0; height: 0; border-left: 8pt solid var(--emerald); border-top: 5pt solid transparent; border-bottom: 5pt solid transparent;"></div>
+                    </div>
+                    <div style="font-size: 8pt; color: var(--text-muted); width: 60pt;">Selective Intake<br/>Top 1%</div>
+                </div>
+
+                <!-- Stage 2: Accelerator -->
+                <div style="display: flex; align-items: center; margin-bottom: 12pt;">
+                    <div style="width: 80pt; text-align: center; padding: 12pt; background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent); border-radius: 12px; border: 1px solid rgba(16,185,129,0.3);">
+                        <div style="font-size: 20pt; margin-bottom: 4pt;">🚀</div>
+                        <div style="font-size: 9pt; font-weight: 800; color: var(--emerald); margin-bottom: 2pt;">ACCELERATOR</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">30-Day Sprint</div>
+                    </div>
+                    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, var(--emerald), var(--violet)); margin: 0 10pt; position: relative;">
+                        <div style="position: absolute; right: -5pt; top: -4pt; width: 0; height: 0; border-left: 8pt solid var(--violet); border-top: 5pt solid transparent; border-bottom: 5pt solid transparent;"></div>
+                    </div>
+                    <div style="font-size: 8pt; color: var(--text-muted); width: 60pt;">AI Swarm<br/>17 Agents</div>
+                </div>
+
+                <!-- Stage 3: Success -->
+                <div style="display: flex; align-items: center; margin-bottom: 12pt;">
+                    <div style="width: 80pt; text-align: center; padding: 12pt; background: linear-gradient(135deg, rgba(139,92,246,0.1), transparent); border-radius: 12px; border: 1px solid rgba(139,92,246,0.3);">
+                        <div style="font-size: 20pt; margin-bottom: 4pt;">🏆</div>
+                        <div style="font-size: 9pt; font-weight: 800; color: var(--violet); margin-bottom: 2pt;">SUCCESS</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Equity Capture</div>
+                    </div>
+                    <div style="flex: 1; height: 2px; background: linear-gradient(90deg, var(--violet), var(--amber)); margin: 0 10pt; position: relative;">
+                        <div style="position: absolute; right: -5pt; top: -4pt; width: 0; height: 0; border-left: 8pt solid var(--amber); border-top: 5pt solid transparent; border-bottom: 5pt solid transparent;"></div>
+                    </div>
+                    <div style="font-size: 8pt; color: var(--text-muted); width: 60pt;">10% APEX<br/>5% Builders</div>
+                </div>
+
+                <!-- Stage 4: Community (Loop Back) -->
+                <div style="display: flex; align-items: center;">
+                    <div style="width: 80pt; text-align: center; padding: 12pt; background: linear-gradient(135deg, rgba(245,158,11,0.1), transparent); border-radius: 12px; border: 1px solid rgba(245,158,11,0.3);">
+                        <div style="font-size: 20pt; margin-bottom: 4pt;">🔄</div>
+                        <div style="font-size: 9pt; font-weight: 800; color: var(--amber); margin-bottom: 2pt;">COMMUNITY</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Mentor Loop</div>
+                    </div>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                        <div style="padding: 6pt 12pt; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px dashed var(--border); font-size: 8pt; color: var(--text-muted);">
+                            Successful founders mentor next cohort →
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unit Economics -->
+            <div class="stats-row" style="margin: 10pt 0;">
+                <div class="stat-box">
+                    <div class="stat-value">$200</div>
+                    <div class="stat-label">ARPU/Month</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">$150</div>
+                    <div class="stat-label">Blended CAC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">16:1</div>
+                    <div class="stat-label">LTV:CAC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Gross Margin</div>
+                </div>
+            </div>
+
+            <!-- Sensitivity Analysis -->
+            <div class="sensitivity-box">
+                <h4>⚡ Sensitivity Analysis: Multiple Scenarios</h4>                
+                <div class="scenario-row">
+                    <span class="scenario-label">Worst Case (0.7% conversion)</span>
+                    <span class="scenario-value worst">224 customers → $1.2M ARR</span>
+                </div>
+                <div class="scenario-row">
+                    <span class="scenario-label">Base Case (1.4% conversion)</span>
+                    <span class="scenario-value base">448 customers → $2.4M ARR</span>
+                </div>
+                <div class="scenario-row">
+                    <span class="scenario-label">Best Case (2.8% conversion)</span>
+                    <span class="scenario-value best">896 customers → $4.8M ARR</span>
+                </div>
+                <p style="font-size: 7pt; color: var(--text-muted); margin-top: 8pt; font-style: italic;">
+                    All scenarios assume 2.23x organic growth multiplier via referrals and partnerships
+                </p>
+            </div>
+
+            <!-- Partners -->
+            <h3 style="margin-top: 15pt;">Strategic Partnerships</h3>
+            
+            <div class="partner-grid">
+                <div class="partner-card">
+                    <div class="partner-logo" style="color: var(--cyan);">IA</div>
+                    <div class="partner-name">InfoAcademy</div>
+                    <div class="partner-status active">✓ 32K Active</div>
+                </div>
+                
+                <div class="partner-card">
+                    <div class="partner-logo" style="background: transparent;">
+                        <img src="/investor-pack/assets/orange-logo.svg" alt="Orange Romania" style="width:46pt;height:46pt;" />
+                    </div>
+                    <div class="partner-name">Orange Romania</div>
+                    <div class="partner-status talks">● B2B Talks</div>
+                </div>
+                
+                <div class="partner-card">
+                    <div class="partner-logo" style="color: var(--violet);">🇷🇸</div>
+                    <div class="partner-name">Serbia Partner</div>
+                    <div class="partner-status serbia">● Growth Partner</div>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_BRIEF_v3.0</span>
+                <span>[PAGE_02/04] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: FINANCIAL TRAJECTORY -->
+    <div class="page">
+        <div class="grid-bg"></div>
+        <div class="wire-net"></div>
+        <div class="glow-emerald" style="bottom: -200px; left: -200px;"></div>
+        
+        <div class="content">
+            <h2 style="font-size: 20pt; margin-bottom: 10pt;">Financial Trajectory</h2>
+            
+            <!-- Revenue Table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Timeline</th>
+                        <th>Customers</th>
+                        <th>MRR</th>
+                        <th>ARR</th>
+                        <th>Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Validation</td>
+                        <td>Month 3</td>
+                        <td>100</td>
+                        <td>$20K</td>
+                        <td>$240K</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td>Product-Market Fit</td>
+                        <td>Month 6</td>
+                        <td>300</td>
+                        <td>$60K</td>
+                        <td>$720K</td>
+                        <td>+200%</td>
+                    </tr>
+                    <tr>
+                        <td>Scale</td>
+                        <td>Month 12</td>
+                        <td>600</td>
+                        <td>$120K</td>
+                        <td>$1.44M</td>
+                        <td>+100%</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td><strong>Series A Ready</strong></td>
+                        <td><strong>Month 18</strong></td>
+                        <td><strong>1,000</strong></td>
+                        <td><strong>$200K</strong></td>
+                        <td><strong>$2.4M</strong></td>
+                        <td><strong>+67%</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Detailed Unit Economics -->
+            <div class="two-col" style="margin-top: 15pt;">
+                <div class="glass-card">
+                    <h3>Unit Economics</h3>
+                    
+                    <div style="margin: 8pt 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 4pt;">
+                            <span style="color: var(--text-secondary);">Average Revenue Per User</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--cyan);">$200/month</span>
+                        </div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Blended across all tiers</div>
+                    </div>
+
+                    <div style="margin: 8pt 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 4pt;">
+                            <span style="color: var(--text-secondary);">Customer Acquisition Cost</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--amber);">$150</span>
+                        </div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">70% organic / 30% paid</div>
+                    </div>
+
+                    <div style="margin: 8pt 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 4pt;">
+                            <span style="color: var(--text-secondary);">Customer Lifetime Value</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--emerald);">$2,400</span>
+                        </div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">$200 × 12 months</div>
+                    </div>
+
+                    <div style="margin: 12pt 0; padding-top: 12pt; border-top: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; font-size: 10pt;">
+                            <span style="font-weight: 700;">LTV:CAC Ratio</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-weight: 900; color: var(--emerald); font-size: 14pt;">16:1</span>
+                        </div>
+                        <div style="font-size: 7pt; color: var(--text-muted); margin-top: 4pt;">Industry benchmark: 3:1 healthy, 5:1 excellent</div>
+                    </div>
+
+                    <div style="margin-top: 12pt;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+                            <span style="color: var(--text-secondary);">CAC Payback Period</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--cyan);">0.75 months</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3>Key Assumptions</h3>
+                    
+                    <div style="font-size: 8pt; line-height: 1.8; color: var(--text-secondary);">
+                        <p style="margin-bottom: 8pt;"><strong style="color: var(--text-primary);">Conversion:</strong> 1.4% of 32K base = 448 initial customers (worst-case conservative)</p>
+                        
+                        <p style="margin-bottom: 8pt;"><strong style="color: var(--text-primary);">Growth:</strong> 2.23x multiplier via referrals, partnerships, and viral loops</p>
+                        
+                        <p style="margin-bottom: 8pt;"><strong style="color: var(--text-primary);">Retention:</strong> 12-month average (modeled with 5% monthly churn)</p>
+                        
+                        <p style="margin-bottom: 8pt;"><strong style="color: var(--text-primary);">Organic/Paid:</strong> 70% from InfoAcademy base, 30% paid acquisition</p>
+                        
+                        <p><strong style="color: var(--text-primary);">Margin:</strong> 85% gross (AI-native infrastructure, low variable costs)</p>
+                    </div>
+
+                    <div style="margin-top: 12pt; padding-top: 12pt; border-top: 1px solid var(--border);">
+                        <div style="font-size: 9pt; color: var(--emerald); font-weight: 700; text-align: center;">
+                            Path to Profitability: Month 12
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_BRIEF_v3.0</span>
+                <span>[PAGE_03/04] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: THE ASK -->
+    <div class="page">
+        <div class="grid-bg"></div>
+        <div class="wire-net"></div>
+        <div class="glow-cyan" style="top: 50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 800px; opacity: 0.2;"></div>
+        
+        <div class="content">
+            <div class="cta-box">
+                <div class="cta-amount">$1.2M</div>
+                <div class="cta-label">Seed Round</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15pt; margin-top: 20pt;">
+                    <div class="glass-card" style="text-align: center;">
+                        <div style="font-size: 20pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: var(--cyan);">$6.8M</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4pt;">Pre-Money Val</div>
+                    </div>
+                    
+                    <div class="glass-card" style="text-align: center;">
+                        <div style="font-size: 20pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: var(--emerald);">15%</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4pt;">Equity Offered</div>
+                    </div>
+                    
+                    <div class="glass-card" style="text-align: center;">
+                        <div style="font-size: 20pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: var(--violet);">Q1'26</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4pt;">Target Close</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20pt;">Use of Funds</h3>
+
+            <div class="fund-bar">
+                <div class="fund-label">R&D</div>
+                <div class="fund-progress">
+                    <div class="fund-fill rd">40%</div>
+                </div>
+                <div class="fund-desc">AI Agent Infrastructure</div>
+            </div>
+
+            <div class="fund-bar">
+                <div class="fund-label">Distribution</div>
+                <div class="fund-progress">
+                    <div class="fund-fill dist">30%</div>
+                </div>
+                <div class="fund-desc">Partnerships & B2B</div>
+            </div>
+
+            <div class="fund-bar">
+                <div class="fund-label">Operations</div>
+                <div class="fund-progress">
+                    <div class="fund-fill ops">20%</div>
+                </div>
+                <div class="fund-desc">Team & Systems</div>
+            </div>
+
+            <div class="fund-bar">
+                <div class="fund-label">Reserve</div>
+                <div class="fund-progress">
+                    <div class="fund-fill reserve">10%</div>
+                </div>
+                <div class="fund-desc">Strategic Buffer</div>
+            </div>
+
+            <h3 style="margin-top: 20pt;">Immediate Milestones</h3>
+
+            <div class="timeline">
+                <div class="timeline-item complete">
+                    <div class="timeline-date">This Friday</div>
+                    <div class="timeline-title">Waitlist Goes Live</div>
+                    <div class="timeline-desc">Expected 1000+ signups from InfoAcademy base</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">2-3 Weeks</div>
+                    <div class="timeline-title">First Live Webinar</div>
+                    <div class="timeline-desc">50-100 high-intent founders, conversion focus</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">4 Weeks</div>
+                    <div class="timeline-title">First Cohort Selection</div>
+                    <div class="timeline-desc">Top 1% intake, 30-day sprint begins</div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">6 Weeks</div>
+                    <div class="timeline-title">APEX-OS Dashboard Launch</div>
+                    <div class="timeline-desc">Agentic lead gen infrastructure live</div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; text-align: center; padding-top: 20pt; border-top: 1px solid var(--border);">
+                <div style="font-size: 10pt; color: var(--text-muted); margin-bottom: 8pt;">Ready to build the future?</div>
+                
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11pt; color: var(--cyan); font-weight: 700;">
+                    nico.f@infoacademy.net
+                </div>
+                
+                <div style="font-size: 8pt; color: var(--text-muted); margin-top: 4pt;">
+                    apex-os-vibe.vercel.app
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_BRIEF_v3.0</span>
+                <span>[PAGE_04/04] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

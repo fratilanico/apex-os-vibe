@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX OS - Investor Deck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+            border: 1px solid #06b6d4;
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page:last-child {
+            page-break-after: avoid;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #06b6d4;
+        }
+        
+        .logo {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+        
+        .tagline {
+            font-size: 14px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        /* Section Headers */
+        h1 {
+            font-size: 28px;
+            color: #06b6d4;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid #06b6d4;
+            padding-left: 15px;
+        }
+        
+        h2 {
+            font-size: 20px;
+            color: #10b981;
+            margin: 20px 0 10px 0;
+        }
+        
+        h3 {
+            font-size: 16px;
+            color: #f59e0b;
+            margin: 15px 0 8px 0;
+        }
+        
+        /* Content */
+        p {
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #e0e0e0;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #222;
+            color: #ccc;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(6, 182, 212, 0.05);
+        }
+        
+        tr:hover {
+            background: rgba(6, 182, 212, 0.1);
+        }
+        
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid #06b6d4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .highlight-box h3 {
+            color: #06b6d4;
+            margin-top: 0;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            margin: 15px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #06b6d4, #10b981);
+            border-radius: 4px;
+        }
+        
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            text-align: center;
+            font-size: 10px;
+            color: #555;
+            border-top: 1px solid #222;
+            padding-top: 15px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .page {
+                border: none;
+                background: white;
+                color: black;
+            }
+            
+            .logo {
+                color: #000;
+                -webkit-text-fill-color: #000;
+            }
+            
+            h1, h2, h3 {
+                color: #000;
+            }
+            
+            p, td {
+                color: #333;
+            }
+        }
+        
+        /* Signature Section */
+        .signature-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #06b6d4;
+        }
+        
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .signature-block {
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin: 40px 20px 10px 20px;
+        }
+        
+        .signature-name {
+            font-weight: 600;
+            color: #06b6d4;
+        }
+        
+        .signature-title {
+            font-size: 11px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE 1: EXECUTIVE SUMMARY -->
+    <div class="page">
+        <div class="header">
+            <div class="logo">APEX OS</div>
+            <div class="tagline">The Operating System for Human Potential</div>
+        </div>
+        
+        <h1>Executive Summary</h1>
+        
+        <p style="font-size: 15px; color: #fff; margin-bottom: 20px;">
+            <strong>APEX OS is the first AI-native operating system for entrepreneurial acceleration.</strong> We transform 32,000 proven InfoAcademy customers into a zero-CAC distribution network, enabling builders to go from idea to revenue in 30 days—backed by 17 AI agents and a comprehensive technical infrastructure built in just 10 days.
+        </p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">$1.2M</div>
+                <div class="stat-label">Seed Round</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$6.8M</div>
+                <div class="stat-label">Pre-Money Val</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">15%</div>
+                <div class="stat-label">Investor Equity</div>
+            </div>
+        </div>
+        
+        <h2>The Opportunity</h2>
+        
+        <div class="two-column">
+            <div>
+                <h3>The Problem</h3>
+                <p>Traditional education takes 4 years and $200K to produce graduates who can't build real products. Accelerators take 12 weeks and 7% equity for pitch decks. The system extracts value rather than creating it.</p>
+                
+                <h3>The Market</h3>
+                <p>Online education: $350B. No-code tools: $45B. AI development: $25B. Combined TAM: $420B. The builder economy is exploding, but distribution remains the critical bottleneck.</p>
+            </div>
+            
+            <div>
+                <h3>Our Solution>
+                <p>The 30-Day Sprint: AI-powered acceleration from idea to revenue. Builders enter with concepts and exit with live products, paying customers, and equity in the network—not debt, not promises.</p>
+                <h3>The Advantage</h3>
+                <p>32,000 proven buyers from InfoAcademy provide immediate distribution. CAC = $0. LTV:CAC = Infinite. This is the holy grail of startup economics.</p>
+            </div>
+        </div>
+        
+        <h2>Traction & Proof</h2>
+        
+        <div class="highlight-box">
+            <h3>10-Day Build Proof</h3>
+            <p>From January 25 to February 4, 2026, we built a complete operating system:</p>
+            <ul style="margin-left: 20px; font-size: 12px; color: #ccc;">
+                <li>17-agent AI swarm with Vertex AI 5-provider cascade</li>
+                <li>Complete database architecture (8 tables, Supabase)</li>
+                <li>RSS aggregation system (13 premium sources)</li>
+                <li>Newsletter engine with Listmonk integration</li>
+                <li>Tony Stark-grade UI/UX system</li>
+                <li>Automated content scoring and curation</li>
+            </ul>
+            <p style="margin-top: 15px;"><strong style="color: #10b981;">This isn't a prototype. This is production infrastructure.</strong></p>
+        </div>
+        
+        <h2>Financial Highlights</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Year 1</th>
+                    <th>Month 18</th>
+                    <th>Target</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Active Builders</td>
+                    <td>590</td>
+                    <td>1,000</td>
+                    <td>3,200 (Y3)</td>
+                </tr>
+                <tr>
+                    <td>Monthly Recurring Revenue</td>
+                    <td>$87,910</td>
+                    <td>$149,000</td>
+                    <td>$477,000</td>
+                </tr>
+                <tr>
+                    <td>Annual Run Rate</td>
+                    <td>$1,054,920</td>
+                    <td>$1,788,000</td>
+                    <td>$5,724,000</td>
+                </tr>
+                <tr>
+                    <td>Gross Margin</td>
+                    <td>85%</td>
+                    <td>85%</td>
+                    <td>82%</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            APEX OS Investment Deck • Page 1 of 3 • Confidential
+        </div>
+    </div>
+    
+    <!-- PAGE 2: FINANCIAL MODEL -->
+    <div class="page">
+        <div class="header">
+            <div class="logo">APEX OS</div>
+            <div class="tagline">Financial Model & Projections</div>
+        </div>
+        
+        <h1>Conservative Financial Scenarios</h1>
+        
+        <p>All projections based on 32,000 InfoAcademy customer base, $149 ARPU, and $0 CAC due to internal distribution advantage.</p>
+        
+        <h2>Scenario Analysis</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th style="background: #ef4444;">Bear Case</th>
+                    <th style="background: #f59e0b;">Base Case</th>
+                    <th style="background: #10b981;">Growth Case</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Monthly Churn</strong></td>
+                    <td>10% (Aggressive)</td>
+                    <td>5% (Standard)</td>
+                    <td>3% (Premium)</td>
+                </tr>
+                <tr>
+                    <td><strong>Customer Lifetime</strong></td>
+                    <td>10 months</td>
+                    <td>20 months</td>
+                    <td>33 months</td>
+                </tr>
+                <tr>
+                    <td><strong>LTV (Lifetime Value)</strong></td>
+                    <td>$1,490</td>
+                    <td>$2,980</td>
+                    <td>$4,917</td>
+                </tr>
+                <tr>
+                    <td><strong>CAC (Acquisition Cost)</strong></td>
+                    <td colspan="3" style="text-align: center; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold;">$0 (Internal Distribution Asset)</td>
+                </tr>
+                <tr>
+                    <td><strong>LTV:CAC Ratio</strong></td>
+                    <td colspan="3" style="text-align: center; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold;">Infinite (∞)</td>
+                </tr>
+                <tr style="background: rgba(6, 182, 212, 0.1);">
+                    <td><strong>Year 1 Revenue</strong></td>
+                    <td>$1,054,920</td>
+                    <td>$1,054,920</td>
+                    <td>$1,054,920</td>
+                </tr>
+                <tr style="background: rgba(6, 182, 212, 0.1);">
+                    <td><strong>Month 18 ARR</strong></td>
+                    <td>$1,788,000</td>
+                    <td>$1,788,000</td>
+                    <td>$1,788,000</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>Revenue Ramp (18-Month Projection)</h2>
+        
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Month 6</span>
+                <span>$44,700 MRR (300 builders)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 30%;"></div>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Month 12</span>
+                <span>$87,910 MRR (590 builders)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 59%;"></div>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Month 18</span>
+                <span>$149,000 MRR (1,000 builders)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+        </div>
+        
+        
+        <h2>Unit Economics</h2>
+        
+        <div class="two-column">
+            <div class="highlight-box">
+                <h3>Revenue Model</h3>
+                <p><strong>Primary:</strong> 30% revenue share from builder products</p>
+                <p><strong>Secondary:</strong> Premium tool subscriptions ($49-199/mo)</p>
+                <p><strong>Tertiary:</strong> Enterprise consulting ($5-15K/projects)</p>
+                <p><strong>Network:</strong> Performance unit dividends</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>Cost Structure</h3>
+                <p><strong>COGS:</strong> $20-40/customer (AI infrastructure)</p>
+                <p><strong>Gross Margin:</strong> 82-85%</p>
+                <p><strong>CAC:</strong> $0 (internal distribution)</p>
+                <p><strong>Payback Period:</strong> Immediate</p>
+            </div>
+        </div>
+        
+        <h2>The $1.2M Ask</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Use of Funds</th>
+                    <th>Allocation</th>
+                    <th>Amount</th>
+                    <th>Purpose</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Product & Engineering</td>
+                    <td>40%</td>
+                    <td>$480,000</td>
+                    <td>AI infrastructure, agent development</td>
+                </tr>
+                <tr>
+                    <td>Customer Acquisition</td>
+                    <td>30%</td>
+                    <td>$360,000</td>
+                    <td>Paid channels, partnerships</td>
+                </tr>
+                <tr>
+                    <td>Operations & Team</td>
+                    <td>20%</td>
+                    <td>$240,000</td>
+                    <td>Core team, legal, compliance</td>
+                </tr>
+                <tr>
+                    <td>Reserve</td>
+                    <td>10%</td>
+                    <td>$120,000</td>
+                    <td>Contingency, opportunities</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            APEX OS Investment Deck • Page 2 of 3 • Confidential
+        </div>
+    </div>
+    
+    <!-- PAGE 3: TEAM & EQUITY -->
+    <div class="page">
+        <div class="header">
+            <div class="logo">APEX OS</div>
+            <div class="tagline">Team, Equity Structure & Strategic Advantage</div>
+        </div>
+        
+        <h1>Leadership Team</h1>
+        
+        <div class="two-column">
+            <div class="highlight-box">
+                <h3>Nicolae Fratila</h3>
+                <p><strong>Founder & CEO</strong></p>
+                <p style="font-size: 11px;">Technical architect with proven execution capability. Built complete APEX OS infrastructure in 10 days, demonstrating AI-native development velocity and systems thinking at scale.</p>
+                <p style="font-size: 11px; color: #10b981; margin-top: 10px;">Equity: 65% (Majority Control)</p>
+            </div>
+            
+            
+            <div class="highlight-box">
+                <h3>Kevin Obeegadoo</h3>
+                <p><strong>Strategic Advisor</strong></p>
+                <p style="font-size: 11px;">30+ years consulting experience. Unreasonable Impact UK & Europe 2025 Mentor. Advised 14+ Unreasonable companies. Expert in business strategy, risk mitigation, and global scaling from Mauritius IFC.</p>
+                <p style="font-size: 11px; color: #10b981; margin-top: 10px;">Equity: 5% (Strategic Advisory)</p>
+            </div>
+        </div>
+        
+        
+        <h1>Equity Structure</h1>
+        
+        <p>Alignment through ownership. Unlike traditional accelerators that extract 7% from founders, APEX OS distributes equity to builders and maintains founder majority control.</p>
+        
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Entity</th>
+                    <th>Equity %</th>
+                    <th>Contribution</th>
+                    <th>Vesting</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: rgba(16, 185, 129, 0.1);">
+                    <td><strong>Founders</strong></td>
+                    <td><strong>65%</strong></td>
+                    <td>Vision, technical execution, IP</td>
+                    <td>4-year vest, 12-month cliff</td>
+                </tr>
+                <tr>
+                    <td>Seed Investors</td>
+                    <td>15%</td>
+                    <td>$1.2M capital injection</td>
+                    <td>Immediate</td>
+                </tr>
+                <tr>
+                    <td>InfoAcademy</td>
+                    <td>10%</td>
+                    <td>32K customers, infrastructure</td>
+                    <td>2-year vest</td>
+                </tr>
+                <tr>
+                    <td>Strategic Advisory</td>
+                    <td>5%</td>
+                    <td>Risk mitigation, global scaling</td>
+                    <td>2-year vest</td>
+                </tr>
+                <tr>
+                    <td>Builder Pool</td>
+                    <td>5%</td>
+                    <td>Co-founder equity for graduates</td>
+                    <td>Performance-based</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+        <h2>The Revolutionary Model</h2>
+        
+        <div class="highlight-box">
+            <h3>Builder Equity Program</h3>
+            <p>Builders who complete the 30-Day Sprint receive:</p>
+            <ul style="margin-left: 20px; font-size: 12px; color: #ccc; margin-top: 10px;">
+                <li><strong>Performance Units:</strong> Tokenized equity based on milestones (Sprint: 100, $1K MRR: 500, $10K MRR: 2,000)</li>
+                <li><strong>Revenue Share:</strong> 70% to builder, 30% to APEX (industry standard is 50/50)</li>
+                <li><strong>Network Access:</strong> Lifetime membership in founder ecosystem</li>
+                <li><strong>Mentorship Equity:</strong> Successful builders earn equity by mentoring new cohorts</li>
+            </ul>
+            <p style="margin-top: 15px; color: #10b981;"><strong>Result: Perfect alignment. When builders win, everyone wins.</strong></p>
+        </div>
+        
+        
+        <h2>Strategic Partnerships</h2>
+        
+        <div class="two-column">
+            <div>
+                <h3>PayPerCut</h3>
+                <p style="font-size: 11px;"><strong>Global Payment Processing</strong></p>
+                <p style="font-size: 11px;">Mauritius IFC jurisdiction. Multi-currency support. KYC/AML compliant. Enables international founders to accept payments from day one.</p>
+                <p style="font-size: 10px; color: #06b6d4; margin-top: 5px;">https://me.paypercut.io/register</p>
+            </div>
+            
+            
+            <div>
+                <h3>AI Startup Network</h3>
+                <p style="font-size: 11px;"><strong>Community Access</strong></p>
+                <p style="font-size: 11px;">5+ specialized AI communities. Technical co-marketing. Shared talent pipeline. Joint venture opportunities. Expands distribution exponentially.</p>
+                <p style="font-size: 10px; color: #10b981; margin-top: 5px;">Active partnerships in negotiation</p>
+            </div>
+        </div>
+        
+        
+        <h2>Milestones & Roadmap</h2>
+        
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Timeline</th>
+                    <th>Builders</th>
+                    <th>MRR</th>
+                    <th>Key Milestone</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Month 3</td>
+                    <td>100</td>
+                    <td>$25,000</td>
+                    <td>Product-market fit validation</td>
+                </tr>
+                <tr>
+                    <td>Month 6</td>
+                    <td>300</td>
+                    <td>$50,000</td>
+                    <td>Revenue model proven</td>
+                </tr>
+                <tr>
+                    <td>Month 9</td>
+                    <td>600</td>
+                    <td>$100,000</td>
+                    <td>Network effects kick in</td>
+                </tr>
+                <tr style="background: rgba(16, 185, 129, 0.1);">
+                    <td><strong>Month 12</strong></td>
+                    <td><strong>1,000</strong></td>
+                    <td><strong>$149,000</strong></td>
+                    <td><strong>Series A Ready</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        
+        <div class="signature-section">
+            <h2>Investment Terms</h2>
+            
+            <p style="text-align: center; margin: 20px 0;">
+                <strong style="font-size: 18px; color: #06b6d4;">$1,200,000 Seed Round</strong>
+                <br />
+                Pre-Money Valuation: $6,800,000 | Post-Money: $8,000,000
+                <br />
+                Investor Equity: 15% | Use of Funds: Product (40%), Growth (30%), Operations (20%), Reserve (10%)
+            </p>
+            
+            
+            <div class="signature-grid">
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Nicolae Fratila</div>
+                    <div class="signature-title">Founder & CEO, APEX OS</div>
+                </div>
+                
+                
+                <div class="signature-block">
+                    <div class="signature-line"></div>
+                    <div class="signature-name">Kevin Obeegadoo</div>
+                    <div class="signature-title">Strategic Advisor, Unreasonable Impact</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="footer">
+            APEX OS Investment Deck • Page 3 of 3 • Confidential • February 2026
+            <br />
+            Contact: https://vibe-infoacademy-pearl.vercel.app
+        </div>
+    </div>
+</body>
+</html>

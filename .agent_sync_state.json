@@ -1,0 +1,28 @@
+{
+  "verification": {
+    "agent": "@opencode-agent",
+    "timestamp": "2026-02-12T12:25:00Z",
+    "status": "ACTIVE",
+    "current_task": "Waitlist hardening: persist identity fields + StateHints + token-dump guardrails",
+    "progress": "100%",
+    "blockers": "None",
+    "next_action": "Stage waitlist-related changes; commit; deploy Vercel preview",
+    "alignment_verified": true,
+    "last_check": "2026-02-12T12:25:00Z",
+    "deliverables": {
+      "files_modified": [
+        "components/SpectacularTerminal.tsx",
+        "stores/useOnboardingStore.ts",
+        "lib/ai/globalAIService.ts",
+        "lib/ai/orchestration/unifiedDecision.ts",
+        "api/ai-unified.ts"
+      ],
+      "changes": [
+        "Blocked token/id dump inputs client-side and prevented them from entering history",
+        "Persisted waitlist onboarding identity fields (name/phone/discovery) so new tabs/refresh don't regress",
+        "Injected StateHints into unified AI context for deterministic post-handshake continuity",
+        "Server-side decisioning now trusts StateHints and ignores token dumps during extraction"
+      ]
+    }
+  }
+}

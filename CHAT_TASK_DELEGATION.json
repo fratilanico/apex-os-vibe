@@ -1,0 +1,118 @@
+{
+  "delegation_id": "DELEGATION_CHAT_001",
+  "timestamp": "2026-02-04T05:50:00Z",
+  "orchestrator": "@apex-os-cli-builder",
+  "mode": "CHAT_DELEGATION",
+  "status": "TASKS_AVAILABLE_FOR_PICKUP",
+  
+  "available_tasks": [
+    {
+      "task_id": "CHAT_001",
+      "name": "Fix TypeScript Errors in AgentSwarmDashboard",
+      "priority": "🔴 CRITICAL",
+      "status": "🟡 AVAILABLE",
+      "assignee": null,
+      "description": "Fix 4 TypeScript errors in AgentSwarmDashboard.tsx",
+      "errors": [
+        "ERROR [389:17] Type 'string' is not assignable to type 'never'",
+        "ERROR [430:19] Type 'string' is not assignable to type 'never'",
+        "ERROR [610:13] Type 'AgentStatus | undefined' is not assignable to type 'AgentStatus'",
+        "ERROR [743:39] 'index' is declared but its value is never read"
+      ],
+      "file": "/Users/nico/apex-os-vibe/components/AgentSwarmDashboard.tsx",
+      "estimated_time": "15 minutes",
+      "skills_required": ["TypeScript", "React", "Type definitions"],
+      "deliverable": "Error-free TypeScript compilation",
+      "instructions": "Read file, fix all 4 errors, ensure Golden Standard compliance, run typecheck to verify"
+    },
+    {
+      "task_id": "CHAT_002",
+      "name": "Auto-format README.md to Golden Standard",
+      "priority": "🟡 HIGH",
+      "status": "🟡 AVAILABLE",
+      "assignee": null,
+      "description": "README.md is 75% compliant - needs Golden Standard formatting",
+      "issues": [
+        "Missing double-line header banners (╔═══╗)",
+        "Missing ASCII tables",
+        "Missing progress bars",
+        "Missing Tony Stark tone"
+      ],
+      "file": "/Users/nico/apex-os-vibe/README.md",
+      "estimated_time": "20 minutes",
+      "skills_required": ["Markdown", "Golden Standard", "Tony Stark tone"],
+      "deliverable": "100% Golden Standard compliant README.md",
+      "instructions": "Add ASCII borders, progress bars, status icons, Tony Stark phrases. Validate with ./scripts/validate-golden-standard.sh"
+    },
+    {
+      "task_id": "CHAT_003",
+      "name": "Build and Deploy to Preview",
+      "priority": "🔴 CRITICAL",
+      "status": "🟡 AVAILABLE",
+      "assignee": null,
+      "description": "Build the application and deploy to Vercel preview",
+      "steps": [
+        "Run npm run build",
+        "Fix any build errors",
+        "Deploy to Vercel preview: npx vercel",
+        "Verify preview URL works",
+        "Report preview URL back"
+      ],
+      "estimated_time": "10 minutes",
+      "skills_required": ["Build tools", "Vercel", "Deployment"],
+      "deliverable": "Working preview deployment URL",
+      "instructions": "Build, fix errors, deploy preview, test, report URL"
+    },
+    {
+      "task_id": "CHAT_004",
+      "name": "Create Agent Status Dashboard Component",
+      "priority": "🟡 HIGH",
+      "status": "🟡 AVAILABLE",
+      "assignee": null,
+      "description": "Create a visual dashboard showing all 33 agents with status",
+      "features": [
+        "Display 33 agents in table format",
+        "Show status with icons (🟢🟡🔴)",
+        "Show load with progress bars [████░░]",
+        "Click agent to invoke",
+        "Real-time updates",
+        "Golden Standard formatting"
+      ],
+      "estimated_time": "30 minutes",
+      "skills_required": ["React", "TypeScript", "UI/UX", "Golden Standard"],
+      "deliverable": "AgentSwarmDashboard.tsx component",
+      "instructions": "Create component, use ASCII borders, progress bars, status icons, Tony Stark tone. Integrate with useAgentSwarm hook."
+    },
+    {
+      "task_id": "CHAT_005",
+      "name": "Test Golden Standard Validator Script",
+      "priority": "🟢 MEDIUM",
+      "status": "🟡 AVAILABLE",
+      "assignee": null,
+      "description": "Test the Golden Standard validator on all markdown files",
+      "files_to_test": [
+        "GOLDEN_STANDARD.md",
+        "README.md",
+        "AGENTS.md",
+        "SWARM_INTEGRATION_COMPLETE.md",
+        "UNIFIED_DOCUMENTATION.md"
+      ],
+      "estimated_time": "10 minutes",
+      "skills_required": ["Bash", "Testing", "Validation"],
+      "deliverable": "Validation report for all files",
+      "instructions": "Run ./scripts/validate-golden-standard.sh on each file, document results, identify violations"
+    }
+  ],
+  
+  "how_to_claim": {
+    "step_1": "Reply in chat: 'CLAIMING TASK [TASK_ID] - [YOUR_AGENT_NAME]'",
+    "step_2": "Update this file with your agent name in 'assignee' field",
+    "step_3": "Execute the task following instructions",
+    "step_4": "Report completion: 'TASK [TASK_ID] COMPLETE - [DELIVERABLE]'",
+    "step_5": "Mark task as complete in this file"
+  },
+  
+  "example_claim": "CLAIMING TASK CHAT_001 - @typescript-fixer-agent",
+  
+  "orchestrator_note": "LISTEN UP - I have 5 tasks ready for pickup. These are available to ANY agent in this chat session. Claim a task, execute it, report back. Full Tony Stark mode. Golden Standard compliance required. No excuses. Only execution. - @apex-os-cli-builder"
+}

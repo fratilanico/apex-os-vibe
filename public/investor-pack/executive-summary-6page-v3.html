@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX OS // EXECUTIVE_DECK_v3</title>
+    <script src="https://unpkg.com/pagedjs/dist/paged.polyfill.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-primary: #030305;
+            --bg-secondary: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --cyan: #22d3ee;
+            --cyan-glow: rgba(34, 211, 238, 0.3);
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.3);
+            --violet: #8b5cf6;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            page-break-after: always;
+        }
+
+        .page:last-child {
+            page-break-after: avoid;
+        }
+
+        /* Wire Grid Background */
+        .wire-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        /* Glow Effects */
+        .glow-cyan {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .glow-emerald {
+            position: absolute;
+            bottom: -10%;
+            right: -10%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(circle, var(--emerald-glow) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Typography */
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-black { font-weight: 900; }
+        .italic { font-style: italic; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-tight { letter-spacing: -0.02em; }
+        .tracking-widest { letter-spacing: 0.2em; }
+
+        h1 {
+            font-size: 42pt;
+            line-height: 0.95;
+            margin-bottom: 15pt;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 24pt;
+            line-height: 1.1;
+            margin-bottom: 12pt;
+            color: var(--text-primary);
+        }
+
+        h3 {
+            font-size: 14pt;
+            font-weight: 800;
+            color: var(--cyan);
+            margin-bottom: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20pt;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0.5;
+        }
+
+        .glass-card.emerald::before {
+            background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+        }
+
+        .glass-card.violet::before {
+            background: linear-gradient(90deg, transparent, var(--violet), transparent);
+        }
+
+        /* Stats Grid */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12pt;
+            margin-bottom: 20pt;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15pt 10pt;
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-box::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+            border-radius: 12px 12px 0 0;
+        }
+
+        .stat-value {
+            font-size: 22pt;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4pt;
+        }
+
+        .stat-label {
+            font-size: 7pt;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* Protocol Box */
+        .protocol-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--cyan);
+            border-radius: 12px;
+            padding: 15pt;
+            margin-bottom: 12pt;
+        }
+
+        .protocol-box.emerald {
+            border-left-color: var(--emerald);
+        }
+
+        .protocol-box.violet {
+            border-left-color: var(--violet);
+        }
+
+        .protocol-header {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: var(--cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 8pt;
+        }
+
+        .protocol-box.emerald .protocol-header {
+            color: var(--emerald);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-bottom: 15pt;
+        }
+
+        th {
+            background: var(--bg-secondary);
+            padding: 10pt 8pt;
+            text-align: left;
+            font-weight: 700;
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 10pt 8pt;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight-row {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .highlight-row td {
+            color: var(--emerald);
+            font-weight: 600;
+        }
+
+        /* Partner Logos */
+        .partner-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15pt;
+            margin-bottom: 20pt;
+        }
+
+        .partner-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15pt;
+            text-align: center;
+        }
+
+        .partner-logo {
+            width: 50pt;
+            height: 50pt;
+            margin: 0 auto 10pt;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 20pt;
+        }
+
+        .partner-logo.infoacademy {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+
+        .partner-logo.orange {
+            background: #ff6600;
+            color: white;
+        }
+
+        .partner-logo.serbia {
+            background: linear-gradient(180deg, #c41e3a 33%, #0d47a1 33%, #0d47a1 66%, #ffffff 66%);
+            color: white;
+            font-size: 16pt;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .partner-name {
+            font-size: 10pt;
+            font-weight: 700;
+            margin-bottom: 4pt;
+        }
+
+        .partner-status {
+            font-size: 7pt;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* CTA Box */
+        .cta-box {
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(16, 185, 129, 0.1));
+            border: 1px solid var(--cyan);
+            border-radius: 16px;
+            padding: 25pt;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .cta-title {
+            font-size: 24pt;
+            font-weight: 900;
+            margin-bottom: 10pt;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Footer */
+        .page-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 12pt;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 7pt;
+            color: var(--text-muted);
+        }
+
+        /* Timeline */
+        .timeline-item {
+            display: flex;
+            gap: 12pt;
+            margin-bottom: 10pt;
+            align-items: flex-start;
+        }
+
+        .timeline-dot {
+            width: 10pt;
+            height: 10pt;
+            border-radius: 50%;
+            background: var(--cyan);
+            margin-top: 3pt;
+            flex-shrink: 0;
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .timeline-content h4 {
+            font-size: 11pt;
+            font-weight: 700;
+            margin-bottom: 2pt;
+        }
+
+        .timeline-content p {
+            font-size: 9pt;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* List styling */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 6pt 0;
+            padding-left: 15pt;
+            position: relative;
+            font-size: 10pt;
+            color: var(--text-secondary);
+        }
+
+        .feature-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .feature-list.emerald li::before {
+            color: var(--emerald);
+        }
+
+        /* Progress bars */
+        .progress-bar {
+            height: 6pt;
+            background: var(--bg-secondary);
+            border-radius: 3pt;
+            overflow: hidden;
+            margin-top: 6pt;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--emerald));
+            border-radius: 3pt;
+        }
+
+        /* Math explanation box */
+        .math-box {
+            background: rgba(34, 211, 238, 0.05);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            border-radius: 8px;
+            padding: 10pt;
+            margin-top: 10pt;
+        }
+
+        .math-box p {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8pt;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Agent visualization */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8pt;
+            margin-top: 10pt;
+        }
+
+        .agent-node {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6pt;
+            padding: 6pt;
+            text-align: center;
+            font-size: 7pt;
+        }
+
+        .agent-icon {
+            width: 20pt;
+            height: 20pt;
+            margin: 0 auto 4pt;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--emerald));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10pt;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- PAGE 1: VISION -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        <div class="glow-cyan"></div>
+        <div class="glow-emerald"></div>
+        
+        <div class="content">
+            <pre style="font-family: 'JetBrains Mono', monospace; font-size: 6px; line-height: 1.1; color: var(--cyan); text-align: center; margin-bottom: 15pt; opacity: 0.8;">
+    █████╗ ██████╗ ███████╗██╗  ██╗      ██████╗ ███████╗
+   ██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝      ██╔═══██╗██╔════╝
+   ███████║██████╔╝█████╗   ╚███╔╝ █████╗██║   ██║███████╗
+   ██╔══██║██╔═══╝ ██╔══╝   ██╔██╗ ╚════╝██║   ██║╚════██║
+   ██║  ██║██║     ███████╗██╔╝ ██╗      ╚██████╔╝███████║
+   ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝       ╚═════╝ ╚══════╝
+            </pre>
+
+            <h1 class="font-black uppercase italic tracking-tight text-center" style="font-size: 28pt;">
+                The Operating System<br>for the AI-First Economy
+            </h1>
+
+            <p style="text-align: center; font-size: 12pt; color: var(--text-secondary); margin-bottom: 20pt;">
+                Democratizing software creation through AI-native orchestration.<br>
+                Founders ship products in <strong style="color: var(--cyan);">30 days</strong>, not 12 months.
+            </p>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-value">32K</div>
+                    <div class="stat-label">Warm Leads</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">448</div>
+                    <div class="stat-label">Initial (1.4%)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">1,000</div>
+                    <div class="stat-label">M18 Target</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">$2.4M</div>
+                    <div class="stat-label">Projected ARR</div>
+                </div>
+            </div>
+
+            <div class="glass-card emerald">
+                <div class="protocol-header" style="color: var(--emerald);">The Mission</div>
+                <p style="font-size: 11pt; color: var(--text-secondary); line-height: 1.6;">
+                    We put the power back into the hands of founders. By leveraging bleeding-edge agentic AI infrastructure, we enable builders to validate ideas, ship products, and scale businesses at a fraction of traditional costs—while maintaining full ownership of their vision and equity.
+                </p>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_01/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: THE PROBLEM -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        
+        <div class="content">
+            <h2 class="font-black uppercase italic tracking-tight">The Builder's Dilemma</h2>
+            
+            <p style="font-size: 10pt; color: var(--text-muted); margin-bottom: 15pt;">Three critical failures of the traditional model:</p>
+
+            <div style="margin-bottom: 15pt;">
+                <div class="protocol-box" style="border-left-color: #ef4444; opacity: 0.9;">
+                    <div class="protocol-header" style="color: #ef4444;">01. Time to Market</div>
+                    <p style="font-size: 10pt; color: var(--text-secondary); margin: 0;">
+                        <strong>6-12 months to MVP.</strong> By the time traditional dev teams deliver, market windows have closed. Competitors have moved. Customer needs have evolved. The pace of modern business demands iteration in days, not quarters.
+                    </p>
+                </div>
+
+                <div class="protocol-box" style="border-left-color: #f59e0b; opacity: 0.9;">
+                    <div class="protocol-header" style="color: #f59e0b;">02. Equity Dilution</div>
+                    <p style="font-size: 10pt; color: var(--text-secondary); margin: 0;">
+                        <strong>Technical co-founders take 20-40%.</strong> Non-technical founders are forced to give away significant equity just to build their product. This creates misaligned incentives and reduces founder control at the most critical early stages.
+                    </p>
+                </div>
+
+                <div class="protocol-box" style="border-left-color: #8b5cf6; opacity: 0.9;">
+                    <div class="protocol-header" style="color: #8b5cf6;">03. Capital Inefficiency</div>
+                    <p style="font-size: 10pt; color: var(--text-secondary); margin: 0;">
+                        <strong>90% fail before revenue.</strong> High burn rates on engineering talent consume runway before product-market fit is achieved. Founders run out of capital learning what customers actually want.
+                    </p>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div class="protocol-header">The Cost of Building (Traditional)</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15pt; margin-top: 10pt;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24pt; font-weight: 900; color: #ef4444; font-family: 'JetBrains Mono', monospace;">6-12mo</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); margin-top: 4pt;">Time to MVP</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div style="font-size: 24pt; font-weight: 900; color: #f59e0b; font-family: 'JetBrains Mono', monospace;">20-40%</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); margin-top: 4pt;">Equity Given Away</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <div style="font-size: 24pt; font-weight: 900; color: #8b5cf6; font-family: 'JetBrains Mono', monospace;">90%</div>
+                        <div style="font-size: 8pt; color: var(--text-muted); margin-top: 4pt;">Failure Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_02/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: THE SOLUTION -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        <div class="glow-cyan"></div>
+        
+        <div class="content">
+            <h2 class="font-black uppercase italic tracking-tight">The APEX Protocol</h2>
+            
+            <div class="glass-card emerald" style="margin-bottom: 15pt;">
+                <div class="protocol-header" style="color: var(--emerald);">17-Agent AI Swarm</div>
+                
+                <p style="font-size: 10pt; color: var(--text-secondary); margin-bottom: 10pt;">
+                    Our specialized agents work in concert to deliver production-grade software:
+                </p>
+
+                <div class="agent-grid">
+                    <div class="agent-node">
+                        <div class="agent-icon">🏗️</div>
+                        <div style="font-weight: 700;">Architect</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">💻</div>
+                        <div style="font-weight: 700;">Developer</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">🧪</div>
+                        <div style="font-weight: 700;">QA</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">🚀</div>
+                        <div style="font-weight: 700;">Deploy</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">📊</div>
+                        <div style="font-weight: 700;">Analytics</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">🎯</div>
+                        <div style="font-weight: 700;">GTM</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">🎨</div>
+                        <div style="font-weight: 700;">Design</div>
+                    </div>
+                    <div class="agent-node">
+                        <div class="agent-icon">📱</div>
+                        <div style="font-weight: 700;">Mobile</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10pt; padding-top: 10pt; border-top: 1px solid var(--border); font-size: 8pt; color: var(--text-muted); text-align: center;">
+                    + 9 additional specialized agents for security, DevOps, API integration, testing, documentation, and more
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15pt;">
+                <div class="protocol-box emerald">
+                    <div class="protocol-header" style="color: var(--emerald);">Technical Stack</div>
+                    
+                    <ul class="feature-list emerald">
+                        <li>Vertex AI (Gemini 2.5 Pro)</li>
+                        <li>Claude 3.5 Sonnet</li>
+                        <li>GPT-4 Turbo</li>
+                        <li>Multi-model orchestration</li>
+                        <li>12-tool integrated workflow</li>
+                    </ul>
+                </div>
+
+                <div class="protocol-box">
+                    <div class="protocol-header">The Result</div>
+                    
+                    <ul class="feature-list">
+                        <li>Ship in 30 days, not 12 months</li>
+                        <li>Iterate daily, not quarterly</li>
+                        <li>Own 100% of your equity</li>
+                        <li>Validate before you scale</li>
+                        <li>Build with AI, not against it</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_03/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 4: HYPERLOOP + TRACTION -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        <div class="content">
+            <h2 class="font-black uppercase italic tracking-tight">The Hyperloop</h2>
+            
+            <div class="glass-card" style="margin-bottom: 15pt;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15pt; text-align: center;">
+                    <div>
+                        <div style="width: 40pt; height: 40pt; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--emerald)); margin: 0 auto 8pt; display: flex; align-items: center; justify-content: center; font-size: 16pt;">🎓</div>
+                        <div style="font-size: 9pt; font-weight: 700;">ACADEMY</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Lead Engine</div>
+                    </div>
+                    <div>
+                        <div style="width: 40pt; height: 40pt; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--cyan)); margin: 0 auto 8pt; display: flex; align-items: center; justify-content: center; font-size: 16pt;">🚀</div>
+                        <div style="font-size: 9pt; font-weight: 700;">ACCELERATOR</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">30-Day Sprint</div>
+                    </div>
+                    <div>
+                        <div style="width: 40pt; height: 40pt; border-radius: 50%; background: linear-gradient(135deg, var(--emerald), #22d3ee); margin: 0 auto 8pt; display: flex; align-items: center; justify-content: center; font-size: 16pt;">💰</div>
+                        <div style="font-size: 9pt; font-weight: 700;">SUCCESS</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Equity Capture</div>
+                    </div>
+                    <div>
+                        <div style="width: 40pt; height: 40pt; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, var(--emerald)); margin: 0 auto 8pt; display: flex; align-items: center; justify-content: center; font-size: 16pt;">🔄</div>
+                        <div style="font-size: 9pt; font-weight: 700;">COMMUNITY</div>
+                        <div style="font-size: 7pt; color: var(--text-muted);">Mentor Loop</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15pt; padding-top: 15pt; border-top: 1px solid var(--border);">
+                    <div style="font-size: 20pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; background: linear-gradient(135deg, var(--cyan), var(--emerald)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">32K → 448 → 1,000</div>
+                    <div style="font-size: 8pt; color: var(--text-muted); margin-top: 5pt;">InfoAcademy Base → 1.4% Conversion → M18 Target (with organic growth)</div>
+                </div>
+            </div>
+
+            <div class="stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 15pt;">
+                <div class="stat-box">
+                    <div class="stat-value">$200</div>
+                    <div class="stat-label">Blended ARPU</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Gross Margin</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">16:1</div>
+                    <div class="stat-label">LTV:CAC</div>
+                </div>
+            </div>
+
+            <h3>Partnership Network</h3>
+            
+            <div class="partner-grid">
+                <div class="partner-card">
+                    <div class="partner-logo infoacademy">IA</div>
+                    <div class="partner-name">InfoAcademy</div>
+                    <div class="partner-status">✓ 32K Customers | Active</div>
+                </div>
+                
+                <div class="partner-card">
+                    <div class="partner-logo orange">O</div>
+                    <div class="partner-name">Orange Romania</div>
+                    <div class="partner-status">● B2B Discussions</div>
+                </div>
+                
+                <div class="partner-card">
+                    <div class="partner-logo serbia">S</div>
+                    <div class="partner-name">Serbia Market</div>
+                    <div class="partner-status">● Partnership Secured</div>
+                </div>
+            </div>
+
+            <div class="protocol-box">
+                <div class="protocol-header">Agentic Infrastructure</div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <h4>APEX-OS Dashboard</h4>
+                        <p>Live in 2 weeks | Personalized outreach at scale</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: var(--emerald);"></div>
+                    <div class="timeline-content">
+                        <h4>Automated B2B Lead Gen</h4>
+                        <p>Daily lead generation | AI-powered call scheduling</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_04/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 5: FINANCIALS -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        <div class="content">
+            <h2 class="font-black uppercase italic tracking-tight">Financial Trajectory</h2>
+            
+            <div class="glass-card" style="margin-bottom: 15pt;">
+                <div class="protocol-header">Conservative Growth Model</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>Timeline</th>
+                            <th>Customers</th>
+                            <th>MRR</th>
+                            <th>ARR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Validation</td>
+                            <td>M3</td>
+                            <td>100</td>
+                            <td>$20K</td>
+                            <td>$240K</td>
+                        </tr>
+                        <tr>
+                            <td>Product-Market Fit</td>
+                            <td>M6</td>
+                            <td>300</td>
+                            <td>$60K</td>
+                            <td>$720K</td>
+                        </tr>
+                        <tr>
+                            <td>Scale</td>
+                            <td>M12</td>
+                            <td>600</td>
+                            <td>$120K</td>
+                            <td>$1.44M</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>Series A Ready</strong></td>
+                            <td><strong>M18</strong></td>
+                            <td><strong>1,000</strong></td>
+                            <td><strong>$200K</strong></td>
+                            <td><strong>$2.4M</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="math-box">
+                    <p>📊 MATH: 32K InfoAcademy base × 1.4% conversion = 448 initial customers + 552 organic growth (referrals, B2B, partnerships) = 1,000 customers at M18</p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15pt;">
+                <div class="glass-card">
+                    <div class="protocol-header">Unit Economics</div>
+                    
+                    <div style="margin-bottom: 10pt;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 4pt;">
+                            <span>ARPU</span>
+                            <span style="color: var(--cyan); font-weight: 700;">$200/mo</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 10pt;">
+                        <div style="display: flex; justify-content: space-between; font-size: 9pt; margin-bottom: 4pt;">
+                            <span>CAC</span>
+                            <span style="color: var(--emerald); font-weight: 700;">$150</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 10pt; border-top: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 9pt;">LTV:CAC Ratio</span>
+                            <span style="font-size: 20pt; font-weight: 900; color: var(--emerald); font-family: 'JetBrains Mono', monospace;">16:1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card emerald">
+                    <div class="protocol-header" style="color: var(--emerald);">Path to Profitability</div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: var(--emerald);"></div>
+                        <div class="timeline-content">
+                            <h4>Break-even: Month 12</h4>
+                            <p>600 customers × $200 ARPU</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background: var(--cyan);"></div>
+                        <div class="timeline-content">
+                            <h4>Series A Ready: Month 18</h4>
+                            <p>1,000 customers × $200 ARPU = $2.4M ARR</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_05/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 6: THE ASK -->
+    <div class="page">
+        <div class="wire-grid"></div>
+        <div class="glow-cyan"></div>
+        <div class="glow-emerald"></div>
+        
+        <div class="content">
+            <div class="cta-box">
+                <div style="font-size: 56pt; font-weight: 900; font-family: 'JetBrains Mono', monospace; background: linear-gradient(135deg, var(--cyan), var(--emerald)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5pt;">$1.2M</div>
+                <div style="font-size: 12pt; font-weight: 700; letter-spacing: 0.2em; color: var(--text-secondary); margin-bottom: 20pt;">SEED ROUND</div>
+            </div>
+
+            <div class="stats-row" style="margin-top: 20pt;">
+                <div class="stat-box">
+                    <div class="stat-value">$6.8M</div>
+                    <div class="stat-label">Pre-Money Val</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">15%</div>
+                    <div class="stat-label">Equity Offered</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">Q1'26</div>
+                    <div class="stat-label">Target Close</div>
+                </div>
+            </div>
+
+            <h3>Use of Funds</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10pt; margin-bottom: 20pt;">
+                <div class="glass-card" style="padding: 12pt; text-align: center;">
+                    <div style="font-size: 24pt; font-weight: 900; color: var(--cyan); font-family: 'JetBrains Mono', monospace;">40%</div>
+                    <div style="font-size: 8pt; font-weight: 700; margin-top: 5pt;">R&D</div>
+                    <div style="font-size: 7pt; color: var(--text-muted);">AI Infrastructure</div>
+                </div>
+                
+                <div class="glass-card" style="padding: 12pt; text-align: center;">
+                    <div style="font-size: 24pt; font-weight: 900; color: var(--violet); font-family: 'JetBrains Mono', monospace;">30%</div>
+                    <div style="font-size: 8pt; font-weight: 700; margin-top: 5pt;">Distribution</div>
+                    <div style="font-size: 7pt; color: var(--text-muted);">B2B Expansion</div>
+                </div>
+                
+                <div class="glass-card" style="padding: 12pt; text-align: center;">
+                    <div style="font-size: 24pt; font-weight: 900; color: var(--emerald); font-family: 'JetBrains Mono', monospace;">20%</div>
+                    <div style="font-size: 8pt; font-weight: 700; margin-top: 5pt;">Operations</div>
+                    <div style="font-size: 7pt; color: var(--text-muted);">Team & Systems</div>
+                </div>
+                
+                <div class="glass-card" style="padding: 12pt; text-align: center;">
+                    <div style="font-size: 24pt; font-weight: 900; color: #f59e0b; font-family: 'JetBrains Mono', monospace;">10%</div>
+                    <div style="font-size: 8pt; font-weight: 700; margin-top: 5pt;">Reserve</div>
+                    <div style="font-size: 7pt; color: var(--text-muted);">Strategic Buffer</div>
+                </div>
+            </div>
+
+            <h3>Immediate Milestones</h3>
+            
+            <div class="protocol-box emerald">
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: var(--emerald);"></div>
+                    <div class="timeline-content">
+                        <h4>✓ This Friday: Waitlist Live</h4>
+                        <p>Expected 1000+ signups from InfoAcademy base</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: var(--cyan);"></div>
+                    <div class="timeline-content">
+                        <h4>→ 2-3 Weeks: First Webinar</h4>
+                        <p>50-100 high-intent founders expected</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background: var(--violet);"></div>
+                    <div class="timeline-content">
+                        <h4>→ 4 Weeks: First Cohort Selection</h4>
+                        <p>Top 1% intake begins 30-day sprint</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; text-align: center; padding-top: 20pt;">
+                <div style="font-size: 10pt; color: var(--text-muted); margin-bottom: 8pt;">Ready to build the future?</div>
+                
+                <div style="font-size: 14pt; font-weight: 700; color: var(--cyan); font-family: 'JetBrains Mono', monospace; margin-bottom: 4pt;">nico.f@infoacademy.net</div>
+                
+                <div style="font-size: 9pt; color: var(--text-muted);">apex-os-vibe.vercel.app</div>
+            </div>
+
+            <div class="page-footer">
+                <span>APEX OS // EXECUTIVE_DECK_v3</span>
+                <span>[PAGE_06/06] // CONFIDENTIAL</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
