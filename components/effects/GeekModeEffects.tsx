@@ -2,17 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
-const isLowPoweredDevice = () => {
-  if (typeof window === 'undefined') return false;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent) || (window.innerWidth >= 768 && window.innerWidth <= 1366);
-  return isMobile || isTablet;
-};
-
 export const MatrixRain: React.FC<{ enabled?: boolean; speed?: number }> = ({ enabled = true, speed = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { mode } = useOnboardingStore();
-  const [isLowPower] = useState(() => isLowPoweredDevice());
 
   useEffect(() => {
     if (!enabled || mode !== 'GEEK') return;
@@ -21,19 +13,19 @@ export const MatrixRain: React.FC<{ enabled?: boolean; speed?: number }> = ({ en
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const columnWidth = isLowPower ? 40 : 20;
+    const columnWidth = 20;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const columns = Math.floor(canvas.width / columnWidth);
     const drops: number[] = new Array(columns).fill(1);
-    const chars = isLowPower ? '01' : '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
+    const chars = '0123456789ABCDEFｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
 
     let animationId: number;
     const draw = () => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#0F0';
-      ctx.font = isLowPower ? '12px monospace' : '15px monospace';
+      ctx.font = '15px monospace';
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)] ?? '0';
         ctx.fillText(text, i * columnWidth, drops[i] * 20);
@@ -45,7 +37,7 @@ export const MatrixRain: React.FC<{ enabled?: boolean; speed?: number }> = ({ en
 
     draw();
     return () => cancelAnimationFrame(animationId);
-  }, [enabled, mode, speed, isLowPower]);
+  }, [enabled, mode, speed]);
 
   if (!enabled || mode !== 'GEEK') return null;
 
