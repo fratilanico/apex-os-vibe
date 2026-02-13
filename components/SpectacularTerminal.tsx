@@ -11,7 +11,7 @@ import {
   PLAYER_ONE_ASCII
 } from '../lib/terminal/constants';
 import { RotatingCTA } from './ui/Terminal/RotatingCTA';
-import { queryAI } from '../lib/ai/globalAIService';
+import { queryAIOptimized, prefetchCommonResponses } from '../lib/ai/clientOptimized';
 import { PillChoiceSystem } from './PillChoiceSystem';
 import { PILL_CONFIG } from '../config/pillConfig';
 import { TRAJECTORY_CONFIG } from '../config/trajectoryConfig';
@@ -164,6 +164,10 @@ export const SpectacularTerminal: React.FC = () => {
       document.head.appendChild(style);
     }
     window.addEventListener('resize', checkMobile);
+    
+    // Prefetch common AI responses for faster UX
+    prefetchCommonResponses();
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -729,15 +733,14 @@ export const SpectacularTerminal: React.FC = () => {
         `StrictMode: ${strictMode ? 'ON (ask for precise target)' : 'OFF (infer + propose options)'}`,
       ].join('\n');
       
-      // Use queryAI for resilience (timeouts, error handling, fallback)
-      const requestedProvider = 'auto';
-      const response = await queryAI({
+      // Use optimized client-side AI with caching
+      const response = await queryAIOptimized({
         message: msg,
         userEmail: email,
         context,
         history: trimmedHistory,
         systemPrompt,
-        preferredProvider: requestedProvider,
+        preferredProvider: 'auto',
       });
 
       void trackEvent({
