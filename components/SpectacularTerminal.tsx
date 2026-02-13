@@ -69,7 +69,7 @@ const chromaticStyle = `
 interface TerminalLine {
   id: string;
   text: string;
-  type: 'input' | 'output' | 'error' | 'system' | 'success' | 'jarvis' | 'matrix' | 'choice' | 'ascii' | 'brand-logo';
+  type: 'input' | 'output' | 'error' | 'system' | 'success' | 'jarvis' | 'matrix' | 'choice' | 'ascii' | 'brand-logo' | 'cyan';
   className?: string;
 }
 
@@ -953,22 +953,63 @@ export const SpectacularTerminal: React.FC = () => {
         }
       }
 
+      if (lower === 'golden-standard' || lower === 'validate') {
+        addTerminalLine('╔══════════════════════════════════════════════════════════════════════════════╗', 'cyan');
+        addTerminalLine('║  🔱 GOLDEN STANDARD VALIDATOR v1.0.0                                         ║', 'cyan');
+        addTerminalLine('╚══════════════════════════════════════════════════════════════════════════════╝', 'cyan');
+        addTerminalLine('', 'system');
+        addTerminalLine('🔍 Rule 001: Double-line header banners      [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 002: ASCII table formatting          [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 003: Progress bar format (10 blocks) [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 004: Status icon usage               [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 005: Code block syntax highlighting  [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 006: Tony Stark tone                 [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('🔍 Rule 007: Confidence markers              [██████████] 100% ✅ PASS', 'system');
+        addTerminalLine('', 'system');
+        addTerminalLine('┌──────────────────────────────────────────────────────────────────────────────┐', 'cyan');
+        addTerminalLine('│  VALIDATION SUMMARY                                                          │', 'cyan');
+        addTerminalLine('├──────────────────────────────────────────────────────────────────────────────┤', 'cyan');
+        addTerminalLine('│  Status: ✅ FULLY COMPLIANT                                                  │', 'success');
+        addTerminalLine('│  Score:  [██████████] 100%                                                   │', 'success');
+        addTerminalLine('└──────────────────────────────────────────────────────────────────────────────┘', 'cyan');
+        addTerminalLine('', 'system');
+        addTerminalLine('Type `golden-standard rules` for protocol specification.', 'system');
+        return;
+      }
+
+      if (lower === 'golden-standard rules') {
+        const rules = [
+          'RULE_001: Heavy Borders ╔═╗ for Headers',
+          'RULE_002: Thin Borders ┌─┐ for Data Tables',
+          'RULE_003: 10-Block Progress Indicators [███░░░]',
+          'RULE_004: Approved Status Icons (🟢, 🔴, ⚡, 🚀)',
+          'RULE_005: Tony Stark Command Tone Engagement',
+          'RULE_006: Absolute Confidence Language ONLY',
+          'RULE_007: Strict 42-Character Mobile Clipping',
+        ];
+        const boxedRules = CLIFormatter.boxText('GOLDEN_STANDARD_PROTOCOL_V1.0', rules);
+        boxedRules.split('\n').forEach(l => addTerminalLine(l, 'cyan'));
+        return;
+      }
+
       if (lower === 'help') {
-        addTerminalLine('[SYSTEM] Available Commands:', 'system');
-        addTerminalLine('  clear  - Clear screen', 'system');
-        addTerminalLine('  status - Check sync status', 'system');
-        addTerminalLine('  jarvis - Direct AI link', 'system');
-        addTerminalLine('  about  - APEX OS mission', 'system');
-        if (!secretTreatFound) {
-          addTerminalLine('  ???    - Hidden protocol detected', 'matrix');
-        }
+        const helpContent = [
+          'clear          - Clear terminal output',
+          'status         - Check system synchronization',
+          'jarvis         - Direct neural AI link',
+          'about          - APEX OS mission brief',
+          'golden-standard- Check compliance report',
+          'pill           - Trigger persona selection',
+        ];
+        
         if (isPitchDeckContext) {
-          addTerminalLine('', 'system');
-          addTerminalLine('[PITCH DECK MODE]', 'success');
-          addTerminalLine('  mrr        - Revenue projections', 'system');
-          addTerminalLine('  ltv        - Unit economics', 'system');
-          addTerminalLine('  valuation  - Berkus method', 'system');
+          helpContent.push('mrr            - Revenue projections');
+          helpContent.push('ltv            - Unit economics stats');
+          helpContent.push('valuation      - Berkus rationale');
         }
+
+        const boxedHelp = CLIFormatter.boxText('COMMAND_REGISTRY_V6.4.1', helpContent);
+        boxedHelp.split('\n').forEach(l => addTerminalLine(l, 'system'));
         return;
       }
 
@@ -979,7 +1020,27 @@ export const SpectacularTerminal: React.FC = () => {
       }
 
       if (lower === 'status') {
-        addTerminalLine('[SYSTEM] 17 Agents Synchronized. All systems nominal.', 'success');
+        const statusReport = [
+          'Agent Cluster: [██████████] 17/17 ONLINE',
+          'Neural Link:   [██████████] STABLE',
+          'Sovereignty:   [██████████] 100% SECURE',
+          'Memory Pool:   [██████░░░░] 6.4GB / 8GB',
+          'Uptime:        432:12:08',
+        ];
+        const boxedStatus = CLIFormatter.boxText('SYSTEM_SYNCHRONIZATION_REPORT', statusReport);
+        boxedStatus.split('\n').forEach(l => addTerminalLine(l, 'success'));
+        return;
+      }
+
+      if (lower === 'about') {
+        const aboutContent = [
+          'APEX OS is the manufacturing plant for the neural era.',
+          'We build autonomous agent fleets that replace traditional',
+          'dev teams, allowing non-technical founders to ship',
+          'at 10x velocity with 0% equity dilution.',
+        ];
+        const boxedAbout = CLIFormatter.boxText('MISSION_BRIEF_V1.0', aboutContent);
+        boxedAbout.split('\n').forEach(l => addTerminalLine(l, 'system'));
         return;
       }
 
@@ -1045,9 +1106,11 @@ export const SpectacularTerminal: React.FC = () => {
                   line.type === 'input' ? 'text-cyan-400' :
                   line.type === 'error' ? 'text-red-400 font-bold' :
                   line.type === 'success' ? 'text-emerald-400' :
+                  line.type === 'system' ? 'text-cyan-400' :
                   line.type === 'jarvis' ? 'text-violet-400 font-black' :
                   line.type === 'choice' ? 'text-cyan-300 font-black underline cursor-pointer hover:text-white transition-colors' :
                   line.type === 'matrix' ? 'text-green-400' :
+                  line.type === 'cyan' ? 'text-cyan-400' :
                   'text-white/70'
                 )
               }`}
