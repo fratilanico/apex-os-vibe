@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { TerminalWindow, TerminalPortal } from '../../ui/Terminal';
-import { DEMO_CREDENTIALS, type AuthUser, type AuthenticatedTerminalProps } from './AuthenticatedTerminal.types';
+import { DEMO_CREDENTIALS, PLAYER1_CREDENTIALS, type AuthUser, type AuthenticatedTerminalProps } from './AuthenticatedTerminal.types';
 
 type AuthState = 'boot' | 'username' | 'password' | 'authenticating' | 'success';
 
@@ -84,12 +84,14 @@ export const AuthenticatedTerminal: React.FC<AuthenticatedTerminalProps> = ({
     setOutput(prev => [...prev, 'VERIFYING_CREDENTIALS...']);
     await sleep(1000);
 
-    // Check credentials
-    const isValid = username === DEMO_CREDENTIALS.username && inputValue === DEMO_CREDENTIALS.password;
+    // Check credentials (support both demo and Player1 accounts)
+    const isDemoValid = username === DEMO_CREDENTIALS.username && inputValue === DEMO_CREDENTIALS.password;
+    const isPlayer1Valid = username === PLAYER1_CREDENTIALS.username && inputValue === PLAYER1_CREDENTIALS.password;
+    const isValid = isDemoValid || isPlayer1Valid;
 
     if (isValid) {
       const user: AuthUser = {
-        email: DEMO_CREDENTIALS.email,
+        email: isPlayer1Valid ? PLAYER1_CREDENTIALS.email : DEMO_CREDENTIALS.email,
         name: username,
         authMethod: 'cli'
       };
@@ -114,7 +116,9 @@ export const AuthenticatedTerminal: React.FC<AuthenticatedTerminalProps> = ({
         ...prev,
         '✗ INVALID_CREDENTIALS',
         '',
-        'Hint: Try username: vibefounder, password: apex2024',
+        'Hint: Try one of these:',
+        '  username: Player1, password: greuceanu',
+        '  username: vibefounder, password: apex2024',
         '',
         'Press ESC to try again'
       ]);

@@ -14,3 +14,9 @@ export const DEMO_CREDENTIALS = {
   password: 'apex2024',
   email: 'demo@vibeacademy.com'
 };
+
+export const PLAYER1_CREDENTIALS = {
+  username: 'Player1',
+  password: 'greuceanu',
+  email: 'greuceanu@apexos.com'
+};

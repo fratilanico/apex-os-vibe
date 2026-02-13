@@ -247,6 +247,87 @@ export const PricingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Comparison Table */}
+      <section className="mb-12 sm:mb-16 px-2 sm:px-0">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="max-w-5xl mx-auto"
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Compare Your Options</h2>
+            <p className="text-white/60">See how Vibe Academy stacks up against traditional paths</p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-4 px-4 text-white/40 font-medium text-sm">Feature</th>
+                  <th className="text-center py-4 px-4">
+                    <div className="text-cyan-400 font-bold">Vibe Academy</div>
+                    <div className="text-emerald-400 text-xs">Recommended</div>
+                  </th>
+                  <th className="text-center py-4 px-4 text-white/60 font-medium text-sm">Tech Co-Founder</th>
+                  <th className="text-center py-4 px-4 text-white/60 font-medium text-sm">Dev Agency</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Upfront Cost</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">$200/mo or $997</td>
+                  <td className="py-4 px-4 text-center text-white/60">$0 (equity)</td>
+                  <td className="py-4 px-4 text-center text-white/60">$15,000+</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Annual Cost</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">$997-$2,400</td>
+                  <td className="py-4 px-4 text-center text-white/60">$150K-$300K</td>
+                  <td className="py-4 px-4 text-center text-white/60">$50K-$200K</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Equity Required</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">0%</td>
+                  <td className="py-4 px-4 text-center text-white/60">15-50%</td>
+                  <td className="py-4 px-4 text-center text-white/60">0%</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Time to Start</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">Immediate</td>
+                  <td className="py-4 px-4 text-center text-white/60">3-12 months</td>
+                  <td className="py-4 px-4 text-center text-white/60">2-4 weeks</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Knowledge Transfer</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">You learn everything</td>
+                  <td className="py-4 px-4 text-center text-white/60">Dependent on them</td>
+                  <td className="py-4 px-4 text-center text-white/60">None</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">Ongoing Dependency</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">None - you own it</td>
+                  <td className="py-4 px-4 text-center text-white/60">High risk if they leave</td>
+                  <td className="py-4 px-4 text-center text-white/60">Vendor lock-in</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-4 px-4 text-white/80 text-sm">24/7 Availability</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">AI agents work anytime</td>
+                  <td className="py-4 px-4 text-center text-white/60">Limited hours</td>
+                  <td className="py-4 px-4 text-center text-white/60">Business hours only</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-4 text-white/80 text-sm">Scalability</td>
+                  <td className="py-4 px-4 text-center text-cyan-400 font-semibold">Unlimited parallel agents</td>
+                  <td className="py-4 px-4 text-center text-white/60">1 person bandwidth</td>
+                  <td className="py-4 px-4 text-center text-white/60">Hourly billing</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </section>
+
       {/* Trust Section */}
       <section className="mb-12 sm:mb-16 px-2 sm:px-0">
         <motion.div

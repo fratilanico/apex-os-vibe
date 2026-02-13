@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { ChromaticLogo } from './ui/ChromaticLogo';
 
 // Premium navbar inspired by OpenAI/Apple/Claude
 // Clean, minimal, professional
@@ -16,10 +17,11 @@ export const Navbar: React.FC<NavbarProps> = () => {
   const [scrolled, setScrolled] = useState(false);
   
   const navItems = [
-    { name: 'Vibe', path: '/vibe' },
-    { name: 'Approach', path: '/approach' },
-    { name: 'Academy', path: '/academy' },
-    { name: 'Contact', path: '/contact' }
+    { name: 'START', path: '/' },
+    { name: 'VIBE', path: '/vibe' },
+    { name: 'APPROACH', path: '/approach' },
+    { name: 'ACADEMY', path: '/academy' },
+    { name: 'CONTACT', path: '/contact' }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -43,11 +45,8 @@ export const Navbar: React.FC<NavbarProps> = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
-                <span className="text-white text-xs font-black">A</span>
-              </div>
-              <span className="text-sm font-semibold text-white tracking-tight">APEX OS</span>
+            <Link to="/" className="flex items-center group">
+              <ChromaticLogo type="apex" size="sm" className="scale-[0.4] origin-left" />
             </Link>
             
             {/* Desktop Navigation */}
@@ -71,9 +70,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
             <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/pricing"
-                className="px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-white/90 transition-colors"
+                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold tracking-wider hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
               >
-                Get Started
+                ENROLL NOW
               </Link>
             </div>
 
@@ -124,9 +123,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   to="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block mt-4 px-4 py-3 rounded-lg bg-white text-black text-sm font-semibold text-center"
+                  className="block mt-4 px-4 py-3 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold text-center"
                 >
-                  Get Started
+                  ENROLL NOW
                 </Link>
               </div>
             </motion.div>
