@@ -42,49 +42,49 @@ export const Navbar: React.FC<NavbarProps> = () => {
           scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+        <div className="relative max-w-7xl mx-auto h-16">
+          {/* Logo - Absolute Left */}
+          <div className="absolute left-4 top-1/2 -translate-y-1/2">
             <Link to="/" className="flex items-center group">
               <ChromaticLogo type="apex" size="sm" className="scale-[0.4] origin-left" />
             </Link>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.path)
-                      ? 'text-white bg-white/10'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Desktop CTA */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link
-                to="/pricing"
-                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold tracking-wider hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
-              >
-                ENROLL NOW
-              </Link>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
           </div>
+          
+          {/* Desktop Navigation - True Center */}
+          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`text-xs font-mono font-bold tracking-widest uppercase transition-colors ${
+                  isActive(item.path)
+                    ? 'text-white'
+                    : 'text-white/60 hover:text-cyan-400'
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop CTA - Absolute Right */}
+          <div className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2">
+            <Link
+              to="/pricing"
+              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold tracking-wider hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+            >
+              ENROLL NOW
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button - Absolute Right */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </motion.nav>
 
