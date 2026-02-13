@@ -34,14 +34,30 @@ export const HeroSection: React.FC = () => {
           <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mt-4 font-sans">Zero equity. Maximum velocity.</p>
         </motion.div>
         <motion.div variants={item} className="mb-6">
-          <p className="text-xs md:text-sm text-white/40 uppercase tracking-widest mb-4">Next Webinar Launch</p>
+          <p className="text-xs md:text-sm text-white/40 uppercase tracking-widest mb-4">Next Cohort Launch</p>
           <CountdownTimer />
         </motion.div>
+        
+        {/* Class Start Info */}
+        <motion.div variants={item} className="mb-8 space-y-2">
+          <p className="text-base md:text-lg text-cyan-300 font-medium">
+            First class starts 2nd week of March
+          </p>
+          <p className="text-sm text-white/40">
+            Secure your spot. Limited to 50 builders.
+          </p>
+        </motion.div>
       </div>
+      
+      {/* Scroll to Explore */}
       <motion.div variants={item} className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30">
-        <span className="text-xs uppercase tracking-widest">Scroll to explore</span>
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}><ArrowDown className="w-5 h-5" /></motion.div>
+        <span className="text-xs uppercase tracking-widest">SCROLL TO EXPLORE</span>
+        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+          <ArrowDown className="w-5 h-5" />
+        </motion.div>
       </motion.div>
     </motion.section>
   );
 };
+
+export default HeroSection;

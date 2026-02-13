@@ -32,7 +32,7 @@ export const ComparisonSection: React.FC = () => {
           onClick={() => setView('new')}
           className={`px-8 py-3 text-sm font-semibold rounded-l-xl transition-all duration-300 ${
             view === 'new'
-              ? 'bg-gradient-to-r from-[#06b6d4] to-[#059669] text-white'
+              ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-white shadow-[0_0_15px_rgba(34,211,238,0.3)]'
               : 'bg-white/5 text-white/40'
           }`}
         >
@@ -42,7 +42,7 @@ export const ComparisonSection: React.FC = () => {
           onClick={() => setView('old')}
           className={`px-8 py-3 text-sm font-semibold rounded-r-xl transition-all duration-300 ${
             view === 'old'
-              ? 'bg-white/10 text-white'
+              ? 'bg-gradient-to-r from-rose-700 to-red-600 text-white shadow-[0_0_15px_rgba(225,29,72,0.3)]'
               : 'bg-white/5 text-white/40'
           }`}
         >
@@ -84,11 +84,11 @@ export const ComparisonSection: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-white/5 border border-white/5 rounded-3xl p-8 text-left"
+                className="bg-rose-900/20 border border-rose-700/50 rounded-3xl p-8 text-left"
               >
-                <item.icon className="w-8 h-8 text-white/30 mb-4" />
-                <h3 className="text-xl font-bold text-white/30 mb-2">{item.title}</h3>
-                <p className="text-white/30 text-sm leading-relaxed">{item.desc}</p>
+                <item.icon className="w-8 h-8 text-rose-400/50 mb-4" />
+                <h3 className="text-xl font-bold text-rose-200/50 mb-2">{item.title}</h3>
+                <p className="text-rose-200/40 text-sm leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </motion.div>

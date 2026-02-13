@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useOnboardingStore } from '../../stores/useOnboardingStore';
 
-export const MatrixRain: React.FC<{ enabled?: boolean; speed?: number }> = ({ enabled = true, speed = 1 }) => {
+export const MatrixRain: React.FC<{ enabled?: boolean; speed?: number }> = ({ enabled = true, speed = 0.7 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { mode } = useOnboardingStore();
 

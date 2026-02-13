@@ -77,7 +77,7 @@ export const RotatingPunchlines: React.FC = () => {
             backfaceVisibility: 'hidden',
           }}
         >
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center whitespace-nowrap">
             <PolychromaticText>
               {PUNCHLINES[currentIndex]}
             </PolychromaticText>
