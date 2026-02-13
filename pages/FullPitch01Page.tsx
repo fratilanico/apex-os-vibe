@@ -21,7 +21,7 @@ import { HyperloopMultiplierEngine } from '@/components/showmethemoney/accelerat
 
 // Background & Effects
 import { AmbientGlow } from '@/components/ui/AmbientGlow';
-import { MatrixRain, Scanlines, GlitchOverlay, AsciiParticles } from '@/components/effects/GeekModeEffects';
+import { Scanlines, GlitchOverlay, AsciiParticles } from '@/components/effects/GeekModeEffects';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 
 // Pitch Sections
@@ -115,8 +115,7 @@ export const FullPitch01Page: React.FC = () => {
 
   return (
     <main className="relative z-10 min-h-screen bg-gradient-to-br from-teal-950 via-slate-950 to-pink-950 text-white overflow-x-hidden font-sans selection:bg-cyan-500/30">
-      {/* GEEK MODE EFFECTS */}
-      <MatrixRain enabled={true} />
+      {/* BACKGROUND EFFECTS - MatrixRain removed to prevent tablet flickering */}
       <Scanlines />
       <GlitchOverlay />
       <AsciiParticles />
