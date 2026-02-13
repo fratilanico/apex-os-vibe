@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { ChromaticLogo } from './ui/ChromaticLogo';
-
-// Premium navbar inspired by OpenAI/Apple/Claude
-// Clean, minimal, professional
 
 interface NavbarProps {
   onOpenCurriculum?: () => void;
@@ -14,7 +11,6 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   
   const navItems = [
     { name: 'START', path: '/' },
@@ -26,69 +22,69 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Track scroll for backdrop effect
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
     <>
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-black/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
-        }`}
+        aria-label="Primary"
+        initial={{ y: -100, x: '-50%' }}
+        animate={{ y: 0, x: '-50%' }}
+        className="fixed top-8 left-1/2 z-40 px-3 sm:px-6 py-3 rounded-full bg-black/40 border border-white/10 backdrop-blur-2xl flex items-center gap-4 sm:gap-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
       >
-        <div className="relative max-w-7xl mx-auto h-16">
-          {/* Logo - Absolute Left */}
-          <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <Link to="/" className="flex items-center group">
-              <ChromaticLogo type="apex" size="sm" className="scale-[0.4] origin-left" />
-            </Link>
-          </div>
-          
-          {/* Desktop Navigation - True Center */}
-          <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`text-xs font-mono font-bold tracking-widest uppercase transition-colors ${
-                  isActive(item.path)
-                    ? 'text-white'
-                    : 'text-white/60 hover:text-cyan-400'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-
-          {/* Desktop CTA - Absolute Right */}
-          <div className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2">
-            <Link
-              to="/pricing"
-              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold tracking-wider hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+        <Link to="/" className="flex items-center gap-2 pr-3 sm:pr-4 border-r border-white/10 group">
+          {/* Cyan ASCII Logo for Landing Page */}
+          <ChromaticLogo type="apex-cyan" size="sm" className="scale-[0.35] md:scale-[0.4] origin-left" />
+        </Link>
+        
+        {/* Desktop navigation */}
+        <div className="hidden sm:flex items-center gap-8">
+          {navItems.map((item) => (
+            <Link 
+              key={item.name} 
+              to={item.path}
+              className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:tracking-[0.3em] ${
+                isActive(item.path) ? 'text-white' : 'text-white/40 hover:text-white'
+              }`}
             >
-              ENROLL NOW
+              {item.name}
             </Link>
-          </div>
-
-          {/* Mobile Menu Button - Absolute Right */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          ))}
         </div>
+
+        {/* Mobile hamburger button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="sm:hidden p-2 text-white/60 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
+        {/* Desktop Enroll button */}
+        <Link to="/pricing" className="relative group hidden sm:block">
+          <motion.div
+            className="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 opacity-75 blur-md group-hover:opacity-100 transition-opacity"
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 0.8, 0.5],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.button 
+            whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(6, 182, 212, 0.6), 0 0 80px rgba(139, 92, 246, 0.4)' }}
+            whileTap={{ scale: 0.95 }}
+            className="relative px-6 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
+          >
+            ENROLL NOW
+          </motion.button>
+        </Link>
       </motion.nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -96,24 +92,25 @@ export const Navbar: React.FC<NavbarProps> = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 sm:hidden"
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             />
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-16 left-0 right-0 z-50 md:hidden bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl"
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed top-24 left-4 right-4 z-40 sm:hidden bg-black/95 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-2xl"
             >
-              <div className="max-w-7xl mx-auto px-4 py-6 space-y-1">
+              <div className="flex flex-col gap-2">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      isActive(item.path)
-                        ? 'text-white bg-white/10'
+                    className={`text-base font-bold uppercase tracking-wider py-3 px-4 rounded-xl transition-all min-h-[48px] flex items-center ${
+                      isActive(item.path) 
+                        ? 'text-cyan-400 bg-cyan-500/10' 
                         : 'text-white/60 hover:text-white hover:bg-white/5'
                     }`}
                   >
@@ -123,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   to="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block mt-4 px-4 py-3 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold text-center"
+                  className="mt-4 px-6 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-sm font-bold uppercase tracking-wider text-center min-h-[48px] flex items-center justify-center shadow-lg shadow-cyan-500/30"
                 >
                   ENROLL NOW
                 </Link>
@@ -135,3 +132,5 @@ export const Navbar: React.FC<NavbarProps> = () => {
     </>
   );
 };
+
+export default Navbar;

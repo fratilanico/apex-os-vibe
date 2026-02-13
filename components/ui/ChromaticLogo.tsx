@@ -36,7 +36,7 @@ const chromaticStyle = `
 `;
 
 interface ChromaticLogoProps {
-  type?: 'apex' | 'player-one';
+  type?: 'apex' | 'apex-cyan' | 'player-one';
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
@@ -78,6 +78,28 @@ export const ChromaticLogo: React.FC<ChromaticLogoProps> = ({
       >
         {APEX_LOGO_ASCII_LINES.map((l, i) => (
           <span key={i} style={{ color: l.color, display: 'block' }}>
+            {l.text}
+          </span>
+        ))}
+      </pre>
+    );
+  }
+
+  // APEX CYAN - All cyan version for homepage
+  if (type === 'apex-cyan') {
+    return (
+      <pre 
+        className={`font-mono overflow-visible whitespace-pre leading-[0.85] text-cyan-400 ${sizeClasses[size]} ${className}`}
+        style={{ 
+          fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
+          fontVariantLigatures: 'none',
+          textRendering: 'geometricPrecision',
+          margin: 0,
+          padding: 0
+        }}
+      >
+        {APEX_LOGO_ASCII_LINES.map((l, i) => (
+          <span key={i} style={{ display: 'block' }}>
             {l.text}
           </span>
         ))}

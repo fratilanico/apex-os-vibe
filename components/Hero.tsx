@@ -20,14 +20,18 @@ export const Hero = React.memo<HeroProps>(function Hero() {
         <span className="w-2 h-4 bg-cyan-400 animate-pulse"/>
       </div>
 
-      <h1 
-        className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-white mb-6 animate-fade-in-up animation-delay-100 max-w-5xl"
-      >
-        Your $200K Technical Co-Founder <br className="hidden sm:block" />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-500">
-          Just Became $200/Month
-        </span>
-      </h1>
+      <div className="mb-6 animate-fade-in-up animation-delay-100">
+        <img 
+          src="/logo-apex.png" 
+          alt="APEX OS" 
+          className="max-w-[280px] md:max-w-[320px] mx-auto h-auto"
+        />
+        <h2 className="text-2xl md:text-3xl font-bold tracking-tighter text-white mt-4">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-500">
+            Just Became $200/Month
+          </span>
+        </h2>
+      </div>
 
       <p 
         className="max-w-3xl text-lg md:text-xl text-white/60 mb-12 leading-relaxed font-light animate-fade-in-up animation-delay-200"
