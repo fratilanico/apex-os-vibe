@@ -12,7 +12,6 @@ import {
   Timer,
 } from 'lucide-react';
 import { PRICING_TIERS, calculatePrice, calculateDiscount, getSavings, type PricingTier } from '../data/pricingData';
-import { MatrixRain } from '../components/effects/GeekModeEffects';
 
 type BillingPeriod = 'monthly' | 'yearly';
 
@@ -250,10 +249,6 @@ export const PricingPage: React.FC = () => {
 
       {/* Comparison Table */}
       <section className="mb-12 sm:mb-16 px-2 sm:px-0 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
-          <MatrixRain enabled={true} />
-        </div>
-        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
